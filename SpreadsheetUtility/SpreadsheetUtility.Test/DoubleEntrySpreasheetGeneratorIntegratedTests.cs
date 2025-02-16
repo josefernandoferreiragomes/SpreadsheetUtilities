@@ -27,9 +27,9 @@ namespace DoubleEntrySpreadsheetGeneratorTests
 
             // Act
             var result = await generator.GenerateDoubleEntrySpreasheet();
-
+            var path = System.IO.Path.GetFullPath(inputFilePath);
             // Assert
-            Assert.Contains("Error: Input file 'nonexistent.xlsx' not found.", result);
+            Assert.Contains($"Error processing the file: Could not find file '{path}'.", result);
         }
 
         [Fact]

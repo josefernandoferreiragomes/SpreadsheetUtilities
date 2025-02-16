@@ -34,7 +34,9 @@ namespace Utilities.Test
             mockWorksheet.Setup(ws => ws.Cell(It.IsAny<int>(), It.IsAny<string>()).GetString()).Returns("Test");
 
             // Setup mock workbook behavior
-            mockWorkbook.Setup(wb => wb.Worksheet(It.IsAny<int>())).Returns(mockWorksheet.Object);
+            mockWorkbook.Setup(wb => wb
+                .Worksheet(It.IsAny<int>())
+            ).Returns(mockWorksheet.Object);
 
             var generator = new DoubleEntrySpreasheetGenerator(mockWorkbook.Object, "1", "2", "output.xlsx");
 

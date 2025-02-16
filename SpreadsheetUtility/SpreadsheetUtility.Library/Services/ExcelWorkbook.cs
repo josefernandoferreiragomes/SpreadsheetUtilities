@@ -16,7 +16,7 @@ namespace Utilities.Services
         public ExcelWorkbook(string filePath)
         {            
             _filePath = filePath;            
-            _workbook = new Lazy<XLWorkbook>(() => new XLWorkbook(_filePath));           
+            _workbook = new Lazy<XLWorkbook>(() => new XLWorkbook(_filePath));
         }
         
         public IXLWorksheet Worksheet(int index)
@@ -37,11 +37,7 @@ namespace Utilities.Services
         public async Task<string> GenerateOutputFileName()
         {
             string result = string.Empty;
-
-            if (!File.Exists(_filePath))
-            {
-                throw new FileNotFoundException($"Error: Input file '{_filePath}' not found.");
-            }
+            ValidateFilePath();
 
             await Task.Run(() =>
             {
@@ -50,6 +46,14 @@ namespace Utilities.Services
                 result = Path.Combine(directory, $"{fileNameWithoutExt}_output.xlsx");
             });
             return result;
+        }
+
+        private void ValidateFilePath()
+        {
+            if (!File.Exists(_filePath))
+            {
+                throw new FileNotFoundException($"Error: Input file '{_filePath}' not found.");
+            }
         }
     }
 

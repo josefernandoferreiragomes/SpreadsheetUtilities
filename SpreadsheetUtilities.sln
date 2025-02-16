@@ -1,0 +1,68 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.12.35521.163
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpreadsheetUtility.Library", "SpreadsheetUtility\SpreadsheetUtility.Library\SpreadsheetUtility.Library.csproj", "{EEA62EC1-327A-4454-813C-9311CA2B7D16}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpreadsheetUtility.UI.Console", "SpreadsheetUtility\SpreadsheetUtility.UI.Console\SpreadsheetUtility.UI.Console.csproj", "{69825D0B-BFCB-453B-89A6-9AB30B4D6F6A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{18066C81-BC94-471E-B150-4BCC8CE900EB}"
+	ProjectSection(SolutionItems) = preProject
+		LICENSE.txt = LICENSE.txt
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{C7DD7E85-59DA-4437-9061-E61FCF5B83E7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpreadsheetUtility.Test", "SpreadsheetUtility\SpreadsheetUtility.Test\SpreadsheetUtility.Test.csproj", "{E6184575-AB43-4A1B-BE78-4A87B7FB3631}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SimplifiedUtilityConsole", "SimplifiedUtilityConsole", "{BCB9D4AA-42B9-4422-8A0F-A3A1E9448F47}"
+	ProjectSection(SolutionItems) = preProject
+		SimplifiedUtilityConsole\ReadMe.md = SimplifiedUtilityConsole\ReadMe.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SpreadsheetUtility", "SpreadsheetUtility", "{589C6770-9BE3-4742-BE34-345E564C5F7D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimplifiedUtilityConsole", "SimplifiedUtilityConsole\SimplifiedUtilityConsole.csproj", "{1118E5C9-FCF2-474A-9355-5DD1CD7D3AF1}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ExampleFiles", "ExampleFiles", "{B0E8E23F-7945-4AEA-9344-E84F3D8B3370}"
+	ProjectSection(SolutionItems) = preProject
+		ExampleFiles\input.xlsx = ExampleFiles\input.xlsx
+		ExampleFiles\input_output.xlsx = ExampleFiles\input_output.xlsx
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EEA62EC1-327A-4454-813C-9311CA2B7D16}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EEA62EC1-327A-4454-813C-9311CA2B7D16}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EEA62EC1-327A-4454-813C-9311CA2B7D16}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EEA62EC1-327A-4454-813C-9311CA2B7D16}.Release|Any CPU.Build.0 = Release|Any CPU
+		{69825D0B-BFCB-453B-89A6-9AB30B4D6F6A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{69825D0B-BFCB-453B-89A6-9AB30B4D6F6A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{69825D0B-BFCB-453B-89A6-9AB30B4D6F6A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{69825D0B-BFCB-453B-89A6-9AB30B4D6F6A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E6184575-AB43-4A1B-BE78-4A87B7FB3631}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E6184575-AB43-4A1B-BE78-4A87B7FB3631}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E6184575-AB43-4A1B-BE78-4A87B7FB3631}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E6184575-AB43-4A1B-BE78-4A87B7FB3631}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1118E5C9-FCF2-474A-9355-5DD1CD7D3AF1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1118E5C9-FCF2-474A-9355-5DD1CD7D3AF1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1118E5C9-FCF2-474A-9355-5DD1CD7D3AF1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1118E5C9-FCF2-474A-9355-5DD1CD7D3AF1}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{EEA62EC1-327A-4454-813C-9311CA2B7D16} = {589C6770-9BE3-4742-BE34-345E564C5F7D}
+		{69825D0B-BFCB-453B-89A6-9AB30B4D6F6A} = {589C6770-9BE3-4742-BE34-345E564C5F7D}
+		{E6184575-AB43-4A1B-BE78-4A87B7FB3631} = {C7DD7E85-59DA-4437-9061-E61FCF5B83E7}
+		{1118E5C9-FCF2-474A-9355-5DD1CD7D3AF1} = {BCB9D4AA-42B9-4422-8A0F-A3A1E9448F47}
+		{B0E8E23F-7945-4AEA-9344-E84F3D8B3370} = {18066C81-BC94-471E-B150-4BCC8CE900EB}
+	EndGlobalSection
+EndGlobal

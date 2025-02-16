@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using ClosedXML.Excel;
 using Moq;
 using Utilities;
+using Utilities.Interfaces;
+using Utilities.Services;
 using Xunit;
 
 namespace DoubleEntrySpreadsheetGeneratorTests
@@ -12,11 +14,16 @@ namespace DoubleEntrySpreadsheetGeneratorTests
 
     public class DoubleEntrySpreasheetGeneratorIntegratedTests
     {
+        //startup method
+        
+
         [Fact]
         public async Task GenerateDoubleEntrySpreasheet_InputFileNotFound_ReturnsError()
-        {
+        {            
             // Arrange
-            var generator = new DoubleEntrySpreasheetGenerator("nonexistent.xlsx", "5", "3", "output.xlsx");
+            var inputFilePath = "nonexistent.xlsx";
+            var service = new ExcelWorkbook(inputFilePath);
+            var generator = new DoubleEntrySpreasheetGenerator(service, "5", "3", "output.xlsx");
 
             // Act
             var result = await generator.GenerateDoubleEntrySpreasheet();
@@ -32,8 +39,9 @@ namespace DoubleEntrySpreadsheetGeneratorTests
             var inputFilePath = "test_input.xlsx";
             var outputFilePath = "test_output.xlsx";
             CreateTestInputFile(inputFilePath);
+            var service = new ExcelWorkbook(inputFilePath);
 
-            var generator = new DoubleEntrySpreasheetGenerator(inputFilePath, "2", "4", outputFilePath);
+            var generator = new DoubleEntrySpreasheetGenerator(service, "2", "4", outputFilePath);
 
             // Act
             var result = await generator.GenerateDoubleEntrySpreasheet();
@@ -53,8 +61,9 @@ namespace DoubleEntrySpreadsheetGeneratorTests
             // Arrange
             var inputFilePath = "empty_input.xlsx";
             CreateEmptyTestInputFile(inputFilePath);
+            var service = new ExcelWorkbook(inputFilePath);
 
-            var generator = new DoubleEntrySpreasheetGenerator(inputFilePath, "5", "3", "output.xlsx");
+            var generator = new DoubleEntrySpreasheetGenerator(service, "5", "3", "output.xlsx");
 
             // Act
             var result = await generator.GenerateDoubleEntrySpreasheet();

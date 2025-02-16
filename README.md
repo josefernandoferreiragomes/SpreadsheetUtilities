@@ -74,25 +74,34 @@ This command will generate a double entry spreadsheet from `input.xlsx` and save
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
-### Walkthrough
+## Walkthrough
 
-Used AI to generate the code for the console app, 
+Created the code for the console app, 
 
 Then moved the logic to read the excel file and generate the double entry spreadsheet to a new library project.
 
-Used AI to refactor the previous code. And refactored it manually again.
+Refactored the previous code.
 
 Adapted the projects to use the same solution and added the tests for the logic.
 
-Used AI to generate the code for the tests.
+Created the code for the tests.
 
-Ìn Package Manager Console, added the moq library to the test project to mock the excel file reading:
+In Package Manager Console:
+
+Added the moq library to the test project to mock the excel file reading:
 ```bash
 Install-Package moq
 ```
+
 Updated the xunit package:
 ```bash
 Update-Package xunit
+```
+
+Added the Microsoft.Extensions.Hosting and Microsoft.Extensions.Hosting.Abstractions to the library project:
+```bash
+Install-Package Microsoft.Extensions.Hosting
+Install-Package Microsoft.Extensions.Hosting.Abstractions
 ```
 
 

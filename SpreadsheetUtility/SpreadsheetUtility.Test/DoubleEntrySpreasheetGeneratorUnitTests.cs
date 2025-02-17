@@ -5,18 +5,30 @@ using Utilities.Interfaces;
 namespace Utilities.Test
 {
 
+    /// <summary>
+    /// Still being developed...
+    /// </summary>
     public class DoubleEntrySpreasheetGeneratorUnitTests
     {
         [Fact]
         public async Task GenerateDoubleEntrySpreasheet_InputFileNotFound_ReturnsError()
         {
             // Arrange
+            var mockIXLWorkbook = new Mock<IXLWorkbook>();
+            mockIXLWorkbook.Setup(wb => wb.Worksheet(It.IsAny<int>())).Returns(new Mock<IXLWorksheet>().Object);
             var mockWorkbook = new Mock<IExcelWorkbook>();
             
-            var generator = new DoubleEntrySpreasheetGenerator(mockWorkbook.Object, "1", "2", "output.xlsx");
+            var generator = new Mock<DoubleEntrySpreasheetGenerator>();
+
+
+            //generator.Setup(wb => wb.GenerateDoubleEntrySpreasheet()).Returns(Task.FromResult(new List<string>()
+            //{
+            //    "Error: Input file 'nonexistent.xlsx' not found."
+            //}));
+            //var generator = new DoubleEntrySpreasheetGenerator(mockWorkbook.Object, "1", "2", "output.xlsx");
 
             // Act
-            var result = await generator.GenerateDoubleEntrySpreasheet();
+            var result = await generator.Object.GenerateDoubleEntrySpreasheet();
 
             // Assert
             Assert.Contains("Error: Input file 'nonexistent.xlsx' not found.", result);

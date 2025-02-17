@@ -11,14 +11,20 @@ namespace Utilities.Services
     public class ExcelWorkbook : IExcelWorkbook
     {
         private string _filePath;
-        private Lazy<XLWorkbook> _workbook;
+        private Lazy<IXLWorkbook> _workbook;
 
         public ExcelWorkbook(string filePath)
         {            
             _filePath = filePath;            
-            _workbook = new Lazy<XLWorkbook>(() => new XLWorkbook(_filePath));
+            _workbook = new Lazy<IXLWorkbook>(() => new XLWorkbook(_filePath));
         }
-        
+
+        public ExcelWorkbook(string filePath, Lazy<IXLWorkbook> workbook)
+        {
+            _filePath = filePath;
+            _workbook = workbook;
+        }
+
         public IXLWorksheet Worksheet(int index)
         {
             return _workbook.Value.Worksheet(index);

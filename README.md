@@ -1,6 +1,6 @@
 # Double Entry Spreadsheet Generator
 
-This console application generates double entry spreadsheets from single entry spreadsheets.
+This console application generates double entry spreadsheets from single entry spreadsheets with multi line cells.
 
 For example, if You have a spreadsheet with the following data:
 
@@ -103,5 +103,10 @@ Added the Microsoft.Extensions.Hosting and Microsoft.Extensions.Hosting.Abstract
 Install-Package Microsoft.Extensions.Hosting
 Install-Package Microsoft.Extensions.Hosting.Abstractions
 ```
+
+## Next features
+Multi line cells to multi rows
+One entry tables with single line cells to Double entry
+
 
 

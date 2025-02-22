@@ -8,37 +8,15 @@ using Utilities.Interfaces;
 
 namespace Utilities
 {
-    public class DoubleEntrySpreasheetGenerator
+    public class SpreasheetGeneratorMultiRow : SpreasheetGeneratorBase
     {
-        private const int WORKSHEET_INDEX_COUNT_DEFAULT = 1;
-        private const int HEADER_ROW_INDEX_DEFAULT = 2;
 
-        private readonly IExcelWorkbook _workbook;
-
-        private string _keyColumnID;
-        private string _valuesColumnID;
-        private string _outputFilePath;
-        private string _headersRow;
-        private string _worksheetIndex;
-        private int _keyColumnIDint;
-        private int _valuesColumnIDint;
-        private int _headersRowInt;
-        private int _worksheetIndexInt;
-
-        public DoubleEntrySpreasheetGenerator(IExcelWorkbook workbook, string keyColumnID, string valuesColumnID, string outputFilePath, string? headersRow = null, string? worksheetIndex = null)
+        public SpreasheetGeneratorMultiRow(IExcelWorkbook workbook, string keyColumnID, string valuesColumnID, string outputFilePath, string? headersRow = null, string? worksheetIndex = null)
+            : base(workbook, keyColumnID, valuesColumnID, outputFilePath, headersRow, worksheetIndex)
         {
-            _workbook = workbook;
-           
-            _keyColumnID = keyColumnID;
-            _valuesColumnID = valuesColumnID;
-            _outputFilePath = outputFilePath;
-            _headersRow = headersRow ?? string.Empty;
-            _worksheetIndex = worksheetIndex ?? string.Empty;            
-            _worksheetIndexInt = int.TryParse(_worksheetIndex, out _worksheetIndexInt) ? _worksheetIndexInt : WORKSHEET_INDEX_COUNT_DEFAULT;
-            _headersRowInt = int.TryParse(_headersRow, out _headersRowInt) ? _headersRowInt : HEADER_ROW_INDEX_DEFAULT;
-        }        
+        }
 
-        public async Task<List<string>> GenerateDoubleEntrySpreasheet()
+        public override async Task<List<string>> Generate()
         {
             var result = new List<string>();
 
@@ -55,7 +33,7 @@ namespace Utilities
                     return result;
                 }
 
-                var uniqueThirdPartyServices = GetUniqueThirdPartyServices(serviceMappings);
+                var uniqueThirdPartyServices = GetSplitCellRows(serviceMappings);
                 await WriteOutputFile(serviceMappings, uniqueThirdPartyServices).ConfigureAwait(false);
 
                 result.Add($"Output file saved: {_outputFilePath}");
@@ -67,27 +45,10 @@ namespace Utilities
 
             return result;
         }
-        
-        private List<string> ValidateInput()
-        {
-            var result = new List<string>();           
-            if (string.IsNullOrEmpty(_keyColumnID) || !int.TryParse(_keyColumnID, out _keyColumnIDint))
-            {
-                result.Add("Error: Key Column ID is missing.");
-                return result;
-            }
-
-            if (string.IsNullOrEmpty(_valuesColumnID) || !int.TryParse(_valuesColumnID, out _valuesColumnIDint))
-            {
-                result.Add("Error: Values Column ID is missing.");
-                return result;
-            }
-            return result;
-        }
 
         private async Task<Dictionary<string, HashSet<string>>> ReadInputFile()
         {            
-            var serviceMappings = new Dictionary<string, HashSet<string>>();
+            var keyMappings = new Dictionary<string, HashSet<string>>();
             await Task.Run(() =>
             {  
                                  
@@ -102,38 +63,23 @@ namespace Utilities
 
                     if (string.IsNullOrEmpty(keyColumn)) continue;
 
-                    if (!serviceMappings.ContainsKey(keyColumn))
-                        serviceMappings[keyColumn] = new HashSet<string>();
+                    if (!keyMappings.ContainsKey(keyColumn))
+                        keyMappings[keyColumn] = new HashSet<string>();
 
                     foreach (var thirdPartyService in valuesColumn.Split(new[] { '\n', ',' }, StringSplitOptions.RemoveEmptyEntries))
                     {
                         string service = thirdPartyService.Trim();
                         if (!string.IsNullOrEmpty(service))
                         {
-                            serviceMappings[keyColumn].Add(service);
+                            keyMappings[keyColumn].Add(service);
                         }
                     }
                 }                          
             });            
-            return serviceMappings;
+            return keyMappings;
         }      
 
-        private HashSet<string> GetUniqueThirdPartyServices(Dictionary<string, HashSet<string>> serviceMappings)
-        {
-            var uniqueThirdPartyServices = new HashSet<string>();
-
-            foreach (var entry in serviceMappings)
-            {
-                foreach (var service in entry.Value)
-                {
-                    uniqueThirdPartyServices.Add(service);
-                }
-            }
-
-            return uniqueThirdPartyServices;
-        }
-
-        private async Task WriteOutputFile(Dictionary<string, HashSet<string>> serviceMappings, HashSet<string> uniqueThirdPartyServices)
+        protected override async Task WriteOutputFile(Dictionary<string, HashSet<string>> serviceMappings, HashSet<string> uniqueThirdPartyServices)
         {
             await Task.Run(() =>
             {              

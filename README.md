@@ -56,7 +56,7 @@ In the following example, it is run from CMD from the exe file folder, consideri
 
 Developer PowerShell, from the project folder:
 ```bash
-dotnet run .\..\input.xlsx 2 5 output.xlsx
+dotnet run .\input.xlsx 2 5 output.xlsx
 ```
 
 This command will generate a double entry spreadsheet from `input.xlsx` and save it as `output.xlsx`.

@@ -23,10 +23,10 @@ namespace DoubleEntrySpreadsheetGeneratorTests
             // Arrange
             var inputFilePath = "nonexistent.xlsx";
             var service = new ExcelWorkbook(inputFilePath);
-            var generator = new DoubleEntrySpreasheetGenerator(service, "5", "3", "output.xlsx");
+            var generator = new SpreasheetGeneratorDoubleEntry(service, "5", "3", "output.xlsx");
 
             // Act
-            var result = await generator.GenerateDoubleEntrySpreasheet();
+            var result = await generator.Generate();
             var path = System.IO.Path.GetFullPath(inputFilePath);
             // Assert
             Assert.Contains($"Error processing the file: Could not find file '{path}'.", result);
@@ -41,10 +41,10 @@ namespace DoubleEntrySpreadsheetGeneratorTests
             CreateTestInputFile(inputFilePath);
             var service = new ExcelWorkbook(inputFilePath);
 
-            var generator = new DoubleEntrySpreasheetGenerator(service, "2", "4", outputFilePath);
+            var generator = new SpreasheetGeneratorDoubleEntry(service, "2", "4", outputFilePath);
 
             // Act
-            var result = await generator.GenerateDoubleEntrySpreasheet();
+            var result = await generator.Generate();
 
             // Assert
             Assert.Contains($"Output file saved: {outputFilePath}", result);
@@ -63,10 +63,10 @@ namespace DoubleEntrySpreadsheetGeneratorTests
             CreateEmptyTestInputFile(inputFilePath);
             var service = new ExcelWorkbook(inputFilePath);
 
-            var generator = new DoubleEntrySpreasheetGenerator(service, "5", "3", "output.xlsx");
+            var generator = new SpreasheetGeneratorDoubleEntry(service, "5", "3", "output.xlsx");
 
             // Act
-            var result = await generator.GenerateDoubleEntrySpreasheet();
+            var result = await generator.Generate();
 
             // Assert
             Assert.Contains("Error: No valid data found in input file.", result);

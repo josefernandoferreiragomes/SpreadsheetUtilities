@@ -25,9 +25,9 @@ var host = CreateHostBuilder(args);
 var service = host.Build().Services.GetRequiredService<IExcelWorkbook>();
 
 //TODO: Use a factory to create the generator
-DoubleEntrySpreasheetGenerator generator = new DoubleEntrySpreasheetGenerator(service, keyColumnID, valuesColumnID, outputFilePath, headersRow, worksheetIndex);
+SpreasheetGeneratorDoubleEntry generator = new SpreasheetGeneratorDoubleEntry(service, keyColumnID, valuesColumnID, outputFilePath, headersRow, worksheetIndex);
 
-List<string> result = await generator.GenerateDoubleEntrySpreasheet();
+List<string> result = await generator.Generate();
 
 foreach (var line in result)
 {
@@ -42,5 +42,5 @@ static IHostBuilder CreateHostBuilder(string[] args) =>
         {
             string filePath = args[0];
             services.AddTransient<IExcelWorkbook>(factoryProvider => new ExcelWorkbook(filePath));
-            services.AddTransient<DoubleEntrySpreasheetGenerator>();
+            services.AddTransient<SpreasheetGeneratorDoubleEntry>();
         });

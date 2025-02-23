@@ -43,3 +43,8 @@ dotnet run .\..\ExampleFiles\input.xlsx 2 5 output.xlsx
 	```bash
 	Install-Package ClosedXML SimplifiedUtilityConsole
 	```
+- Tried Syncfusion.Blazor.Gantt, but it is paid, so I uninstalled it
+- For the Gantt chart generator, added the following dependency:
+	```bash	
+	Install-Package
+	```

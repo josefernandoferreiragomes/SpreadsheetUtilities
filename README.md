@@ -105,8 +105,60 @@ Install-Package Microsoft.Extensions.Hosting.Abstractions
 ```
 
 ## Next features
+Blazor Gantt Generator
 Multi line cells to multi rows
 One entry tables with single line cells to Double entry
+
+# Blazor Gantt Chart Application
+
+## Overview
+This application is a **Blazor WebAssembly** project that generates a **Gantt Chart** based on task assignments from an Excel file. It uses **BlazorGantt** for visualization and **ClosedXML** for reading Excel spreadsheets.
+
+## Features
+- Reads task and team data from two Excel files:
+  - **Tasks.xlsx**: Contains project tasks with estimated effort hours.
+  - **Team.xlsx**: Contains developers, their daily work hours, and vacation periods.
+- Assigns tasks to developers while considering vacation periods.
+- Generates a Gantt Chart to visualize task assignments.
+
+## Required Packages
+Install the following NuGet packages:
+```sh
+# ClosedXML for Excel processing
+dotnet add package ClosedXML
+````
+# Gantt chart rendering, in the Blazor app
+```bash
+dotnet add package frappe-gantt
+dotnet add package Microsoft.JSInterop 
+```
+# To allow for Gantt chart rendering, in the Library
+```bash
+dotnet add package newtonsoft.json
+```
+
+
+## File Structure
+- **GanttChartService.cs**: Processes Excel data, assigns tasks, and handles scheduling logic.
+- **Gantt.razor**: Blazor page that renders the Gantt Chart using BlazorGantt.
+- **wwwroot/**: Place your **Tasks.xlsx** and **Team.xlsx** files here.
+
+## License
+This project uses the following licenses:
+- **ClosedXML**: MIT License (Free for personal and commercial use)
+- **BlazorGantt**: MIT License (Free and open-source)
+
+## How to Run
+1. Place `Tasks.xlsx` and `Team.xlsx` in the `wwwroot/` folder.
+2. Run the Blazor app:
+   ```sh
+   dotnet run
+   ```
+3. Open your browser and navigate to `/gantt` to see the Gantt Chart.
+
+---
+For any questions or improvements, feel free to contribute!
+
 
 
 

@@ -30,7 +30,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ExampleFiles", "ExampleFile
 	ProjectSection(SolutionItems) = preProject
 		ExampleFiles\input.xlsx = ExampleFiles\input.xlsx
 		ExampleFiles\input_output.xlsx = ExampleFiles\input_output.xlsx
+		SpreadsheetUtility.UI.Web\tasks.xlsx = SpreadsheetUtility.UI.Web\tasks.xlsx
+		SpreadsheetUtility.UI.Web\team.xlsx = SpreadsheetUtility.UI.Web\team.xlsx
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpreadsheetUtility.UI.Web", "SpreadsheetUtility.UI.Web\SpreadsheetUtility.UI.Web.csproj", "{5F9B3108-25A8-46CF-B012-4C81DDC7A492}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -54,6 +58,10 @@ Global
 		{1118E5C9-FCF2-474A-9355-5DD1CD7D3AF1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1118E5C9-FCF2-474A-9355-5DD1CD7D3AF1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1118E5C9-FCF2-474A-9355-5DD1CD7D3AF1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5F9B3108-25A8-46CF-B012-4C81DDC7A492}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5F9B3108-25A8-46CF-B012-4C81DDC7A492}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5F9B3108-25A8-46CF-B012-4C81DDC7A492}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5F9B3108-25A8-46CF-B012-4C81DDC7A492}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -64,5 +72,6 @@ Global
 		{E6184575-AB43-4A1B-BE78-4A87B7FB3631} = {C7DD7E85-59DA-4437-9061-E61FCF5B83E7}
 		{1118E5C9-FCF2-474A-9355-5DD1CD7D3AF1} = {BCB9D4AA-42B9-4422-8A0F-A3A1E9448F47}
 		{B0E8E23F-7945-4AEA-9344-E84F3D8B3370} = {18066C81-BC94-471E-B150-4BCC8CE900EB}
+		{5F9B3108-25A8-46CF-B012-4C81DDC7A492} = {589C6770-9BE3-4742-BE34-345E564C5F7D}
 	EndGlobalSection
 EndGlobal

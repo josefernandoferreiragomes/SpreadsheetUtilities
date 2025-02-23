@@ -8,15 +8,44 @@ namespace SpreadsheetUtility.Library
     {
         string ProcessExcelData(string taskFilePath, string teamFilePath);
     }
+    public class GanttTask
+    {
+        [JsonProperty("id")]
+        public string Id { get; set; }
+
+        [JsonProperty("name")]
+        public string Name { get; set; }
+
+        [JsonProperty("start")]
+        public string Start { get; set; } // Format: "YYYY-MM-DD"
+
+        [JsonProperty("end")]
+        public string End { get; set; }   // Format: "YYYY-MM-DD"
+
+        [JsonProperty("progress")]
+        public int Progress { get; set; } = 0;
+
+        [JsonProperty("dependencies")]
+        public string Dependencies { get; set; } = "";
+    }
+
+
+
     public class GanttChartService: IGanttChartService
     {
         public string ProcessExcelData(string taskFilePath, string teamFilePath)
         {
-            var tasks = LoadTasks(taskFilePath);
-            var developers = LoadDevelopers(teamFilePath);
-            AssignTasksToDevelopers(tasks, developers);
+            //var tasks = LoadTasks(taskFilePath);
+            //var developers = LoadDevelopers(teamFilePath);
+            //AssignTasksToDevelopers(tasks, developers);
+            var tasks = new List<GanttTask>
+            {
+                new GanttTask { Id = "1", Name = "Design UI", Start = "2025-02-25", End = "2025-03-01", Progress = 50 },
+                new GanttTask { Id = "2", Name = "Backend API", Start = "2025-03-02", End = "2025-03-10", Progress = 30, Dependencies = "1" }
+            };
 
-            return JsonConvert.SerializeObject(tasks, Formatting.Indented);
+            Console.WriteLine(JsonConvert.SerializeObject(tasks, Formatting.Indented));
+            return JsonConvert.SerializeObject(tasks);
         }
 
         private List<TaskAssignment> LoadTasks(string filePath)
@@ -32,7 +61,7 @@ namespace SpreadsheetUtility.Library
                         Id = row.Cell(1).GetValue<int>(),
                         Name = row.Cell(2).GetValue<string>(),
                         EstimatedHours = row.Cell(3).GetValue<int>(),
-                        StartDate = DateTime.Now,  // Placeholder, will be adjusted
+                        Start = DateTime.Now,  // Placeholder, will be adjusted
                         Progress = 0
                     });
                 }
@@ -65,9 +94,9 @@ namespace SpreadsheetUtility.Library
             foreach (var task in tasks)
             {
                 var developer = developers.OrderBy(d => d.NextAvailableDate(currentDate)).First();
-                task.StartDate = developer.NextAvailableDate(currentDate);
-                task.EndDate = task.StartDate.AddHours(task.EstimatedHours / developer.DailyWorkHours * 8);
-                developer.BlockDates(task.StartDate, task.EndDate);
+                task.Start = developer.NextAvailableDate(currentDate);
+                task.End = task.Start.AddHours(task.EstimatedHours / developer.DailyWorkHours * 8);
+                developer.BlockDates(task.Start, task.End);
             }
         }
 
@@ -96,10 +125,11 @@ namespace SpreadsheetUtility.Library
     {
         public int Id { get; set; }
         public string Name { get; set; }
-        public int EstimatedHours { get; set; }
-        public DateTime StartDate { get; set; }
-        public DateTime EndDate { get; set; }
+        public DateTime Start { get; set; }
+        public DateTime End { get; set; }
         public int Progress { get; set; }
+        public string Dependencies { get; set; }
+        internal int EstimatedHours { get; set; }
     }
 
     public class DeveloperAvailability

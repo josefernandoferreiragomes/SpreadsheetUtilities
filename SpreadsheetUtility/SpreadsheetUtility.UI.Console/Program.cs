@@ -6,7 +6,7 @@ using Utilities.Services;
 // See https://aka.ms/new-console-template for more information
 // Display help if arguments are missing
 
-Console.WriteLine("Double Entry Spreadsheet Generator is about to start...");
+Console.WriteLine("Double Entry Spreadsheet Generator is about to Start...");
 
 if (args.Length < 1)
 {

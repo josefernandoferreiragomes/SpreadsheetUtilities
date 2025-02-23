@@ -1,4 +1,5 @@
 ﻿window.renderGantt = (taskDataJson) => {
+    console.log("Received Data: ", taskDataJson); // Debug in browser console
     let tasks = JSON.parse(taskDataJson);
     document.getElementById("gantt-chart").innerHTML = ""; // Clear previous chart
 

@@ -12,19 +12,30 @@
 <input type="text" @bind="taskDataPath" />
 <h4>Team file path:</h4>
 <input type="text" @bind="teamDataPath" />
-<button @onclick="LoadGanttChart">Load Gantt Chart</button>
-<p>Gantt Chart:</p> 
-<div id="gantt-chart"></div>
+<button @onclick="LoadGanttChartTasks">Load Tasks Gantt Chart</button>
+<button @onclick="LoadGanttChartProjects">Load Projects Gantt Chart</button>
+<p>Tasks Gantt Chart:</p> 
+<div id="gantt-chart-tasks"></div>
+
+<p>Projects Gantt Chart:</p>
+<div id="gantt-chart-projects"></div>
 
 @code {
     string taskDataPath = @"C:\\Users\\josef\\source\\repos\\SpreadsheetUtilities\\ExampleFiles\\tasks.xlsx";
     string teamDataPath = @"C:\\Users\\josef\\source\\repos\\SpreadsheetUtilities\\ExampleFiles\\team.xlsx";
     private string TaskDataJson;
 
-    private void LoadGanttChart()
+    private void LoadGanttChartTasks()
     {
-        TaskDataJson = GanttService.ProcessExcelData(taskDataPath, teamDataPath);
+        TaskDataJson = GanttService.ProcessExcelDataTasks(taskDataPath, teamDataPath);
         //await InvokeAsync(StateHasChanged);
-        JS.InvokeVoidAsync("renderGantt", TaskDataJson);
+        JS.InvokeVoidAsync("renderGanttTasks", TaskDataJson);
+    }
+
+    private void LoadGanttChartProjects()
+    {
+        TaskDataJson = GanttService.ProcessExcelDataTasks(taskDataPath, teamDataPath);
+        //await InvokeAsync(StateHasChanged);
+        JS.InvokeVoidAsync("renderGanttProjects", TaskDataJson);
     }
 }

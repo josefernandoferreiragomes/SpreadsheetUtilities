@@ -128,6 +128,9 @@ Install the following NuGet packages:
 dotnet add package ClosedXML
 ````
 # Gantt chart rendering, in the Blazor app
+Frappe Gantt:
+https://github.com/frappe/gantt
+
 ```bash
 dotnet add package frappe-gantt
 dotnet add package Microsoft.JSInterop 

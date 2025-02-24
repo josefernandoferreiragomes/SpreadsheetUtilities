@@ -1,0 +1,7 @@
+﻿.gantt-task-blue .bar {
+    fill: #4285F4 !important; /* Google Blue */
+}
+
+.gantt-task-green .bar {
+    fill: #34A853 !important; /* Google Green */
+}

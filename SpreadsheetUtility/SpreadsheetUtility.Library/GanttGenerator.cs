@@ -18,15 +18,24 @@ namespace SpreadsheetUtility.Library
         {
             var tasks = LoadTasks(taskFilePath);
             var developers = LoadDevelopers(teamFilePath);
-            AssignTasks(tasks, developers);
+            AssignTasks(tasks, developers);          
 
-            //previous tasks mock
-            //var tasksMock = new List<GanttTask>
-            //{
-            //    new GanttTask { Id = "1", Name = "Design UI", Start = "2025-02-25", End = "2025-03-01", Progress = 50 },
-            //    new GanttTask { Id = "2", Name = "Backend API", Start = "2025-03-02", End = "2025-03-10", Progress = 30, Dependencies = "1" }
-            //};
-            //Console.WriteLine(JsonConvert.SerializeObject(tasksMock, Formatting.Indented));
+            Console.WriteLine(JsonConvert.SerializeObject(tasks,
+                new JsonSerializerSettings
+                {
+                    ContractResolver = new CamelCasePropertyNamesContractResolver(),
+                    Formatting = Formatting.Indented
+                })
+            );
+
+            return JsonConvert.SerializeObject(tasks);
+        }
+
+        public string ProcessExcelDataProjects(string taskFilePath, string teamFilePath)
+        {
+            var tasks = LoadProjects(taskFilePath);
+            var developers = LoadDevelopers(teamFilePath);
+            AssignTasks(tasks, developers);
 
             Console.WriteLine(JsonConvert.SerializeObject(tasks,
                 new JsonSerializerSettings
@@ -47,16 +56,44 @@ namespace SpreadsheetUtility.Library
                 var worksheet = workbook.Worksheet(1);
                 foreach (var row in worksheet.RangeUsed().RowsUsed().Skip(1)) // Skip header
                 {
-                    var id = row.Cell(1).GetString();
-                    var name = row.Cell(2).GetString();
-                    var effortHours = row.Cell(3).GetDouble();
-                    var dependencies = row.Cell(4).GetString();
-                    var progress = row.Cell(5).GetString();
+                    //A=ID	B=ProjectName	C=TaskName	D=EstimatedEffortHours	E=Dependencies	F=Progress
+                    var id = row.Cell("A").GetString();
+                    var name = $"{row.Cell("B").GetString()} : {row.Cell("C").GetString()}";
+                    var effortHours = row.Cell("D").GetDouble();
+                    var dependencies = row.Cell("E").GetString();
+                    var progress = row.Cell("F").GetString();
                     tasks.Add(new GanttTask
                     {
                         Id = id,
                         Name = name,
                         EstimatedEffortHours = effortHours,                        
+                        Dependencies = dependencies,
+                        Progress = int.TryParse(progress, out var p) ? p : 0
+                    });
+                }
+            }
+            return tasks;
+        }
+
+        private List<GanttTask> LoadProjects(string filePath)
+        {
+            var tasks = new List<GanttTask>();
+            using (var workbook = new XLWorkbook(filePath))
+            {
+                var worksheet = workbook.Worksheet(1);
+                foreach (var row in worksheet.RangeUsed().RowsUsed().Skip(1)) // Skip header
+                {
+                    //A=ID	B=ProjectName	C=EstimatedEffortHours	D=Dependencies	E=Progress
+                    var id = row.Cell("A").GetString();
+                    var name = row.Cell("B").GetString();
+                    var effortHours = row.Cell("C").GetDouble();
+                    var dependencies = row.Cell("D").GetString();
+                    var progress = row.Cell("E").GetString();
+                    tasks.Add(new GanttTask
+                    {
+                        Id = id,
+                        Name = name,
+                        EstimatedEffortHours = effortHours,
                         Dependencies = dependencies,
                         Progress = int.TryParse(progress, out var p) ? p : 0
                     });
@@ -173,6 +210,8 @@ namespace SpreadsheetUtility.Library
         public string Resource { get; set; }
         
         internal double EstimatedEffortHours { get; set; }
+        internal string ProjectName { get; set; }
+        internal string TaskName { get; set; }
     }
 
     public class DeveloperAvailability

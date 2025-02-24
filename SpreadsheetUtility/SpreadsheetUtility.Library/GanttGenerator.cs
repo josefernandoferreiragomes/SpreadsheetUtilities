@@ -9,12 +9,12 @@ namespace SpreadsheetUtility.Library
 
     public interface IGanttChartService
     {
-        string ProcessExcelData(string taskFilePath, string teamFilePath);
+        string ProcessExcelDataTasks(string taskFilePath, string teamFilePath);
     }
 
     public class GanttChartService: IGanttChartService
     {
-        public string ProcessExcelData(string taskFilePath, string teamFilePath)
+        public string ProcessExcelDataTasks(string taskFilePath, string teamFilePath)
         {
             var tasks = LoadTasks(taskFilePath);
             var developers = LoadDevelopers(teamFilePath);
@@ -50,13 +50,15 @@ namespace SpreadsheetUtility.Library
                     var id = row.Cell(1).GetString();
                     var name = row.Cell(2).GetString();
                     var effortHours = row.Cell(3).GetDouble();
-
+                    var dependencies = row.Cell(4).GetString();
+                    var progress = row.Cell(5).GetString();
                     tasks.Add(new GanttTask
                     {
                         Id = id,
                         Name = name,
-                        EstimatedEffortHours = effortHours,
-                        Progress = 0
+                        EstimatedEffortHours = effortHours,                        
+                        Dependencies = dependencies,
+                        Progress = int.TryParse(progress, out var p) ? p : 0
                     });
                 }
             }
@@ -116,9 +118,15 @@ namespace SpreadsheetUtility.Library
                 task.End = taskEnd.ToString("yyyy-MM-dd");
 
                 task.Name = $"{task.Name} ({assignedDeveloper.Name})";
-                
+                //task.Resource = assignedDeveloper.Name;
+                //task.CustomClass = "gantt-task-green";
+                //task.CustomClass = task.Name.Contains("Project A") ? "gantt-task-blue" : "gantt-task-green";
+                //task.CustomClass = task.Name.Contains("Project B") ? "gantt-task-red" : "gantt-task-green";
+
+
                 assignedDeveloper.SetNextAvailableDate(taskEnd.AddDays(1));
             }
+
         }
 
         private DateTime CalculateEndDate(DateTime start, double workDays, List<(DateTime Start, DateTime End)?> vacations)
@@ -157,6 +165,13 @@ namespace SpreadsheetUtility.Library
 
         [JsonProperty("dependencies")]
         public string Dependencies { get; set; } = "";
+        
+        [JsonProperty("customClass")]
+        public string CustomClass { get; set; } // New property for styling
+
+        [JsonProperty("resource")]
+        public string Resource { get; set; }
+        
         internal double EstimatedEffortHours { get; set; }
     }
 

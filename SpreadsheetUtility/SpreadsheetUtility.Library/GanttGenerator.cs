@@ -10,6 +10,7 @@ namespace SpreadsheetUtility.Library
     public interface IGanttChartService
     {
         string ProcessExcelDataTasks(string taskFilePath, string teamFilePath);
+        string ProcessExcelDataProjects(string taskFilePath, string teamFilePath);
     }
 
     public class GanttChartService: IGanttChartService
@@ -33,11 +34,22 @@ namespace SpreadsheetUtility.Library
 
         public string ProcessExcelDataProjects(string taskFilePath, string teamFilePath)
         {
-            var tasks = LoadProjects(taskFilePath);
+            var tasks = LoadTasks(taskFilePath);
             var developers = LoadDevelopers(teamFilePath);
-            AssignTasks(tasks, developers);
 
-            Console.WriteLine(JsonConvert.SerializeObject(tasks,
+            var projects = tasks.GroupBy(t => t.ProjectName)
+                .Select(g => new GanttTask
+                {
+                    Id = g.First().Id,
+                    Name = g.Key,
+                    EstimatedEffortHours = g.Sum(t => t.EstimatedEffortHours),
+                    Dependencies = string.Join(",", g.Select(t => t.Dependencies).Where(d => !string.IsNullOrEmpty(d))),
+                    Progress = (int)g.Average(t => t.Progress)
+                }).ToList();
+
+            AssignProjects(projects, developers);
+
+            Console.WriteLine(JsonConvert.SerializeObject(projects,
                 new JsonSerializerSettings
                 {
                     ContractResolver = new CamelCasePropertyNamesContractResolver(),
@@ -45,63 +57,48 @@ namespace SpreadsheetUtility.Library
                 })
             );
 
-            return JsonConvert.SerializeObject(tasks);
+            return JsonConvert.SerializeObject(projects);
+        }       
+
+        private List<TaskDto> LoadTaskDtos(string filePath)
+        {
+            var taskDtos = new List<TaskDto>();
+            using (var workbook = new XLWorkbook(filePath))
+            {
+                var worksheet = workbook.Worksheet(1);
+                foreach (var row in worksheet.RangeUsed().RowsUsed().Skip(1)) // Skip header
+                {
+                    taskDtos.Add(new TaskDto
+                    {
+                        Id = row.Cell("A").GetString(),
+                        ProjectName = row.Cell("B").GetString(),
+                        TaskName = row.Cell("C").GetString(),
+                        EstimatedEffortHours = row.Cell("D").GetDouble(),
+                        Dependencies = row.Cell("E").GetString(),
+                        Progress = row.Cell("F").GetString()
+                    });
+                }
+            }
+            return taskDtos;
         }
 
         private List<GanttTask> LoadTasks(string filePath)
         {
-            var tasks = new List<GanttTask>();
-            using (var workbook = new XLWorkbook(filePath))
+            var taskDtos = LoadTaskDtos(filePath);
+            var tasks = taskDtos.Select(dto => new GanttTask
             {
-                var worksheet = workbook.Worksheet(1);
-                foreach (var row in worksheet.RangeUsed().RowsUsed().Skip(1)) // Skip header
-                {
-                    //A=ID	B=ProjectName	C=TaskName	D=EstimatedEffortHours	E=Dependencies	F=Progress
-                    var id = row.Cell("A").GetString();
-                    var name = $"{row.Cell("B").GetString()} : {row.Cell("C").GetString()}";
-                    var effortHours = row.Cell("D").GetDouble();
-                    var dependencies = row.Cell("E").GetString();
-                    var progress = row.Cell("F").GetString();
-                    tasks.Add(new GanttTask
-                    {
-                        Id = id,
-                        Name = name,
-                        EstimatedEffortHours = effortHours,                        
-                        Dependencies = dependencies,
-                        Progress = int.TryParse(progress, out var p) ? p : 0
-                    });
-                }
-            }
+                Id = dto.Id,
+                Name = $"{dto.ProjectName} : {dto.TaskName}",
+                EstimatedEffortHours = dto.EstimatedEffortHours,
+                Dependencies = dto.Dependencies,
+                Progress = int.TryParse(dto.Progress, out var p) ? p : 0,
+                ProjectName = dto.ProjectName,
+                TaskName = dto.TaskName
+            }).ToList();
+
             return tasks;
         }
-
-        private List<GanttTask> LoadProjects(string filePath)
-        {
-            var tasks = new List<GanttTask>();
-            using (var workbook = new XLWorkbook(filePath))
-            {
-                var worksheet = workbook.Worksheet(1);
-                foreach (var row in worksheet.RangeUsed().RowsUsed().Skip(1)) // Skip header
-                {
-                    //A=ID	B=ProjectName	C=EstimatedEffortHours	D=Dependencies	E=Progress
-                    var id = row.Cell("A").GetString();
-                    var name = row.Cell("B").GetString();
-                    var effortHours = row.Cell("C").GetDouble();
-                    var dependencies = row.Cell("D").GetString();
-                    var progress = row.Cell("E").GetString();
-                    tasks.Add(new GanttTask
-                    {
-                        Id = id,
-                        Name = name,
-                        EstimatedEffortHours = effortHours,
-                        Dependencies = dependencies,
-                        Progress = int.TryParse(progress, out var p) ? p : 0
-                    });
-                }
-            }
-            return tasks;
-        }
-
+      
         private List<DeveloperAvailability> LoadDevelopers(string filePath)
         {
             var developers = new List<DeveloperAvailability>();
@@ -154,12 +151,28 @@ namespace SpreadsheetUtility.Library
                 task.Start = taskStart.ToString("yyyy-MM-dd");
                 task.End = taskEnd.ToString("yyyy-MM-dd");
 
-                task.Name = $"{task.Name} ({assignedDeveloper.Name})";
-                //task.Resource = assignedDeveloper.Name;
-                //task.CustomClass = "gantt-task-green";
-                //task.CustomClass = task.Name.Contains("Project A") ? "gantt-task-blue" : "gantt-task-green";
-                //task.CustomClass = task.Name.Contains("Project B") ? "gantt-task-red" : "gantt-task-green";
+                task.Name = $"{task.Name} ({assignedDeveloper.Name})";                
 
+                assignedDeveloper.SetNextAvailableDate(taskEnd.AddDays(1));
+            }
+
+        }
+
+        private void AssignProjects(List<GanttTask> tasks, List<DeveloperAvailability> developers)
+        {
+            DateTime startDate = DateTime.Today;
+            foreach (var task in tasks)
+            {
+                var assignedDeveloper = developers.OrderBy(d => d.NextAvailableDate(startDate)).FirstOrDefault();
+                if (assignedDeveloper == null) continue;
+
+                DateTime taskStart = assignedDeveloper.NextAvailableDate(startDate);
+                double requiredDays = Math.Ceiling(task.EstimatedEffortHours / assignedDeveloper.DailyWorkHours);
+                DateTime taskEnd = CalculateEndDate(taskStart, requiredDays, assignedDeveloper.VacationPeriods);
+                task.Start = taskStart.ToString("yyyy-MM-dd");
+                task.End = taskEnd.ToString("yyyy-MM-dd");
+
+                task.Name = task.Name;                
 
                 assignedDeveloper.SetNextAvailableDate(taskEnd.AddDays(1));
             }

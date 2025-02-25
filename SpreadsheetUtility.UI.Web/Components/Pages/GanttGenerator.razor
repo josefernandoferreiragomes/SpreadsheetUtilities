@@ -34,7 +34,7 @@
 
     private void LoadGanttChartProjects()
     {
-        TaskDataJson = GanttService.ProcessExcelDataTasks(taskDataPath, teamDataPath);
+        TaskDataJson = GanttService.ProcessExcelDataProjects(taskDataPath, teamDataPath);
         //await InvokeAsync(StateHasChanged);
         JS.InvokeVoidAsync("renderGanttProjects", TaskDataJson);
     }

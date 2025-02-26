@@ -36,16 +36,19 @@ namespace SpreadsheetUtility.Library
         {
             var tasks = LoadTasks(taskFilePath);
             var developers = LoadDevelopers(teamFilePath);
+            
+            //ID	ProjectName	Dependencies
+            double totalEstimatedEffortHours = tasks.Sum(t => t.EstimatedEffortHours);
 
             var projects = tasks.GroupBy(t => t.ProjectName)
-                .Select(g => new GanttTask
-                {
-                    Id = g.First().Id,
-                    Name = g.Key,
-                    EstimatedEffortHours = g.Sum(t => t.EstimatedEffortHours),
-                    Dependencies = string.Join(",", g.Select(t => t.Dependencies).Where(d => !string.IsNullOrEmpty(d))),
-                    Progress = (int)g.Average(t => t.Progress)
-                }).ToList();
+                                .Select(g => new GanttTask
+                                {
+                                    Id = g.First().ProjectID,
+                                    Name = g.Key,
+                                    EstimatedEffortHours = g.Sum(t => t.EstimatedEffortHours),
+                                    Dependencies = g.Select(t => t.ProjectDependency).Where(d => !string.IsNullOrEmpty(d)).FirstOrDefault() ?? string.Empty,
+                                    Progress = (int)(g.Sum(t => (t.Progress*(t.EstimatedEffortHours/totalEstimatedEffortHours)))) // Summing the progress of each related task
+                                }).ToList();
 
             AssignProjects(projects, developers);
 
@@ -58,10 +61,12 @@ namespace SpreadsheetUtility.Library
             );
 
             return JsonConvert.SerializeObject(projects);
-        }       
+        }
 
         private List<TaskDto> LoadTaskDtos(string filePath)
         {
+            //A ID	B ProjectID	C ProjectName	D TaskName	E EstimatedEffortHours	F TaskDependencies	G ProjectDependency	H Progress
+
             var taskDtos = new List<TaskDto>();
             using (var workbook = new XLWorkbook(filePath))
             {
@@ -71,11 +76,13 @@ namespace SpreadsheetUtility.Library
                     taskDtos.Add(new TaskDto
                     {
                         Id = row.Cell("A").GetString(),
-                        ProjectName = row.Cell("B").GetString(),
-                        TaskName = row.Cell("C").GetString(),
-                        EstimatedEffortHours = row.Cell("D").GetDouble(),
-                        Dependencies = row.Cell("E").GetString(),
-                        Progress = row.Cell("F").GetString()
+                        ProjectID = row.Cell("B").GetString(),
+                        ProjectName = row.Cell("C").GetString(),
+                        TaskName = row.Cell("D").GetString(),
+                        EstimatedEffortHours = row.Cell("E").GetDouble(),
+                        Dependencies = row.Cell("F").GetString(),
+                        ProjectDependency = row.Cell("G").GetString(),
+                        Progress = row.Cell("H").GetString()
                     });
                 }
             }
@@ -144,8 +151,9 @@ namespace SpreadsheetUtility.Library
             {
                 var assignedDeveloper = developers.OrderBy(d => d.NextAvailableDate(startDate)).FirstOrDefault();
                 if (assignedDeveloper == null) continue;
-
                 DateTime taskStart = assignedDeveloper.NextAvailableDate(startDate);
+                DateTime dependencyEndDate;
+                taskStart = DateTime.TryParse(tasks.Find(t=> t.Dependencies == task.Id)?.End ?? "", out dependencyEndDate) ? dependencyEndDate : taskStart;
                 double requiredDays = Math.Ceiling(task.EstimatedEffortHours / assignedDeveloper.DailyWorkHours);
                 DateTime taskEnd = CalculateEndDate(taskStart, requiredDays, assignedDeveloper.VacationPeriods);
                 task.Start = taskStart.ToString("yyyy-MM-dd");
@@ -225,6 +233,8 @@ namespace SpreadsheetUtility.Library
         internal double EstimatedEffortHours { get; set; }
         internal string ProjectName { get; set; }
         internal string TaskName { get; set; }
+        internal string ProjectID { get; set; }
+        internal string ProjectDependency { get; set; }
     }
 
     public class DeveloperAvailability

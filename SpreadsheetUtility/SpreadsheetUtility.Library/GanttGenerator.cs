@@ -15,13 +15,23 @@ namespace SpreadsheetUtility.Library
 
     public class GanttChartService: IGanttChartService
     {
+        private List<GanttTask> _ganttTasks;
+        private List<GanttTask> _ganttProjects;
+
+        private List<DeveloperAvailability> _developerAvailability;
+
+        public GanttChartService()
+        {
+            _ganttTasks = new List<GanttTask>();
+            _ganttProjects = new List<GanttTask>();
+            _developerAvailability = new List<DeveloperAvailability>();
+        }
+
         public string ProcessExcelDataTasks(string taskFilePath, string teamFilePath)
         {
-            var tasks = LoadTasks(taskFilePath);
-            var developers = LoadDevelopers(teamFilePath);
-            AssignTasks(tasks, developers);          
+            ProcessDataTasks(taskFilePath, teamFilePath);
 
-            Console.WriteLine(JsonConvert.SerializeObject(tasks,
+            Console.WriteLine(JsonConvert.SerializeObject(_ganttTasks,
                 new JsonSerializerSettings
                 {
                     ContractResolver = new CamelCasePropertyNamesContractResolver(),
@@ -29,30 +39,38 @@ namespace SpreadsheetUtility.Library
                 })
             );
 
-            return JsonConvert.SerializeObject(tasks);
+            return JsonConvert.SerializeObject(_ganttTasks);
+        }
+
+        private void ProcessDataTasks(string taskFilePath, string teamFilePath)
+        {
+            _ganttTasks = LoadTasks(taskFilePath);
+            _developerAvailability = LoadDevelopers(teamFilePath);
+            AssignTasks();
         }
 
         public string ProcessExcelDataProjects(string taskFilePath, string teamFilePath)
         {
-            var tasks = LoadTasks(taskFilePath);
-            var developers = LoadDevelopers(teamFilePath);
-            
+            ProcessDataTasks(taskFilePath, teamFilePath);
+
             //ID	ProjectName	Dependencies
-            double totalEstimatedEffortHours = tasks.Sum(t => t.EstimatedEffortHours);
+            double totalEstimatedEffortHours = _ganttTasks.Sum(t => t.EstimatedEffortHours);
 
-            var projects = tasks.GroupBy(t => t.ProjectName)
-                                .Select(g => new GanttTask
-                                {
-                                    Id = g.First().ProjectID,
-                                    Name = g.Key,
-                                    EstimatedEffortHours = g.Sum(t => t.EstimatedEffortHours),
-                                    Dependencies = g.Select(t => t.ProjectDependency).Where(d => !string.IsNullOrEmpty(d)).FirstOrDefault() ?? string.Empty,
-                                    Progress = (int)(g.Sum(t => (t.Progress*(t.EstimatedEffortHours/totalEstimatedEffortHours)))) // Summing the progress of each related task
-                                }).ToList();
+            _ganttProjects = _ganttTasks.GroupBy(t => t.ProjectName)
+                .Select(g => new GanttTask
+                {
+                    Id = g.First().ProjectID,
+                    Name = $"{g.Key} ({g.Sum(t => t.EstimatedEffortHours)} hours)",
+                    EstimatedEffortHours = g.Sum(t => t.EstimatedEffortHours),
+                    Dependencies = g.Select(t => t.ProjectDependency).Where(d => !string.IsNullOrEmpty(d)).FirstOrDefault() ?? string.Empty,
+                    Progress = (int)(g.Sum(t => (t.Progress * (t.EstimatedEffortHours / totalEstimatedEffortHours)))), // Summing the progress of each related task
+                    Start = g.Min(t => t.Start)?.ToString() ?? string.Empty,
+                    End = g.Max(t => t.End)?.ToString() ?? string.Empty,
+                }).ToList();
 
-            AssignProjects(projects, developers);
+            
 
-            Console.WriteLine(JsonConvert.SerializeObject(projects,
+            Console.WriteLine(JsonConvert.SerializeObject(_ganttProjects,
                 new JsonSerializerSettings
                 {
                     ContractResolver = new CamelCasePropertyNamesContractResolver(),
@@ -60,7 +78,7 @@ namespace SpreadsheetUtility.Library
                 })
             );
 
-            return JsonConvert.SerializeObject(projects);
+            return JsonConvert.SerializeObject(_ganttProjects);
         }
 
         private List<TaskDto> LoadTaskDtos(string filePath)
@@ -144,16 +162,16 @@ namespace SpreadsheetUtility.Library
             return null;
         }
 
-        private void AssignTasks(List<GanttTask> tasks, List<DeveloperAvailability> developers)
+        private void AssignTasks()
         {
             DateTime startDate = DateTime.Today;
-            foreach (var task in tasks)
+            foreach (var task in _ganttTasks)
             {
-                var assignedDeveloper = developers.OrderBy(d => d.NextAvailableDate(startDate)).FirstOrDefault();
+                var assignedDeveloper = _developerAvailability.OrderBy(d => d.NextAvailableDate(startDate)).FirstOrDefault();
                 if (assignedDeveloper == null) continue;
                 DateTime taskStart = assignedDeveloper.NextAvailableDate(startDate);
                 DateTime dependencyEndDate;
-                taskStart = DateTime.TryParse(tasks.Find(t=> t.Dependencies == task.Id)?.End ?? "", out dependencyEndDate) ? dependencyEndDate : taskStart;
+                taskStart = DateTime.TryParse(_ganttTasks.Find(t=> t.Dependencies == task.Id)?.End ?? "", out dependencyEndDate) ? dependencyEndDate : taskStart;
                 double requiredDays = Math.Ceiling(task.EstimatedEffortHours / assignedDeveloper.DailyWorkHours);
                 DateTime taskEnd = CalculateEndDate(taskStart, requiredDays, assignedDeveloper.VacationPeriods);
                 task.Start = taskStart.ToString("yyyy-MM-dd");

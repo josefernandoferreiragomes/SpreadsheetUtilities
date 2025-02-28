@@ -11,6 +11,8 @@ namespace SpreadsheetUtility.Library
     {
         string ProcessExcelDataTasks(string taskFilePath, string teamFilePath);
         string ProcessExcelDataProjects(string taskFilePath, string teamFilePath);
+        public List<GanttTask> LoadTasksFromDtos(List<TaskDto> taskDtos);
+
     }
 
     public class GanttChartService: IGanttChartService
@@ -110,7 +112,14 @@ namespace SpreadsheetUtility.Library
         private List<GanttTask> LoadTasks(string filePath)
         {
             var taskDtos = LoadTaskDtos(filePath);
-            var tasks = taskDtos.Select(dto => new GanttTask
+            List<GanttTask> tasks = LoadTasksFromDtos(taskDtos);
+
+            return tasks;
+        }
+
+        public List<GanttTask> LoadTasksFromDtos(List<TaskDto> taskDtos)
+        {
+            return taskDtos.Select(dto => new GanttTask
             {
                 Id = dto.Id,
                 Name = $"{dto.ProjectName} : {dto.TaskName}",
@@ -120,10 +129,8 @@ namespace SpreadsheetUtility.Library
                 ProjectName = dto.ProjectName,
                 TaskName = dto.TaskName
             }).ToList();
-
-            return tasks;
         }
-      
+
         private List<DeveloperAvailability> LoadDevelopers(string filePath)
         {
             var developers = new List<DeveloperAvailability>();
@@ -248,11 +255,11 @@ namespace SpreadsheetUtility.Library
         [JsonProperty("resource")]
         public string Resource { get; set; }
         
-        internal double EstimatedEffortHours { get; set; }
-        internal string ProjectName { get; set; }
-        internal string TaskName { get; set; }
-        internal string ProjectID { get; set; }
-        internal string ProjectDependency { get; set; }
+        public double EstimatedEffortHours { get; set; }
+        public string ProjectName { get; set; }
+        public string TaskName { get; set; }
+        public string ProjectID { get; set; }
+        public string ProjectDependency { get; set; }
     }
 
     public class DeveloperAvailability

@@ -1,5 +1,5 @@
-﻿@page "/jsonGeneratorFromPaste"
-@inject IGanttChartService GanttService
+﻿@page "/ganttGenerator"
+@inject IGanttChartService GanttChartService
 @inject IJSRuntime JS
 @rendermode InteractiveServer
 @using Newtonsoft.Json
@@ -21,21 +21,22 @@
 <div id="gantt-chart-projects"></div>
 
 @code {
-    string taskDataPath = @"C:\\Users\\josef\\source\\repos\\SpreadsheetUtilities\\ExampleFiles\\tasks.xlsx";
-    string teamDataPath = @"C:\\Users\\josef\\source\\repos\\SpreadsheetUtilities\\ExampleFiles\\team.xlsx";
+    string taskDataPath;// = @"C:\\Users\\josef\\source\\repos\\SpreadsheetUtilities\\ExampleFiles\\tasks.xlsx";
+    string teamDataPath;// = @"C:\\Users\\josef\\source\\repos\\SpreadsheetUtilities\\ExampleFiles\\team.xlsx";
     private string TaskDataJson;
+    private string ProjectDataJson;
 
     private void LoadGanttChartTasks()
     {
-        TaskDataJson = GanttService.ProcessExcelDataTasks(taskDataPath, teamDataPath);
+        TaskDataJson = GanttChartService.ProcessExcelDataTasks(taskDataPath, teamDataPath);
         //await InvokeAsync(StateHasChanged);
         JS.InvokeVoidAsync("renderGanttTasks", TaskDataJson);
     }
 
     private void LoadGanttChartProjects()
     {
-        TaskDataJson = GanttService.ProcessExcelDataProjects(taskDataPath, teamDataPath);
+        ProjectDataJson = GanttChartService.ProcessExcelDataProjects(taskDataPath, teamDataPath);
         //await InvokeAsync(StateHasChanged);
-        JS.InvokeVoidAsync("renderGanttProjects", TaskDataJson);
+        JS.InvokeVoidAsync("renderGanttProjects", ProjectDataJson);
     }
 }

@@ -2,6 +2,7 @@
 using Newtonsoft.Json.Serialization;
 using Newtonsoft.Json;
 using System.Globalization;
+using DocumentFormat.OpenXml.Spreadsheet;
 
 namespace SpreadsheetUtility.Library
 { 
@@ -12,6 +13,7 @@ namespace SpreadsheetUtility.Library
         string ProcessExcelDataTasks(string taskFilePath, string teamFilePath);
         string ProcessExcelDataProjects(string taskFilePath, string teamFilePath);
         public List<GanttTask> LoadTasksFromDtos(List<TaskDto> taskDtos);
+        public List<DeveloperAvailability> LoadTeamDataFromDtos(List<DeveloperDto> taskDtos);
 
     }
 
@@ -47,6 +49,13 @@ namespace SpreadsheetUtility.Library
         private void ProcessDataTasks(string taskFilePath, string teamFilePath)
         {
             _ganttTasks = LoadTasks(taskFilePath);
+            _developerAvailability = LoadDevelopers(teamFilePath);
+            AssignTasks();
+        }
+
+        private void ProcessDataTasks(List<TaskDto> taskDtos, string teamFilePath)
+        {
+            _ganttTasks = LoadTasksFromDtos(taskDtos);
             _developerAvailability = LoadDevelopers(teamFilePath);
             AssignTasks();
         }
@@ -129,8 +138,19 @@ namespace SpreadsheetUtility.Library
                 ProjectName = dto.ProjectName,
                 TaskName = dto.TaskName
             }).ToList();
+        }        
+        public List<DeveloperAvailability> LoadTeamDataFromDtos(List<DeveloperDto> taskDtos)
+        {
+            return taskDtos.Select(dto => new DeveloperAvailability
+            {                
+                Name = $"{dto.Name} : {dto.Name}",
+                DailyWorkHours = dto.DailyWorkHours,
+                VacationPeriods = dto.VacationPeriods.Split('|')
+                        .Select(ParseDateRange)
+                        .Where(d => d != null)
+                        .ToList()               
+            }).ToList();
         }
-
         private List<DeveloperAvailability> LoadDevelopers(string filePath)
         {
             var developers = new List<DeveloperAvailability>();
@@ -141,7 +161,7 @@ namespace SpreadsheetUtility.Library
                 {
                     var name = row.Cell(2).GetString();
                     var dailyHours = row.Cell(4).GetDouble();
-                    var vacationDates = row.Cell(3).GetString().Split(';')
+                    var vacationDates = row.Cell(3).GetString().Split('|')
                         .Select(ParseDateRange)
                         .Where(d => d != null)
                         .ToList();
@@ -159,7 +179,7 @@ namespace SpreadsheetUtility.Library
 
         private (DateTime Start, DateTime End)? ParseDateRange(string range)
         {
-            var dates = range.Split('-');
+            var dates = range.Split(';');
             if (dates.Length == 2 &&
                 DateTime.TryParseExact(dates[0].Trim(), "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var start) &&
                 DateTime.TryParseExact(dates[1].Trim(), "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var end))
@@ -229,44 +249,19 @@ namespace SpreadsheetUtility.Library
         }
     }
 
-    public class GanttTask
-    {      
-        [JsonProperty("id")]
-        public string Id { get; set; }
-
-        [JsonProperty("name")]
+    
+    public class DeveloperDto
+    {
         public string Name { get; set; }
-
-        [JsonProperty("start")]
-        public string Start { get; set; } // Format: "YYYY-MM-DD"
-
-        [JsonProperty("end")]
-        public string End { get; set; }   // Format: "YYYY-MM-DD"
-
-        [JsonProperty("progress")]
-        public int Progress { get; set; } = 0;
-
-        [JsonProperty("dependencies")]
-        public string Dependencies { get; set; } = "";
-        
-        [JsonProperty("customClass")]
-        public string CustomClass { get; set; } // New property for styling
-
-        [JsonProperty("resource")]
-        public string Resource { get; set; }
-        
-        public double EstimatedEffortHours { get; set; }
-        public string ProjectName { get; set; }
-        public string TaskName { get; set; }
-        public string ProjectID { get; set; }
-        public string ProjectDependency { get; set; }
+        public double DailyWorkHours { get; set; }
+        public string VacationPeriods { get; set; }
     }
-
     public class DeveloperAvailability
     {
         public string Name { get; set; }
         public double DailyWorkHours { get; set; }
         public List<(DateTime Start, DateTime End)?> VacationPeriods { get; set; }
+
         private DateTime nextAvailableDate = DateTime.Today;
 
         public DateTime NextAvailableDate(DateTime fromDate)

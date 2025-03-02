@@ -242,7 +242,7 @@ namespace SpreadsheetUtility.Library
                 if (assignedDeveloper == null) continue;
                 DateTime taskStart = assignedDeveloper.NextAvailableDate(startDate);
                 DateTime dependencyEndDate;
-                taskStart = DateTime.TryParse(_ganttTasks.Find(t=> t.Dependencies == task.Id)?.End ?? "", out dependencyEndDate) ? dependencyEndDate : taskStart;
+                taskStart = DateTime.TryParse(_ganttTasks.Find(t=> t.Id == task.Dependencies)?.End ?? "", out dependencyEndDate) ? dependencyEndDate : taskStart;
                 double requiredDays = Math.Ceiling(task.EstimatedEffortHours / assignedDeveloper.DailyWorkHours);
                 DateTime taskEnd = CalculateEndDate(taskStart, requiredDays, assignedDeveloper.VacationPeriods);
                 task.Start = taskStart.ToString("yyyy-MM-dd");

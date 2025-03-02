@@ -12,6 +12,7 @@ namespace SpreadsheetUtility.Library
     {
         string ProcessExcelDataTasks(string taskFilePath, string teamFilePath);
         string ProcessExcelDataProjects(string taskFilePath, string teamFilePath);
+        string ProcessDataTasksFromDtos(List<TaskDto> taskDtos, List<DeveloperDto> developerDtos);
         public List<GanttTask> LoadTasksFromDtos(List<TaskDto> taskDtos);
         public List<DeveloperAvailability> LoadTeamDataFromDtos(List<DeveloperDto> taskDtos);
 
@@ -53,11 +54,20 @@ namespace SpreadsheetUtility.Library
             AssignTasks();
         }
 
-        private void ProcessDataTasks(List<TaskDto> taskDtos, string teamFilePath)
+        public string ProcessDataTasksFromDtos(List<TaskDto> taskDtos, List<DeveloperDto> developerDtos)
         {
             _ganttTasks = LoadTasksFromDtos(taskDtos);
-            _developerAvailability = LoadDevelopers(teamFilePath);
+            _developerAvailability = LoadTeamDataFromDtos(developerDtos);
             AssignTasks();
+            Console.WriteLine(JsonConvert.SerializeObject(_ganttTasks,
+               new JsonSerializerSettings
+               {
+                   ContractResolver = new CamelCasePropertyNamesContractResolver(),
+                   Formatting = Formatting.Indented
+               })
+           );
+
+            return JsonConvert.SerializeObject(_ganttTasks);
         }
 
         public string ProcessExcelDataProjects(string taskFilePath, string teamFilePath)
@@ -143,7 +153,7 @@ namespace SpreadsheetUtility.Library
         {
             return taskDtos.Select(dto => new DeveloperAvailability
             {                
-                Name = $"{dto.Name} : {dto.Name}",
+                Name = $"{dto.Team} : {dto.Name}",
                 DailyWorkHours = dto.DailyWorkHours,
                 VacationPeriods = dto.VacationPeriods.Split('|')
                         .Select(ParseDateRange)
@@ -252,6 +262,7 @@ namespace SpreadsheetUtility.Library
     
     public class DeveloperDto
     {
+        public string Team { get; set; }
         public string Name { get; set; }
         public double DailyWorkHours { get; set; }
         public string VacationPeriods { get; set; }

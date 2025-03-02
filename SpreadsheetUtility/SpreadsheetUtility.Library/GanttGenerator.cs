@@ -3,6 +3,7 @@ using Newtonsoft.Json.Serialization;
 using Newtonsoft.Json;
 using System.Globalization;
 using DocumentFormat.OpenXml.Spreadsheet;
+using System.Collections.Generic;
 
 namespace SpreadsheetUtility.Library
 { 
@@ -12,10 +13,10 @@ namespace SpreadsheetUtility.Library
     {
         string ProcessExcelDataTasks(string taskFilePath, string teamFilePath);
         string ProcessExcelDataProjects(string taskFilePath, string teamFilePath);
-        string ProcessDataTasksFromDtos(List<TaskDto> taskDtos, List<DeveloperDto> developerDtos);
+        List<GanttTask> ProcessDataTasksFromDtos(List<TaskDto> taskDtos, List<DeveloperDto> developerDtos);
         List<GanttTask> LoadTasksFromDtos(List<TaskDto> taskDtos);
         List<DeveloperAvailability> LoadTeamDataFromDtos(List<DeveloperDto> taskDtos);
-        string AssignProjects(List<GanttTask> tasks, List<DeveloperAvailability> developers);
+        List<GanttTask> AssignProjects(List<TaskDto> taskDtos, List<DeveloperDto> developerDtos);
 
     }
 
@@ -33,23 +34,26 @@ namespace SpreadsheetUtility.Library
             _developerAvailability = new List<DeveloperAvailability>();
         }
 
-        public string ProcessExcelDataTasks(string taskFilePath, string teamFilePath)
+        public List<GanttTask> ProcessDataTasksFromDtos(List<TaskDto> taskDtos, List<DeveloperDto> developerDtos)
         {
-            ProcessDataTasks(taskFilePath, teamFilePath);
-
+            _ganttTasks = LoadTasksFromDtos(taskDtos);
+            _developerAvailability = LoadTeamDataFromDtos(developerDtos);
+            AssignTasks();
             Console.WriteLine(JsonConvert.SerializeObject(_ganttTasks,
-                new JsonSerializerSettings
-                {
-                    ContractResolver = new CamelCasePropertyNamesContractResolver(),
-                    Formatting = Formatting.Indented
-                })
+               new JsonSerializerSettings
+               {
+                   ContractResolver = new CamelCasePropertyNamesContractResolver(),
+                   Formatting = Formatting.Indented
+               })
             );
 
-            return JsonConvert.SerializeObject(_ganttTasks);
+            return _ganttTasks;
         }
 
-        public string AssignProjects(List<GanttTask> tasks, List<DeveloperAvailability> developers)
-        {          
+        public List<GanttTask> AssignProjects(List<TaskDto> taskDtos, List<DeveloperDto> developerDtos)
+        {
+            ProcessDataTasksFromDtos(taskDtos, developerDtos);
+
             //ID	ProjectName	Dependencies
             double totalEstimatedEffortHours = _ganttTasks.Sum(t => t.EstimatedEffortHours);
 
@@ -75,23 +79,24 @@ namespace SpreadsheetUtility.Library
                 })
             );
 
-            return JsonConvert.SerializeObject(_ganttProjects);
+            return _ganttProjects;
         }
-        public string ProcessDataTasksFromDtos(List<TaskDto> taskDtos, List<DeveloperDto> developerDtos)
+
+        public string ProcessExcelDataTasks(string taskFilePath, string teamFilePath)
         {
-            _ganttTasks = LoadTasksFromDtos(taskDtos);
-            _developerAvailability = LoadTeamDataFromDtos(developerDtos);
-            AssignTasks();
+            ProcessDataTasks(taskFilePath, teamFilePath);
+
             Console.WriteLine(JsonConvert.SerializeObject(_ganttTasks,
-               new JsonSerializerSettings
-               {
-                   ContractResolver = new CamelCasePropertyNamesContractResolver(),
-                   Formatting = Formatting.Indented
-               })
-           );
+                new JsonSerializerSettings
+                {
+                    ContractResolver = new CamelCasePropertyNamesContractResolver(),
+                    Formatting = Formatting.Indented
+                })
+            );
 
             return JsonConvert.SerializeObject(_ganttTasks);
         }
+        
         public string ProcessExcelDataProjects(string taskFilePath, string teamFilePath)
         {
             ProcessDataTasks(taskFilePath, teamFilePath);
@@ -130,8 +135,6 @@ namespace SpreadsheetUtility.Library
             _developerAvailability = LoadDevelopers(teamFilePath);
             AssignTasks();
         }
-
-
 
         private List<TaskDto> LoadTaskDtos(string filePath)
         {

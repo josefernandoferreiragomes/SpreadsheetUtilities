@@ -125,15 +125,15 @@
 
     private void LoadGanttChartTasks()
     {
-        TaskDataJson = GanttChartService.ProcessDataTasksFromDtos(taskDtos, developerDtos);
+        var taskData = GanttChartService.ProcessDataTasksFromDtos(taskDtos, developerDtos);
         //await InvokeAsync(StateHasChanged);
-        JS.InvokeVoidAsync("renderGanttTasks", TaskDataJson);
+        JS.InvokeVoidAsync("renderGanttTasks", JsonConvert.SerializeObject(taskData, Formatting.Indented));
     }
 
     private void LoadGanttChartProjects()
     {
-        ProjectDataJson = GanttChartService.AssignProjects(ganttTasks, teamData);
+        var projectData = GanttChartService.AssignProjects(taskDtos, developerDtos);
         //await InvokeAsync(StateHasChanged);
-        JS.InvokeVoidAsync("renderGanttProjects", ProjectDataJson);
+        JS.InvokeVoidAsync("renderGanttProjects", JsonConvert.SerializeObject(projectData, Formatting.Indented));
     }
 }

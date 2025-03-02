@@ -48,3 +48,7 @@ dotnet run .\..\ExampleFiles\input.xlsx 2 5 output.xlsx
 	```bash	
 	Install-Package
 	```
+
+## Requirements for paste from excel:
+- Paste areas in a page
+- Generate button

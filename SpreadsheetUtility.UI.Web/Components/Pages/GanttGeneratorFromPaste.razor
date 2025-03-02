@@ -22,13 +22,18 @@
 <div>
     <button @onclick="ConvertToTeamData">Convert to Team Data</button>
 </div>
-
+<div>
+    <button @onclick="LoadGanttChartTasks">Load Tasks Gantt Chart</button>
+</div>
 <p>Tasks Gantt Chart:</p>
 <div id="gantt-chart-tasks"></div>
 
 <p>Projects Gantt Chart:</p>
 <div id="gantt-chart-projects"></div>
-
+<p></p>
+<p></p>
+<p>Logging:</p>
+<p></p>
 @if (ganttTasks != null)
 {
     <h4>Gantt Tasks</h4>
@@ -43,10 +48,12 @@
 
 @code {
     private string excelData;
+    private List<TaskDto> taskDtos;
     private List<GanttTask> ganttTasks;
     private string ganttTasksJson;
 
     private string excelTeamData;
+    private List<DeveloperDto> developerDtos;
     private List<DeveloperAvailability> teamData;
     private string teamDataJson;
 
@@ -56,14 +63,14 @@
     private void ConvertToGanttTasks()
     {
         var lines = excelData.Split('\n', StringSplitOptions.RemoveEmptyEntries);
-        var tasks = new List<TaskDto>();
+        taskDtos = new List<TaskDto>();
 
         foreach (var line in lines.Skip(1)) // Skip header
         {
             var columns = line.Split('\t');
             if (columns.Length == 8)
             {
-                tasks.Add(new TaskDto()
+                taskDtos.Add(new TaskDto()
                     {
                         Id = columns[0].Trim(),
                         ProjectID = columns[1].Trim(),
@@ -77,7 +84,7 @@
                     });
             }
         }
-        ganttTasks = GanttChartService.LoadTasksFromDtos(tasks);
+        ganttTasks = GanttChartService.LoadTasksFromDtos(taskDtos);
         ganttTasksJson = JsonConvert.SerializeObject(ganttTasks, Formatting.Indented);
         //LoadGanttChartTasks(tasks);
     }
@@ -85,33 +92,34 @@
     private void ConvertToTeamData()
     {
         var lines = excelTeamData.Split('\n', StringSplitOptions.RemoveEmptyEntries);
-        var tasks = new List<DeveloperDto>();
+        developerDtos = new List<DeveloperDto>();
 
         foreach (var line in lines.Skip(1)) // Skip header
         {
             var columns = line.Split('\t');
             if (columns.Length == 4)
             {
-                tasks.Add(new DeveloperDto()
+                developerDtos.Add(new DeveloperDto()
                     {
-                        Name = columns[0].Trim(),
-                        DailyWorkHours = int.TryParse(columns[1].Trim(), out var hours) ? hours : 0,
+                        Team = columns[0].Trim(),
+                        Name = columns[1].Trim(),
                         VacationPeriods = columns[2].Trim(),                        
+                        DailyWorkHours = int.TryParse(columns[3].Trim(), out var hours) ? hours : 0,
 
                     });
             }
         }
-        teamData = GanttChartService.LoadTeamDataFromDtos(tasks);
+        teamData = GanttChartService.LoadTeamDataFromDtos(developerDtos);
         teamDataJson = JsonConvert.SerializeObject(teamData, Formatting.Indented);
-        //LoadGanttChartTasks(tasks);
-    }
+        //LoadGanttChartTasks(developerData);
+    }   
 
-    // private void LoadGanttChartTasks(List<TaskDto> taskDtoList)
-    // {
-    //     TaskDataJson = GanttChartService.ProcessExcelDataTasks(taskDtoList, teamDataPath);
-    //     //await InvokeAsync(StateHasChanged);
-    //     JS.InvokeVoidAsync("renderGanttTasks", TaskDataJson);
-    // }
+    private void LoadGanttChartTasks()
+    {
+        TaskDataJson = GanttChartService.ProcessDataTasksFromDtos(taskDtos, developerDtos);
+        //await InvokeAsync(StateHasChanged);
+        JS.InvokeVoidAsync("renderGanttTasks", TaskDataJson);
+    }
 
     // private void LoadGanttChartProjects()
     // {

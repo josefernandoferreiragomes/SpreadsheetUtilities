@@ -13,8 +13,9 @@ namespace SpreadsheetUtility.Library
         string ProcessExcelDataTasks(string taskFilePath, string teamFilePath);
         string ProcessExcelDataProjects(string taskFilePath, string teamFilePath);
         string ProcessDataTasksFromDtos(List<TaskDto> taskDtos, List<DeveloperDto> developerDtos);
-        public List<GanttTask> LoadTasksFromDtos(List<TaskDto> taskDtos);
-        public List<DeveloperAvailability> LoadTeamDataFromDtos(List<DeveloperDto> taskDtos);
+        List<GanttTask> LoadTasksFromDtos(List<TaskDto> taskDtos);
+        List<DeveloperAvailability> LoadTeamDataFromDtos(List<DeveloperDto> taskDtos);
+        string AssignProjects(List<GanttTask> tasks, List<DeveloperAvailability> developers);
 
     }
 
@@ -47,13 +48,35 @@ namespace SpreadsheetUtility.Library
             return JsonConvert.SerializeObject(_ganttTasks);
         }
 
-        private void ProcessDataTasks(string taskFilePath, string teamFilePath)
-        {
-            _ganttTasks = LoadTasks(taskFilePath);
-            _developerAvailability = LoadDevelopers(teamFilePath);
-            AssignTasks();
-        }
+        public string AssignProjects(List<GanttTask> tasks, List<DeveloperAvailability> developers)
+        {          
+            //ID	ProjectName	Dependencies
+            double totalEstimatedEffortHours = _ganttTasks.Sum(t => t.EstimatedEffortHours);
 
+            _ganttProjects = _ganttTasks.GroupBy(t => t.ProjectName)
+                .Select(g => new GanttTask
+                {
+                    Id = g.First().ProjectID,
+                    Name = $"{g.Key} ({g.Sum(t => t.EstimatedEffortHours)} hours)",
+                    EstimatedEffortHours = g.Sum(t => t.EstimatedEffortHours),
+                    Dependencies = g.Select(t => t.ProjectDependency).Where(d => !string.IsNullOrEmpty(d)).FirstOrDefault() ?? string.Empty,
+                    Progress = (int)(g.Sum(t => (t.Progress * (t.EstimatedEffortHours / totalEstimatedEffortHours)))), // Summing the progress of each related task
+                    Start = g.Min(t => t.Start)?.ToString() ?? string.Empty,
+                    End = g.Max(t => t.End)?.ToString() ?? string.Empty,
+                }).ToList();
+
+
+
+            Console.WriteLine(JsonConvert.SerializeObject(_ganttProjects,
+                new JsonSerializerSettings
+                {
+                    ContractResolver = new CamelCasePropertyNamesContractResolver(),
+                    Formatting = Formatting.Indented
+                })
+            );
+
+            return JsonConvert.SerializeObject(_ganttProjects);
+        }
         public string ProcessDataTasksFromDtos(List<TaskDto> taskDtos, List<DeveloperDto> developerDtos)
         {
             _ganttTasks = LoadTasksFromDtos(taskDtos);
@@ -69,7 +92,6 @@ namespace SpreadsheetUtility.Library
 
             return JsonConvert.SerializeObject(_ganttTasks);
         }
-
         public string ProcessExcelDataProjects(string taskFilePath, string teamFilePath)
         {
             ProcessDataTasks(taskFilePath, teamFilePath);
@@ -101,6 +123,15 @@ namespace SpreadsheetUtility.Library
 
             return JsonConvert.SerializeObject(_ganttProjects);
         }
+
+        private void ProcessDataTasks(string taskFilePath, string teamFilePath)
+        {
+            _ganttTasks = LoadTasks(taskFilePath);
+            _developerAvailability = LoadDevelopers(teamFilePath);
+            AssignTasks();
+        }
+
+
 
         private List<TaskDto> LoadTaskDtos(string filePath)
         {
@@ -220,28 +251,7 @@ namespace SpreadsheetUtility.Library
             }
 
         }
-
-        private void AssignProjects(List<GanttTask> tasks, List<DeveloperAvailability> developers)
-        {
-            DateTime startDate = DateTime.Today;
-            foreach (var task in tasks)
-            {
-                var assignedDeveloper = developers.OrderBy(d => d.NextAvailableDate(startDate)).FirstOrDefault();
-                if (assignedDeveloper == null) continue;
-
-                DateTime taskStart = assignedDeveloper.NextAvailableDate(startDate);
-                double requiredDays = Math.Ceiling(task.EstimatedEffortHours / assignedDeveloper.DailyWorkHours);
-                DateTime taskEnd = CalculateEndDate(taskStart, requiredDays, assignedDeveloper.VacationPeriods);
-                task.Start = taskStart.ToString("yyyy-MM-dd");
-                task.End = taskEnd.ToString("yyyy-MM-dd");
-
-                task.Name = task.Name;                
-
-                assignedDeveloper.SetNextAvailableDate(taskEnd.AddDays(1));
-            }
-
-        }
-
+        
         private DateTime CalculateEndDate(DateTime start, double workDays, List<(DateTime Start, DateTime End)?> vacations)
         {
             DateTime end = start;

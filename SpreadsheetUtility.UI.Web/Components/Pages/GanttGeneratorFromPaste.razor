@@ -15,24 +15,33 @@
 <div>
     <button @onclick="ConvertToGanttTasks">Convert to Gantt Tasks</button>
 </div>
-
+<p></p>
 <div>
     <textarea @bind="excelTeamData" placeholder="Paste your team Excel data here" rows="10" cols="100"></textarea>
 </div>
+<p></p>
 <div>
     <button @onclick="ConvertToTeamData">Convert to Team Data</button>
 </div>
+<p></p>
 <div>
     <button @onclick="LoadGanttChartTasks">Load Tasks Gantt Chart</button>
 </div>
+<div>
+    <button @onclick="LoadGanttChartProjects">Load Projects Gantt Chart</button>
+</div>
+<p></p>
+<p></p>
 <p>Tasks Gantt Chart:</p>
 <div id="gantt-chart-tasks"></div>
-
+<p></p>
+<p></p>
 <p>Projects Gantt Chart:</p>
 <div id="gantt-chart-projects"></div>
 <p></p>
 <p></p>
 <p>Logging:</p>
+<p></p>
 <p></p>
 @if (ganttTasks != null)
 {
@@ -121,10 +130,10 @@
         JS.InvokeVoidAsync("renderGanttTasks", TaskDataJson);
     }
 
-    // private void LoadGanttChartProjects()
-    // {
-    //     ProjectDataJson = GanttChartService.ProcessExcelDataProjects(taskDataPath, teamDataPath);
-    //     //await InvokeAsync(StateHasChanged);
-    //     JS.InvokeVoidAsync("renderGanttProjects", ProjectDataJson);
-    // }
+    private void LoadGanttChartProjects()
+    {
+        ProjectDataJson = GanttChartService.AssignProjects(ganttTasks, teamData);
+        //await InvokeAsync(StateHasChanged);
+        JS.InvokeVoidAsync("renderGanttProjects", ProjectDataJson);
+    }
 }

@@ -1,9 +1,13 @@
 ﻿@page "/ganttGeneratorFromPaste"
 @inject IGanttChartService GanttChartService
-@inject IJSRuntime JS
-@rendermode InteractiveServer
+@using Microsoft.JSInterop
 @using Newtonsoft.Json
 @using SpreadsheetUtility.Library
+@using Microsoft.AspNetCore.Components.QuickGrid;
+@using SpreadsheetUtility.UI.Web.Components; <!-- Added namespace for DeveloperAvailabilityColumn -->
+@using static Microsoft.AspNetCore.Components.Web.RenderMode
+@inject IJSRuntime JS
+@rendermode InteractiveServer
 
 <PageTitle>Gantt Generator Paste</PageTitle>
 
@@ -40,6 +44,17 @@
 <div id="gantt-chart-projects"></div>
 <p></p>
 <p></p>
+
+<div>Developer data</div>
+<div>
+    <QuickGrid Items="@developerOutput">
+        <PropertyColumn Property="@(p => p.Name)" Sortable="true" />
+        <PropertyColumn Property="@(p => p.AllocatedHours)" Sortable="true" />
+        <PropertyColumn Property="@(p => p.SlackHours)" Sortable="true" />
+        <PropertyColumn Property="@(p => p.NextAvailableDateForTasks)" Sortable="true" />
+    </QuickGrid>
+</div>
+<p></p>
 <p>Logging:</p>
 <p></p>
 <p></p>
@@ -55,16 +70,27 @@
     <pre>@teamDataJson</pre>
 }
 
-@code {
+@code {   
+    //record DeveloperAvailability(int PersonId, string Name, DateOnly BirthDate);
+
+    // IQueryable<DeveloperAvailability> people = new[]
+    // {
+    //     new DeveloperAvailability(),
+    //     new DeveloperAvailability()        
+    // }.AsQueryable();
+
     private string excelData;
     private List<TaskDto> taskDtos;
     private List<GanttTask> ganttTasks;
+    private List<GanttTask> taskOutput;
     private string ganttTasksJson;
 
     private string excelTeamData;
     private List<DeveloperDto> developerDtos;
     private List<DeveloperAvailability> teamData;
+    private IQueryable<DeveloperAvailability> developerOutput;
     private string teamDataJson;
+    private GanttChartAllocation GanttChartAllocation;
 
     private string TaskDataJson;
     private string ProjectDataJson;
@@ -126,14 +152,18 @@
     private void LoadGanttChartTasks()
     {
         var taskData = GanttChartService.ProcessDataTasksFromDtos(taskDtos, developerDtos);
+        GanttChartAllocation = GanttChartService.CalculateGanttChartAllocation(taskDtos, developerDtos);
+        taskOutput = GanttChartAllocation.GanttTasks;
+        developerOutput = GanttChartAllocation.DeveloperAvailability.AsQueryable();
         //await InvokeAsync(StateHasChanged);
         JS.InvokeVoidAsync("renderGanttTasks", JsonConvert.SerializeObject(taskData, Formatting.Indented));
     }
 
     private void LoadGanttChartProjects()
     {
-        var projectData = GanttChartService.AssignProjects(taskDtos, developerDtos);
+        var projectData = GanttChartService.AssignProjectsFromDtos(taskDtos, developerDtos);
         //await InvokeAsync(StateHasChanged);
         JS.InvokeVoidAsync("renderGanttProjects", JsonConvert.SerializeObject(projectData, Formatting.Indented));
     }
+    
 }

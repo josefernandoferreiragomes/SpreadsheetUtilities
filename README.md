@@ -163,5 +163,11 @@ This project uses the following licenses:
 For any questions or improvements, feel free to contribute!
 
 
+## Requirements for paste from excel:
+- Paste areas in a page
+- Generate button
 
-
+- Add Quick Grid to the project
+```bash
+dotnet add package Microsoft.AspNetCore.Components.QuickGrid
+```

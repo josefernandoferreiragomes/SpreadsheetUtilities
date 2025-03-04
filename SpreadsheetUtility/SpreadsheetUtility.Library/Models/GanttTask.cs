@@ -32,11 +32,14 @@ namespace SpreadsheetUtility.Library
 
         [JsonProperty("resource")]
         public string Resource { get; set; }
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
 
         public double EstimatedEffortHours { get; set; }
         public string ProjectName { get; set; }
         public string TaskName { get; set; }
         public string ProjectID { get; set; }
         public string ProjectDependency { get; set; }
+        public string AssignedDeveloper { get; set; }
     }
 }

@@ -1,3 +1,5 @@
+using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
+using Microsoft.JSInterop;
 using SpreadsheetUtility.Library;
 using SpreadsheetUtility.UI.Web.Components;
 
@@ -17,6 +19,7 @@ builder.Services.AddLogging(logging =>
 
 //add GanttChartService to middleware services:
 builder.Services.AddScoped<IGanttChartService, GanttChartService>();
+
 
 var app = builder.Build();
 

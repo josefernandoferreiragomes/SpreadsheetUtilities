@@ -130,6 +130,7 @@ dotnet add package ClosedXML
 # Gantt chart rendering, in the Blazor app
 Frappe Gantt:
 https://github.com/frappe/gantt
+https://frappe.io/gantt
 
 ```bash
 dotnet add package frappe-gantt

@@ -34,6 +34,11 @@
 <div>
     <button @onclick="LoadGanttChartProjects">Load Projects Gantt Chart</button>
 </div>
+<div>
+    <button @onclick="SwapChartMode">Swap Chart Mode</button>
+    <h4>Chart Mode</h4>
+    <pre>@chartMode</pre>
+</div>
 <p></p>
 <p></p>
 <p>Tasks Gantt Chart:</p>
@@ -44,6 +49,16 @@
 <div id="gantt-chart-projects"></div>
 <p></p>
 <p></p>
+
+<div>Project data</div>
+<div>
+    <QuickGrid Items="@taskOutput">
+        <PropertyColumn Property="@(p => p.Name)" Sortable="true" />
+        <PropertyColumn Property="@(p => p.StartDate)" Sortable="true" />
+        <PropertyColumn Property="@(p => p.EndDate)" Sortable="true" />
+        <PropertyColumn Property="@(p => p.EstimatedEffortHours)" Sortable="true" />
+    </QuickGrid>
+</div>
 
 <div>Developer data</div>
 <div>
@@ -70,19 +85,12 @@
     <pre>@teamDataJson</pre>
 }
 
-@code {   
-    //record DeveloperAvailability(int PersonId, string Name, DateOnly BirthDate);
-
-    // IQueryable<DeveloperAvailability> people = new[]
-    // {
-    //     new DeveloperAvailability(),
-    //     new DeveloperAvailability()        
-    // }.AsQueryable();
-
+@code {
+    private string chartMode = "Week";
     private string excelData;
     private List<TaskDto> taskDtos;
     private List<GanttTask> ganttTasks;
-    private List<GanttTask> taskOutput;
+    private IQueryable<GanttTask> taskOutput;
     private string ganttTasksJson;
 
     private string excelTeamData;
@@ -94,7 +102,19 @@
 
     private string TaskDataJson;
     private string ProjectDataJson;
-
+    private void SwapChartMode()
+    {
+        if (chartMode == "Week")
+        {
+            chartMode = "Day";
+        }
+        else if(chartMode == "Day")
+        {
+            chartMode = "Week";
+        }
+        LoadGanttChartTasks();
+        LoadGanttChartProjects();
+    }
     private void ConvertToGanttTasks()
     {
         var lines = excelData.Split('\n', StringSplitOptions.RemoveEmptyEntries);
@@ -151,19 +171,19 @@
 
     private void LoadGanttChartTasks()
     {
-        var taskData = GanttChartService.ProcessDataTasksFromDtos(taskDtos, developerDtos);
-        GanttChartAllocation = GanttChartService.CalculateGanttChartAllocation(taskDtos, developerDtos);
-        taskOutput = GanttChartAllocation.GanttTasks;
+        //var taskData = GanttChartService.ProcessDataTasksFromDtos(taskDtos, developerDtos);
+        GanttChartAllocation = GanttChartService.CalculateGanttChartAllocationFromDtos(taskDtos, developerDtos);
+        taskOutput = GanttChartAllocation.GanttTasks.AsQueryable();
         developerOutput = GanttChartAllocation.DeveloperAvailability.AsQueryable();
         //await InvokeAsync(StateHasChanged);
-        JS.InvokeVoidAsync("renderGanttTasks", JsonConvert.SerializeObject(taskData, Formatting.Indented));
+        JS.InvokeVoidAsync("renderGanttTasks", JsonConvert.SerializeObject(taskOutput, Formatting.Indented), chartMode, "true");
     }
 
     private void LoadGanttChartProjects()
     {
         var projectData = GanttChartService.AssignProjectsFromDtos(taskDtos, developerDtos);
         //await InvokeAsync(StateHasChanged);
-        JS.InvokeVoidAsync("renderGanttProjects", JsonConvert.SerializeObject(projectData, Formatting.Indented));
+        JS.InvokeVoidAsync("renderGanttProjects", JsonConvert.SerializeObject(projectData, Formatting.Indented), chartMode, "true");
     }
     
 }

@@ -28,14 +28,14 @@
 
     private void LoadGanttChartTasks()
     {
-        TaskDataJson = GanttChartService.ProcessExcelDataTasks(taskDataPath, teamDataPath);
+        TaskDataJson = GanttChartService.ProcessExcelDataTasksFromFile(taskDataPath, teamDataPath);
         //await InvokeAsync(StateHasChanged);
         JS.InvokeVoidAsync("renderGanttTasks", TaskDataJson);
     }
 
     private void LoadGanttChartProjects()
     {
-        ProjectDataJson = GanttChartService.ProcessExcelDataProjects(taskDataPath, teamDataPath);
+        ProjectDataJson = GanttChartService.ProcessExcelDataProjectsFromFile(taskDataPath, teamDataPath);
         //await InvokeAsync(StateHasChanged);
         JS.InvokeVoidAsync("renderGanttProjects", ProjectDataJson);
     }

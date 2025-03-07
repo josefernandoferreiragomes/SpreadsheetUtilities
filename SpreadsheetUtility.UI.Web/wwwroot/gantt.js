@@ -1,5 +1,8 @@
 ﻿//render Gantt chart for tasks
-window.renderGanttTasks = (taskDataJson) => {
+window.renderGanttTasks = (taskDataJson, viewMode, namedLanes) => {
+    if (viewMode === undefined) {
+        viewMode = 'Week';
+    }
     const prettyJson = JSON.stringify(JSON.parse(taskDataJson), null, 2);
     console.log("Received Data: ", prettyJson); // Debug in browser console
     let tasks = JSON.parse(taskDataJson);
@@ -10,21 +13,26 @@ window.renderGanttTasks = (taskDataJson) => {
         on_date_change: (task, start, end) => console.log(task, start, end),
         on_progress_change: (task, progress) => console.log(task, progress),
         on_view_change: (mode) => console.log(mode),
-        view_mode: 'Week',
+        view_mode: viewMode,
         language: 'en',
         //holidays: { 'var(--g - weekend - highlight - color)': 'weekend' },
         lines: 'both',
         today_button: 'true',
     });
 
-    //gantt.tasks.forEach(task => {
-    //    task.resource = task.assignedTo; // Use developer name
-    //});
+    if (namedLanes == 'true') {
+        gantt.tasks.forEach(task => {
+            task.resource = task.assignedTo; // Use developer name
+        });
+    }
 
 };
 
 //render Gantt chart for projects
-window.renderGanttProjects = (taskDataJson) => {
+window.renderGanttProjects = (taskDataJson, viewMode, namedLanes) => {
+    if (viewMode === undefined) {
+        viewMode = 'Week';
+    }
     const prettyJson = JSON.stringify(JSON.parse(taskDataJson), null, 2);
     console.log("Received Data: ", prettyJson); // Debug in browser console
     let tasks = JSON.parse(taskDataJson);
@@ -35,15 +43,17 @@ window.renderGanttProjects = (taskDataJson) => {
         on_date_change: (task, start, end) => console.log(task, start, end),
         on_progress_change: (task, progress) => console.log(task, progress),
         on_view_change: (mode) => console.log(mode),
-        view_mode: 'Week',
+        view_mode: viewMode,
         language: 'en',
         //holidays: { 'var(--g - weekend - highlight - color)': 'weekend' },
         lines: 'both',
         today_button: 'true',
     });
 
-    //gantt.tasks.forEach(task => {
-    //    task.resource = task.assignedTo; // Use developer name
-    //});
+    if (namedLanes == 'true') {
+        gantt.tasks.forEach(task => {
+            task.resource = task.assignedTo; // Use developer name
+        });
+    }
 
 };

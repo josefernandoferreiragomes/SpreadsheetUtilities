@@ -5,6 +5,7 @@ using System.Globalization;
 using DocumentFormat.OpenXml.Spreadsheet;
 using System.Collections.Generic;
 using DocumentFormat.OpenXml.Wordprocessing;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace SpreadsheetUtility.Library
 { 
@@ -12,13 +13,13 @@ namespace SpreadsheetUtility.Library
 
     public interface IGanttChartService
     {
-        string ProcessExcelDataTasks(string taskFilePath, string teamFilePath);
-        string ProcessExcelDataProjects(string taskFilePath, string teamFilePath);
+        string ProcessExcelDataTasksFromFile(string taskFilePath, string teamFilePath);
+        string ProcessExcelDataProjectsFromFile(string taskFilePath, string teamFilePath);
         List<GanttTask> ProcessDataTasksFromDtos(List<TaskDto> taskDtos, List<DeveloperDto> developerDtos);
         List<GanttTask> LoadTasksFromDtos(List<TaskDto> taskDtos);
         List<DeveloperAvailability> LoadTeamDataFromDtos(List<DeveloperDto> taskDtos);
         List<GanttTask> AssignProjectsFromDtos(List<TaskDto> taskDtos, List<DeveloperDto> developerDtos);
-        GanttChartAllocation CalculateGanttChartAllocation(List<TaskDto> taskDtos, List<DeveloperDto> developerDtos);
+        GanttChartAllocation CalculateGanttChartAllocationFromDtos(List<TaskDto> taskDtos, List<DeveloperDto> developerDtos);
     }
 
     public class GanttChartAllocation
@@ -39,9 +40,10 @@ namespace SpreadsheetUtility.Library
             _ganttTasks = new List<GanttTask>();
             _ganttProjects = new List<GanttTask>();
             _developerAvailability = new List<DeveloperAvailability>();
-        }
+        }        
 
-        public GanttChartAllocation CalculateGanttChartAllocation(List<TaskDto> taskDtos, List<DeveloperDto> developerDtos)
+        #region dto processing
+        public GanttChartAllocation CalculateGanttChartAllocationFromDtos(List<TaskDto> taskDtos, List<DeveloperDto> developerDtos)
         {
             _ganttTasks = LoadTasksFromDtos(taskDtos);
             _developerAvailability = LoadTeamDataFromDtos(developerDtos);
@@ -70,19 +72,7 @@ namespace SpreadsheetUtility.Library
 
             return _ganttTasks;
         }
-        private void CalculateDeveloperSlack()
-        {
-            DateTime minDate = _ganttTasks.Min(t => t.StartDate);
-            DateTime maxDate = _ganttTasks.Max(t => t.EndDate);
-            
-            //calculate the sum of hours of non allocation for each developer
-            foreach (var developer in _developerAvailability)
-            {
-                developer.AllocatedHours = developer.Tasks.Sum(t => t.EstimatedEffortHours);
-                developer.SlackHours = (maxDate.Subtract(minDate).Days * developer.DailyWorkHours) - developer.AllocatedHours;
-            }
-
-        }
+        
         public List<GanttTask> AssignProjectsFromDtos(List<TaskDto> taskDtos, List<DeveloperDto> developerDtos)
         {
             ProcessDataTasksFromDtos(taskDtos, developerDtos);
@@ -117,9 +107,38 @@ namespace SpreadsheetUtility.Library
             return _ganttProjects;
         }
 
-        public string ProcessExcelDataTasks(string taskFilePath, string teamFilePath)
+        public List<GanttTask> LoadTasksFromDtos(List<TaskDto> taskDtos)
         {
-            ProcessDataTasks(taskFilePath, teamFilePath);
+            return taskDtos.Select(dto => new GanttTask
+            {
+                Id = dto.Id,
+                Name = $"{dto.ProjectName} : {dto.TaskName}",
+                EstimatedEffortHours = dto.EstimatedEffortHours,
+                Dependencies = dto.Dependencies,
+                Progress = int.TryParse(dto.Progress, out var p) ? p : 0,
+                ProjectName = dto.ProjectName,
+                TaskName = dto.TaskName
+            }).ToList();
+        }
+        public List<DeveloperAvailability> LoadTeamDataFromDtos(List<DeveloperDto> taskDtos)
+        {
+            return taskDtos.Select(dto => new DeveloperAvailability
+            {
+                Name = $"{dto.Team} : {dto.Name}",
+                DailyWorkHours = dto.DailyWorkHours,
+                VacationPeriods = dto.VacationPeriods.Split('|')
+                        .Select(ParseDateRange)
+                        .Where(d => d != null)
+                        .ToList()
+            }).ToList();
+        }
+
+        #endregion
+
+        #region file processing
+        public string ProcessExcelDataTasksFromFile(string taskFilePath, string teamFilePath)
+        {
+            ProcessDataTasksFromFile(taskFilePath, teamFilePath);
 
             Console.WriteLine(JsonConvert.SerializeObject(_ganttTasks,
                 new JsonSerializerSettings
@@ -132,9 +151,9 @@ namespace SpreadsheetUtility.Library
             return JsonConvert.SerializeObject(_ganttTasks);
         }
         
-        public string ProcessExcelDataProjects(string taskFilePath, string teamFilePath)
+        public string ProcessExcelDataProjectsFromFile(string taskFilePath, string teamFilePath)
         {
-            ProcessDataTasks(taskFilePath, teamFilePath);
+            ProcessDataTasksFromFile(taskFilePath, teamFilePath);
 
             //ID	ProjectName	Dependencies
             double totalEstimatedEffortHours = _ganttTasks.Sum(t => t.EstimatedEffortHours);
@@ -166,14 +185,14 @@ namespace SpreadsheetUtility.Library
             return JsonConvert.SerializeObject(_ganttProjects);
         }
 
-        private void ProcessDataTasks(string taskFilePath, string teamFilePath)
+        private void ProcessDataTasksFromFile(string taskFilePath, string teamFilePath)
         {
-            _ganttTasks = LoadTasks(taskFilePath);
-            _developerAvailability = LoadDevelopers(teamFilePath);
+            _ganttTasks = LoadTasksFromFile(taskFilePath);
+            _developerAvailability = LoadDevelopersFromFile(teamFilePath);
             AssignTasks();
         }
 
-        private List<TaskDto> LoadTaskDtos(string filePath)
+        private List<TaskDto> LoadTaskDtosFromFile(string filePath)
         {
             //A ID	B ProjectID	C ProjectName	D TaskName	E EstimatedEffortHours	F TaskDependencies	G ProjectDependency	H Progress
 
@@ -199,40 +218,15 @@ namespace SpreadsheetUtility.Library
             return taskDtos;
         }
 
-        private List<GanttTask> LoadTasks(string filePath)
+        private List<GanttTask> LoadTasksFromFile(string filePath)
         {
-            var taskDtos = LoadTaskDtos(filePath);
+            var taskDtos = LoadTaskDtosFromFile(filePath);
             List<GanttTask> tasks = LoadTasksFromDtos(taskDtos);
 
             return tasks;
         }
 
-        public List<GanttTask> LoadTasksFromDtos(List<TaskDto> taskDtos)
-        {
-            return taskDtos.Select(dto => new GanttTask
-            {
-                Id = dto.Id,
-                Name = $"{dto.ProjectName} : {dto.TaskName}",
-                EstimatedEffortHours = dto.EstimatedEffortHours,
-                Dependencies = dto.Dependencies,
-                Progress = int.TryParse(dto.Progress, out var p) ? p : 0,
-                ProjectName = dto.ProjectName,
-                TaskName = dto.TaskName                
-            }).ToList();
-        }        
-        public List<DeveloperAvailability> LoadTeamDataFromDtos(List<DeveloperDto> taskDtos)
-        {
-            return taskDtos.Select(dto => new DeveloperAvailability
-            {                
-                Name = $"{dto.Team} : {dto.Name}",
-                DailyWorkHours = dto.DailyWorkHours,
-                VacationPeriods = dto.VacationPeriods.Split('|')
-                        .Select(ParseDateRange)
-                        .Where(d => d != null)
-                        .ToList()               
-            }).ToList();
-        }
-        private List<DeveloperAvailability> LoadDevelopers(string filePath)
+        private List<DeveloperAvailability> LoadDevelopersFromFile(string filePath)
         {
             var developers = new List<DeveloperAvailability>();
             using (var workbook = new XLWorkbook(filePath))
@@ -257,6 +251,25 @@ namespace SpreadsheetUtility.Library
             }
             return developers;
         }
+        #endregion
+
+        #region auxiliary methods
+
+        private void CalculateDeveloperSlack()
+        {
+            DateTime minDate = _ganttTasks.Min(t => t.StartDate);
+            DateTime maxDate = _ganttTasks.Max(t => t.EndDate);
+            
+            //calculate the sum of hours of non allocation for each developer
+            foreach (var developer in _developerAvailability)
+            {
+                var calculatedIntervalDays = CalculateIntervalDays(minDate, maxDate, developer.VacationPeriods);
+                developer.AllocatedHours = developer.Tasks.Sum(t => t.EstimatedEffortHours);
+                var slackHours = (calculatedIntervalDays * developer.DailyWorkHours) - developer.AllocatedHours;
+                developer.SlackHours = slackHours >= 0 ? slackHours : 0;
+            }
+
+        }
 
         private (DateTime Start, DateTime End)? ParseDateRange(string range)
         {
@@ -272,7 +285,12 @@ namespace SpreadsheetUtility.Library
 
         private void AssignTasks()
         {
+
             DateTime startDate = DateTime.Today;
+            while (IsWeekend(startDate))
+            {
+                startDate = startDate.AddDays(1);
+            }
             foreach (var task in _ganttTasks)
             {
                 var assignedDeveloper = _developerAvailability.OrderBy(d => d.NextAvailableDate(startDate)).FirstOrDefault();
@@ -287,7 +305,8 @@ namespace SpreadsheetUtility.Library
                 task.StartDate = taskStart;
                 task.EndDate = taskEnd;
                 task.AssignedDeveloper = assignedDeveloper.Name;
-                task.Name = $"{task.Name} ({assignedDeveloper.Name})";                
+                task.Name = $"{task.Name} ({assignedDeveloper.Name})";
+                task.CustomClass = task.Name.Contains("task") ? "gantt-task-blue" : "gantt-task-green";
                 assignedDeveloper.Tasks.Add(task);
                 assignedDeveloper.SetNextAvailableDate(taskEnd.AddDays(1));
             }
@@ -299,19 +318,40 @@ namespace SpreadsheetUtility.Library
             DateTime end = start;
             while (workDays > 0)
             {
-                if (!IsVacationDay(end, vacations)) workDays--;
+                if (!IsVacationDay(end, vacations) && !IsWeekend(end)) workDays--;
                 end = end.AddDays(1);
             }
             return end.AddDays(-1);
+        }
+
+        private int CalculateIntervalDays(DateTime start, DateTime end, List<(DateTime Start, DateTime End)?> vacations)
+        {
+            int days = 0;
+            while (start < end)
+            {
+                if (!IsVacationDay(end, vacations) && !IsWeekend(start))
+                {
+                   days++;
+                }
+                start = start.AddDays(1);
+            }
+            return days;
         }
 
         private bool IsVacationDay(DateTime date, List<(DateTime Start, DateTime End)?> vacations)
         {
             return vacations.Any(v => v.HasValue && date >= v.Value.Start && date <= v.Value.End);
         }
+
+        private bool IsWeekend(DateTime date)
+        {
+            return date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday;
+        }
+
+        #endregion
     }
 
-    
+
     public class DeveloperDto
     {
         public string Team { get; set; }
@@ -332,8 +372,15 @@ namespace SpreadsheetUtility.Library
         public DateTime NextAvailableDate(DateTime fromDate)
         {
             DateTime date = fromDate > NextAvailableDateForTasks ? fromDate : NextAvailableDateForTasks;
-            while (IsOnVacation(date)) date = date.AddDays(1);
+            while (IsOnVacation(date) || IsWeekend(date))
+            {
+                date = date.AddDays(1);
+            }
             return date;
+        }
+        private bool IsWeekend(DateTime date)
+        {
+            return date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday;
         }
 
         private bool IsOnVacation(DateTime date)

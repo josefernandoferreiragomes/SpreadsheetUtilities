@@ -14,6 +14,13 @@
 <input type="text" @bind="teamDataPath" />
 <button @onclick="LoadGanttChartTasks">Load Tasks Gantt Chart</button>
 <button @onclick="LoadGanttChartProjects">Load Projects Gantt Chart</button>
+<p>
+    <div>
+        <button @onclick="SwapChartMode">Swap Chart Mode</button>
+        <h4>Chart Mode</h4>
+        <pre>@chartMode</pre>
+    </div>
+</p>
 <p>Tasks Gantt Chart:</p> 
 <div id="gantt-chart-tasks"></div>
 
@@ -21,6 +28,21 @@
 <div id="gantt-chart-projects"></div>
 
 @code {
+    private string chartMode = "Week";
+    private void SwapChartMode()
+    {
+        if (chartMode == "Week")
+        {
+            chartMode = "Day";
+        }
+        else if (chartMode == "Day")
+        {
+            chartMode = "Week";
+        }
+        LoadGanttChartTasks();
+        LoadGanttChartProjects();
+    }
+
     string taskDataPath;// = @"C:\\Users\\josef\\source\\repos\\SpreadsheetUtilities\\ExampleFiles\\tasks.xlsx";
     string teamDataPath;// = @"C:\\Users\\josef\\source\\repos\\SpreadsheetUtilities\\ExampleFiles\\team.xlsx";
     private string TaskDataJson;
@@ -30,13 +52,14 @@
     {
         TaskDataJson = GanttChartService.ProcessExcelDataTasksFromFile(taskDataPath, teamDataPath);
         //await InvokeAsync(StateHasChanged);
-        JS.InvokeVoidAsync("renderGanttTasks", TaskDataJson);
+        JS.InvokeVoidAsync("renderGanttTasks", TaskDataJson, chartMode, "true");
     }
 
     private void LoadGanttChartProjects()
     {
         ProjectDataJson = GanttChartService.ProcessExcelDataProjectsFromFile(taskDataPath, teamDataPath);
         //await InvokeAsync(StateHasChanged);
-        JS.InvokeVoidAsync("renderGanttProjects", ProjectDataJson);
+        JS.InvokeVoidAsync("renderGanttProjects", ProjectDataJson, chartMode, "true");
     }
+
 }

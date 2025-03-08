@@ -23,9 +23,9 @@
 }
 
 @code {
-    private string excelData;
-    private List<GanttTask> ganttTasks;
-    private string ganttTasksJson;
+    private string excelData = "";
+    private List<GanttTask> ganttTasks = new List<GanttTask>();
+    private string ganttTasksJson = "";
 
     private void ConvertToGanttTasks()
     {

@@ -1,9 +1,10 @@
 ﻿@page "/ganttGeneratorFromPaste"
-@inject IGanttChartProcessor GanttChartService
+@inject IGanttService GanttService
 @using Microsoft.JSInterop
 @using Newtonsoft.Json
 @using SpreadsheetUtility.Library
 @using Microsoft.AspNetCore.Components.QuickGrid;
+@using SpreadsheetUtility.Services
 @using SpreadsheetUtility.UI.Web.Components; <!-- Added namespace for DeveloperAvailabilityColumn -->
 @using static Microsoft.AspNetCore.Components.Web.RenderMode
 @inject IJSRuntime JS
@@ -143,7 +144,7 @@
                     });
             }
         }
-        ganttTasks = GanttChartService.LoadTasksFromDtos(taskDtos);
+        ganttTasks = GanttService.LoadTasksFromDtos(taskDtos);
         ganttTasksJson = JsonConvert.SerializeObject(ganttTasks, Formatting.Indented);
         //LoadGanttChartTasks(tasks);
     }
@@ -168,7 +169,7 @@
                     });
             }
         }
-        teamData = GanttChartService.LoadDeveloperAvailabilityFromDtos(developerDtos);
+        teamData = GanttService.LoadDeveloperAvailabilityFromDtos(developerDtos);
         teamDataJson = JsonConvert.SerializeObject(teamData, Formatting.Indented);
         //LoadGanttChartTasks(developerData);
     }   
@@ -178,7 +179,7 @@
         ConvertToGanttTasks();
         ConvertToTeamData();
         //var taskData = GanttChartProcessor.ProcessDataTasksFromDtos(taskDtos, developerDtos);
-        GanttChartAllocation = GanttChartService.CalculateGanttChartAllocationFromDtos(taskDtos, developerDtos);
+        GanttChartAllocation = GanttService.CalculateGanttChartAllocationFromDtos(taskDtos, developerDtos);
         taskOutput = GanttChartAllocation.GanttTasks.AsQueryable();
         developerOutput = GanttChartAllocation.DeveloperAvailability.AsQueryable();
         //await InvokeAsync(StateHasChanged);
@@ -187,7 +188,7 @@
 
     private void LoadGanttChartProjects()
     {
-        var projectData = GanttChartService.AssignProjectsFromDtos(taskDtos, developerDtos);
+        var projectData = GanttService.AssignProjectsFromDtos(taskDtos, developerDtos);
         //await InvokeAsync(StateHasChanged);
         JS.InvokeVoidAsync("renderGanttProjects", JsonConvert.SerializeObject(projectData, Formatting.Indented), chartMode, "true");
     }

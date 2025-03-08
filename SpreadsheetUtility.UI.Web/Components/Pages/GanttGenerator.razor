@@ -1,11 +1,12 @@
 ﻿@page "/ganttGenerator"
-@inject IGanttChartProcessor GanttChartService
+@inject IGanttService GanttService
 @inject IJSRuntime JS
 @rendermode InteractiveServer
 @using Newtonsoft.Json
 @using Microsoft.AspNetCore.Components
 @using SpreadsheetUtility.Library
 @using System.Text.Json
+@using SpreadsheetUtility.Services
 
 <h3>Project Gantt Chart</h3>
 <h4>Tasks file path:</h4>
@@ -50,14 +51,14 @@
 
     private void LoadGanttChartTasks()
     {
-        TaskDataJson = GanttChartService.ProcessExcelDataTasksFromFile(taskDataPath, teamDataPath);
+        TaskDataJson = GanttService.ProcessExcelDataTasksFromFile(taskDataPath, teamDataPath);
         //await InvokeAsync(StateHasChanged);
         JS.InvokeVoidAsync("renderGanttTasks", TaskDataJson, chartMode, "true");
     }
 
     private void LoadGanttChartProjects()
     {
-        ProjectDataJson = GanttChartService.ProcessExcelDataProjectsFromFile(taskDataPath, teamDataPath);
+        ProjectDataJson = GanttService.ProcessExcelDataProjectsFromFile(taskDataPath, teamDataPath);
         //await InvokeAsync(StateHasChanged);
         JS.InvokeVoidAsync("renderGanttProjects", ProjectDataJson, chartMode, "true");
     }

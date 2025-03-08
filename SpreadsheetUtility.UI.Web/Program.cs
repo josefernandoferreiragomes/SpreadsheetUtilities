@@ -1,6 +1,7 @@
 using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 using Microsoft.JSInterop;
 using SpreadsheetUtility.Library;
+using SpreadsheetUtility.Services;
 using SpreadsheetUtility.UI.Web.Components;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,6 +20,7 @@ builder.Services.AddLogging(logging =>
 
 //add GanttChartProcessor to middleware services:
 builder.Services.AddScoped<IGanttChartProcessor, GanttChartProcessor>();
+builder.Services.AddScoped<IGanttService, GanttService>();
 
 
 var app = builder.Build();

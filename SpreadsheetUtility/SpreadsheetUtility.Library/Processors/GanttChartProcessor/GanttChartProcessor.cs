@@ -291,16 +291,17 @@ namespace SpreadsheetUtility.Library
 
         private void AssignTasks(bool preSortTasks = false)
         {
-
             DateTime startDate = DateTime.Today;
             while (IsWeekend(startDate))
             {
                 startDate = startDate.AddDays(1);
             }
 
+            List<GanttTask> sortedTasks = _ganttTasks;
+
             if (preSortTasks)
             {
-                //change Dependencies from empty string to "0" for sorting
+                // Change Dependencies from empty string to "0" for sorting
                 foreach (var task in _ganttTasks)
                 {
                     if (string.IsNullOrEmpty(task.Dependencies))
@@ -310,41 +311,47 @@ namespace SpreadsheetUtility.Library
                 }
 
                 // Sort tasks by dependencies and estimated effort hours
-                var sortedTasks = _ganttTasks.OrderBy(t => t.Dependencies).ThenByDescending(t => t.EstimatedEffortHours).ToList();                
-                
-                // Update task IDs based on sorted order
+                sortedTasks = _ganttTasks.OrderBy(t => t.Dependencies).ThenByDescending(t => t.EstimatedEffortHours).ToList();
+
+                // Create a mapping of original task IDs to new task IDs
+                var idMapping = new Dictionary<string, string>();
                 for (int i = 0; i < sortedTasks.Count; i++)
                 {
                     var originalTaskId = sortedTasks[i].Id;
-                    sortedTasks[i].Id = (i + 1).ToString();
-                    
+                    var newTaskId = (i + 1).ToString();
+                    idMapping[originalTaskId] = newTaskId;
+                    sortedTasks[i].Id = newTaskId;
+
                     if (sortedTasks[i].Dependencies == "0")
                     {
                         sortedTasks[i].Dependencies = "";
                     }
-
-                    //update the dependencies to the new sorted order
-                    var dependencyList = sortedTasks.Where(t => t.Dependencies == originalTaskId && t.DependencyUpdated == false).Select(t=>t.Id).ToList();
-                    for(int j=0; j< dependencyList.Count;j++)
-                    {
-                        sortedTasks[j].Dependencies = sortedTasks[i].Id;
-                        sortedTasks[j].DependencyUpdated = true;
-                    }                    
-
                 }
+
+                // Update the dependencies to the new sorted order
+                foreach (var task in sortedTasks)
+                {
+                    if (!string.IsNullOrEmpty(task.Dependencies) && idMapping.ContainsKey(task.Dependencies))
+                    {
+                        task.Dependencies = idMapping[task.Dependencies];
+                    }
+                }
+
                 _ganttTasks = sortedTasks;
             }
-
 
             foreach (var task in _ganttTasks)
             {
                 var assignedDeveloper = _developerList.OrderBy(d => d.NextAvailableDate(startDate)).FirstOrDefault();
                 if (assignedDeveloper == null) continue;
+
                 DateTime taskStart = assignedDeveloper.NextAvailableDate(startDate);
                 DateTime dependencyEndDate;
-                taskStart = DateTime.TryParse(_ganttTasks.Find(t=> t.Id == task.Dependencies)?.End ?? "", out dependencyEndDate) ? dependencyEndDate : taskStart;
+                taskStart = DateTime.TryParse(_ganttTasks.Find(t => t.Id == task.Dependencies)?.End ?? "", out dependencyEndDate) ? dependencyEndDate : taskStart;
+
                 double requiredDays = Math.Ceiling(task.EstimatedEffortHours / assignedDeveloper.DailyWorkHours);
                 DateTime taskEnd = CalculateEndDate(taskStart, requiredDays, assignedDeveloper.VacationPeriods);
+
                 task.Start = taskStart.ToString("yyyy-MM-dd");
                 task.End = taskEnd.ToString("yyyy-MM-dd");
                 task.StartDate = taskStart;
@@ -352,11 +359,11 @@ namespace SpreadsheetUtility.Library
                 task.AssignedDeveloper = assignedDeveloper.Name;
                 task.Name = $"{task.Name} ({assignedDeveloper.Name})";
                 task.CustomClass = task.Name.Contains("task") ? "gantt-task-blue" : "gantt-task-green";
+
                 assignedDeveloper.Tasks.Add(task);
                 assignedDeveloper.SetNextAvailableDate(taskEnd.AddDays(1));
             }
-
-        }        
+        }
 
         private DateTime CalculateEndDate(DateTime start, double workDays, List<(DateTime Start, DateTime End)?>? vacations)
         {

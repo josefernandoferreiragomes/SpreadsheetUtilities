@@ -172,3 +172,6 @@ For any questions or improvements, feel free to contribute!
 ```bash
 dotnet add package Microsoft.AspNetCore.Components.QuickGrid
 ```
+
+- Add project pre sorting
+- Add task end week

@@ -1,5 +1,5 @@
 ﻿@page "/ganttGeneratorFromPaste"
-@inject IGanttChartService GanttChartService
+@inject IGanttChartProcessor GanttChartService
 @using Microsoft.JSInterop
 @using Newtonsoft.Json
 @using SpreadsheetUtility.Library
@@ -168,7 +168,7 @@
                     });
             }
         }
-        teamData = GanttChartService.LoadTeamDataFromDtos(developerDtos);
+        teamData = GanttChartService.LoadDeveloperAvailabilityFromDtos(developerDtos);
         teamDataJson = JsonConvert.SerializeObject(teamData, Formatting.Indented);
         //LoadGanttChartTasks(developerData);
     }   
@@ -177,7 +177,7 @@
     {
         ConvertToGanttTasks();
         ConvertToTeamData();
-        //var taskData = GanttChartService.ProcessDataTasksFromDtos(taskDtos, developerDtos);
+        //var taskData = GanttChartProcessor.ProcessDataTasksFromDtos(taskDtos, developerDtos);
         GanttChartAllocation = GanttChartService.CalculateGanttChartAllocationFromDtos(taskDtos, developerDtos);
         taskOutput = GanttChartAllocation.GanttTasks.AsQueryable();
         developerOutput = GanttChartAllocation.DeveloperAvailability.AsQueryable();

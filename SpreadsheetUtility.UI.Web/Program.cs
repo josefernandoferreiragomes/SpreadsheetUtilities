@@ -17,8 +17,8 @@ builder.Services.AddLogging(logging =>
     logging.AddConsole();
 });
 
-//add GanttChartService to middleware services:
-builder.Services.AddScoped<IGanttChartService, GanttChartService>();
+//add GanttChartProcessor to middleware services:
+builder.Services.AddScoped<IGanttChartProcessor, GanttChartProcessor>();
 
 
 var app = builder.Build();

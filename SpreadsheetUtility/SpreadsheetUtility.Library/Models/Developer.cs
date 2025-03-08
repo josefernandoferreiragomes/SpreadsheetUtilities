@@ -9,15 +9,16 @@ namespace SpreadsheetUtility.Library
     
     public class Developer
     {
-        public string Name { get; set; }
+        public required string Name { get; set; }
         public double DailyWorkHours { get; set; }
-        public List<(DateTime Start, DateTime End)?> VacationPeriods { get; set; }
+        public List<(DateTime Start, DateTime End)?>? VacationPeriods { get; set; }
 
         public DateTime NextAvailableDateForTasks = DateTime.Today;
         public List<GanttTask> Tasks { get; set; } = new List<GanttTask>();
         public double AllocatedHours { get; set; }
         public double SlackHours { get; set; }
-        public string VacationPeriodsSerialized => string.Join("|", VacationPeriods.Select(v => $"{v?.Start:yyyy-MM-dd};{v?.End:yyyy-MM-dd}"));
+        public string VacationPeriodsSerialized => string.Join("|", VacationPeriods?.Where(v => v.HasValue)
+            .Select(v => $"{v?.Start:yyyy-MM-dd};{v?.End:yyyy-MM-dd}") ?? Enumerable.Empty<string>());
         public DateTime NextAvailableDate(DateTime fromDate)
         {
             DateTime date = fromDate > NextAvailableDateForTasks ? fromDate : NextAvailableDateForTasks;
@@ -34,7 +35,7 @@ namespace SpreadsheetUtility.Library
 
         private bool IsOnVacation(DateTime date)
         {
-            return VacationPeriods.Any(v => v.HasValue && date >= v.Value.Start && date <= v.Value.End);
+            return VacationPeriods?.Any(v => v.HasValue && date >= v.Value.Start && date <= v.Value.End) ?? false;
         }
 
         public void SetNextAvailableDate(DateTime date)

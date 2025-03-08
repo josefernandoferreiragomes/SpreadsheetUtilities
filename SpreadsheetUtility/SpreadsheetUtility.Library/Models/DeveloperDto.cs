@@ -8,9 +8,10 @@ namespace SpreadsheetUtility.Library
 {
     public class DeveloperDto
     {
-        public string Team { get; set; }
-        public string Name { get; set; }
-        public double DailyWorkHours { get; set; }
-        public string VacationPeriods { get; set; }
+     
+        public required string Team { get; set; }
+        public required string Name { get; set; }
+        public required double DailyWorkHours { get; set; }
+        public required string VacationPeriods { get; set; }
     }
 }

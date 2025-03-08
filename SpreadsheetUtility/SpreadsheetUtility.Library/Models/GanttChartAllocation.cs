@@ -8,7 +8,7 @@ namespace SpreadsheetUtility.Library
 {
     public class GanttChartAllocation
     {
-        public List<GanttTask> GanttTasks;
-        public List<DeveloperAvailability> DeveloperAvailability;
+        public List<GanttTask> GanttTasks { get; set; } = new List<GanttTask>();
+        public List<DeveloperAvailability> DeveloperAvailability { get; set; } = new List<DeveloperAvailability>();
     }
 }

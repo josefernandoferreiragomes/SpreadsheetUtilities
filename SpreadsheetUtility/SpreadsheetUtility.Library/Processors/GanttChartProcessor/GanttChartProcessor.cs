@@ -261,6 +261,7 @@ namespace SpreadsheetUtility.Library
         }
         private void CalculateDeveloperSlack()
         {
+            if(_ganttTasks.Count == 0 || _developerList.Count == 0) return;
             DateTime minDate = _ganttTasks.Min(t => t.StartDate);
             DateTime maxDate = _ganttTasks.Max(t => t.EndDate);
 

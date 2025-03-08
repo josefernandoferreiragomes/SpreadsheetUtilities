@@ -1,12 +1,12 @@
 ﻿@page "/jsonGeneratorFromPaste"
-@inject IGanttChartService GanttChartService
+@inject IGanttChartProcessor GanttChartService
 @rendermode InteractiveServer
 @using Newtonsoft.Json
 @using SpreadsheetUtility.Library
 
-<PageTitle>Gantt Generator Paste</PageTitle>
+<PageTitle>Json Generator from Paste</PageTitle>
 
-<h3>Gantt Generator Paste</h3>
+<h3>Json Generator Paste</h3>
 
 <div>
     <textarea @bind="excelData" placeholder="Paste your Excel data here" rows="10" cols="100"></textarea>

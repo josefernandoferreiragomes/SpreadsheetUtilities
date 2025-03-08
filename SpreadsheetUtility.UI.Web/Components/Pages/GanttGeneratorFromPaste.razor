@@ -53,10 +53,12 @@
 <div>Project data</div>
 <div>
     <QuickGrid Items="@taskOutput">
+        <PropertyColumn Property="@(p => p.Id)" Sortable="true" />
         <PropertyColumn Property="@(p => p.Name)" Sortable="true" />
         <PropertyColumn Property="@(p => p.StartDate)" Sortable="true" />
         <PropertyColumn Property="@(p => p.EndDate)" Sortable="true" />
         <PropertyColumn Property="@(p => p.EstimatedEffortHours)" Sortable="true" />
+        <PropertyColumn Property="@(p => p.Dependencies)" Sortable="true" />
     </QuickGrid>
 </div>
 
@@ -64,9 +66,11 @@
 <div>
     <QuickGrid Items="@developerOutput">
         <PropertyColumn Property="@(p => p.Name)" Sortable="true" />
+        <PropertyColumn Property="@(p => p.DailyWorkHours)" Sortable="true" />
         <PropertyColumn Property="@(p => p.AllocatedHours)" Sortable="true" />
         <PropertyColumn Property="@(p => p.SlackHours)" Sortable="true" />
-        <PropertyColumn Property="@(p => p.NextAvailableDateForTasks)" Sortable="true" />
+        <PropertyColumn Property="@(p => p.NextAvailableDateForTasks)" Sortable="true" />        
+        <PropertyColumn Property="@(p => p.VacationPeriodsSerialized)" Sortable="true" />
     </QuickGrid>
 </div>
 <p></p>
@@ -171,6 +175,8 @@
 
     private void LoadGanttChartTasks()
     {
+        ConvertToGanttTasks();
+        ConvertToTeamData();
         //var taskData = GanttChartService.ProcessDataTasksFromDtos(taskDtos, developerDtos);
         GanttChartAllocation = GanttChartService.CalculateGanttChartAllocationFromDtos(taskDtos, developerDtos);
         taskOutput = GanttChartAllocation.GanttTasks.AsQueryable();

@@ -1,8 +1,9 @@
 ﻿@page "/jsonGeneratorFromPaste"
-@inject IGanttChartProcessor GanttChartService
+@inject IGanttService GanttService
 @rendermode InteractiveServer
 @using Newtonsoft.Json
 @using SpreadsheetUtility.Library
+@using SpreadsheetUtility.Services
 
 <PageTitle>Json Generator from Paste</PageTitle>
 
@@ -51,7 +52,7 @@
             }
         }
 
-        ganttTasks = GanttChartService.LoadTasksFromDtos(tasks);
+        ganttTasks = GanttService.LoadTasksFromDtos(tasks);
         ganttTasksJson = JsonConvert.SerializeObject(ganttTasks, Formatting.Indented);
     }
 }

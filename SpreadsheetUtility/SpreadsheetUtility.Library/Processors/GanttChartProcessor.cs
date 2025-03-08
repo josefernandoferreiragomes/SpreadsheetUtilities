@@ -25,8 +25,6 @@ namespace SpreadsheetUtility.Library
     {
         private List<GanttTask> _ganttTasks;
         private List<GanttTask> _ganttProjects;
-
-        private List<DeveloperAvailability> _developerAvailability;
         private List<Developer> _developerList;
 
         public GanttChartProcessor()
@@ -325,7 +323,43 @@ namespace SpreadsheetUtility.Library
             }
 
         }
-        
+
+        private void AssignTasksWithSort()
+        {
+            DateTime startDate = DateTime.Today;
+            while (IsWeekend(startDate))
+            {
+                startDate = startDate.AddDays(1);
+            }
+
+            // Sort tasks by dependencies and estimated effort hours
+            var sortedTasks = _ganttTasks.OrderBy(t => t.Dependencies).ThenByDescending(t => t.EstimatedEffortHours).ToList();
+
+            foreach (var task in sortedTasks)
+            {
+                var assignedDeveloper = _developerList.OrderBy(d => d.NextAvailableDate(startDate)).FirstOrDefault();
+                if (assignedDeveloper == null) continue;
+
+                DateTime taskStart = assignedDeveloper.NextAvailableDate(startDate);
+                DateTime dependencyEndDate;
+                taskStart = DateTime.TryParse(_ganttTasks.Find(t => t.Id == task.Dependencies)?.End ?? "", out dependencyEndDate) ? dependencyEndDate : taskStart;
+
+                double requiredDays = Math.Ceiling(task.EstimatedEffortHours / assignedDeveloper.DailyWorkHours);
+                DateTime taskEnd = CalculateEndDate(taskStart, requiredDays, assignedDeveloper.VacationPeriods);
+
+                task.Start = taskStart.ToString("yyyy-MM-dd");
+                task.End = taskEnd.ToString("yyyy-MM-dd");
+                task.StartDate = taskStart;
+                task.EndDate = taskEnd;
+                task.AssignedDeveloper = assignedDeveloper.Name;
+                task.Name = $"{task.Name} ({assignedDeveloper.Name})";
+                task.CustomClass = task.Name.Contains("task") ? "gantt-task-blue" : "gantt-task-green";
+
+                assignedDeveloper.Tasks.Add(task);
+                assignedDeveloper.SetNextAvailableDate(taskEnd.AddDays(1));
+            }
+        }
+
         private DateTime CalculateEndDate(DateTime start, double workDays, List<(DateTime Start, DateTime End)?> vacations)
         {
             DateTime end = start;

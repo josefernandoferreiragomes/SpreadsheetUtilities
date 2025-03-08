@@ -18,6 +18,8 @@ window.renderGanttTasks = (taskDataJson, viewMode, namedLanes) => {
         //holidays: { 'var(--g - weekend - highlight - color)': 'weekend' },
         lines: 'both',
         today_button: 'true',
+        //show_expected_progress: 'true',
+        view_mode_select: 'true'
     });
 
     if (namedLanes == 'true') {
@@ -48,6 +50,8 @@ window.renderGanttProjects = (taskDataJson, viewMode, namedLanes) => {
         //holidays: { 'var(--g - weekend - highlight - color)': 'weekend' },
         lines: 'both',
         today_button: 'true',
+        //show_expected_progress: 'true',
+        view_mode_select: 'true'
     });
 
     if (namedLanes == 'true') {

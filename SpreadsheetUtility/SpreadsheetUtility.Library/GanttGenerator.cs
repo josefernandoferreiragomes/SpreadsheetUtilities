@@ -327,13 +327,14 @@ namespace SpreadsheetUtility.Library
         private int CalculateIntervalDays(DateTime start, DateTime end, List<(DateTime Start, DateTime End)?> vacations)
         {
             int days = 0;
-            while (start < end)
+            var startDate = start;
+            while (startDate < end)
             {
-                if (!IsVacationDay(end, vacations) && !IsWeekend(start))
+                if (!IsVacationDay(startDate, vacations) && !IsWeekend(startDate))
                 {
                    days++;
                 }
-                start = start.AddDays(1);
+                startDate = startDate.AddDays(1);
             }
             return days;
         }
@@ -369,6 +370,7 @@ namespace SpreadsheetUtility.Library
         public List<GanttTask> Tasks { get; set; } = new List<GanttTask>();
         public double AllocatedHours { get; set; }
         public double SlackHours { get; set; }
+        public string VacationPeriodsSerialized => string.Join("|", VacationPeriods.Select(v => $"{v?.Start:yyyy-MM-dd};{v?.End:yyyy-MM-dd}"));
         public DateTime NextAvailableDate(DateTime fromDate)
         {
             DateTime date = fromDate > NextAvailableDateForTasks ? fromDate : NextAvailableDateForTasks;

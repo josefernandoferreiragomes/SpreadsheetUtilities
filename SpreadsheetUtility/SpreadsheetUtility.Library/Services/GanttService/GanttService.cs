@@ -31,13 +31,13 @@ namespace SpreadsheetUtility.Services
         {
             return _ganttChartProcessor.LoadDeveloperAvailabilityFromDtos(developerDtos);
         }
-        public List<GanttTask> AssignProjectsFromDtos(List<TaskDto> taskDtos, List<DeveloperDto> developerDtos)
+        public List<GanttTask> AssignProjectsFromDtos(List<TaskDto> taskDtos, List<DeveloperDto> developerDtos, bool preSortTasks = false)
         {
-            return _ganttChartProcessor.AssignProjectsFromDtos(taskDtos, developerDtos);
+            return _ganttChartProcessor.AssignProjectsFromDtos(taskDtos, developerDtos, preSortTasks);
         }
-        public GanttChartAllocation CalculateGanttChartAllocationFromDtos(List<TaskDto> taskDtos, List<DeveloperDto> developerDtos)
+        public GanttChartAllocation CalculateGanttChartAllocationFromDtos(List<TaskDto> taskDtos, List<DeveloperDto> developerDtos, bool preSortTasks = true)
         {
-            return _ganttChartProcessor.CalculateGanttChartAllocationFromDtos(taskDtos, developerDtos);
+            return _ganttChartProcessor.CalculateGanttChartAllocationFromDtos(taskDtos, developerDtos, preSortTasks);
         }
     }
 }

@@ -29,9 +29,30 @@
     <button @onclick="LoadGanttChartProjects">Load Projects Gantt Chart</button>
 </div>
 <div>
-    <button @onclick="SwapChartMode">Swap Chart Mode</button>
-    <h4>Chart Mode</h4>
-    <pre>@chartMode</pre>
+    <h4>Chart Mode</h4>    
+    <InputRadioGroup @bind-Value="chartMode">
+        <div>
+            <InputRadio Value="ChartMode.Week" /> <label>Week</label>
+        </div>
+        <div>
+            <InputRadio Value="ChartMode.Day" /> <label>Day</label>
+        </div>
+    </InputRadioGroup>
+</div>
+<p></p>
+<div>
+    <label>Pre Sort Tasks</label>
+    <InputRadioGroup @bind-Value="preSortTasks">
+        <div>
+            <InputRadio Value="true" /> <label>Pre Sort Tasks</label>
+        </div>
+        <div>
+            <InputRadio Value="false" /> <label>Do not Pre Sort Tasks</label>
+        </div>
+    </InputRadioGroup>
+</div>
+<div>
+    <button @onclick="SwapChartMode">Re Generate Charts</button>
 </div>
 <p></p>
 <p>Tasks Gantt Chart:</p>
@@ -65,47 +86,24 @@
         <PropertyColumn Property="@(p => p.VacationPeriodsSerialized)" Sortable="true" />
     </QuickGrid>
 </div>
-<p></p>
-<p>Logging:</p>
-<p></p>
-<p></p>
-@if (ganttTasks != null)
-{
-    <h4>Gantt Tasks</h4>
-    <pre>@ganttTasksJson</pre>
-}
-
-@if (excelTeamData != null)
-{
-    <h4>Team Data</h4>
-    <pre>@teamDataJson</pre>
-}
 
 @code {
-    private string chartMode = "Week";
-    private string excelData = "";
+    enum ChartMode
+    {
+        Week,
+        Day
+    }
+    private ChartMode chartMode = ChartMode.Week;
+    private string excelData = "";    
     private List<TaskDto> taskDtos = new List<TaskDto>();
-    private List<GanttTask> ganttTasks = new List<GanttTask>();
-    private IQueryable<GanttTask>? taskOutput;
-    private string ganttTasksJson = "";
-
-    private string excelTeamData = "";
     private List<DeveloperDto> developerDtos = new List<DeveloperDto>();
-    private List<DeveloperAvailability> teamData = new List<DeveloperAvailability>();
-    private IQueryable<DeveloperAvailability>? developerOutput;
-    private string teamDataJson = "";
-    private GanttChartAllocation GanttChartAllocation = new GanttChartAllocation();
+    private IQueryable<GanttTask>? taskOutput;    
+    private string excelTeamData = "";    
+    private IQueryable<DeveloperAvailability>? developerOutput;    
+    private bool preSortTasks = false;
 
     private void SwapChartMode()
-    {
-        if (chartMode == "Week")
-        {
-            chartMode = "Day";
-        }
-        else if(chartMode == "Day")
-        {
-            chartMode = "Week";
-        }
+    {       
         LoadGanttChartTasks();
         LoadGanttChartProjects();
     }
@@ -133,9 +131,7 @@
 
                     });
             }
-        }
-        ganttTasks = GanttService.LoadTasksFromDtos(taskDtos);
-        ganttTasksJson = JsonConvert.SerializeObject(ganttTasks, Formatting.Indented);
+        }        
     }
 
     private void ConvertToTeamData()
@@ -157,25 +153,23 @@
 
                     });
             }
-        }
-        teamData = GanttService.LoadDeveloperAvailabilityFromDtos(developerDtos);
-        teamDataJson = JsonConvert.SerializeObject(teamData, Formatting.Indented);
+        }        
     }   
 
     private void LoadGanttChartTasks()
     {
         ConvertToGanttTasks();
         ConvertToTeamData();      
-        GanttChartAllocation = GanttService.CalculateGanttChartAllocationFromDtos(taskDtos, developerDtos);
-        taskOutput = GanttChartAllocation.GanttTasks.AsQueryable();
-        developerOutput = GanttChartAllocation.DeveloperAvailability.AsQueryable();       
-        JS.InvokeVoidAsync("renderGanttTasks", JsonConvert.SerializeObject(taskOutput, Formatting.Indented), chartMode, "true");
+        var ganttChartAllocation = GanttService.CalculateGanttChartAllocationFromDtos(taskDtos, developerDtos, preSortTasks);
+        taskOutput = ganttChartAllocation.GanttTasks.AsQueryable();
+        developerOutput = ganttChartAllocation.DeveloperAvailability.AsQueryable();
+        JS.InvokeVoidAsync("renderGanttTasks", JsonConvert.SerializeObject(taskOutput, Formatting.Indented), chartMode.ToString(), "true");
     }
 
     private void LoadGanttChartProjects()
     {
-        var projectData = GanttService.AssignProjectsFromDtos(taskDtos, developerDtos);     
-        JS.InvokeVoidAsync("renderGanttProjects", JsonConvert.SerializeObject(projectData, Formatting.Indented), chartMode, "true");
+        var projectData = GanttService.AssignProjectsFromDtos(taskDtos, developerDtos, preSortTasks);
+        JS.InvokeVoidAsync("renderGanttProjects", JsonConvert.SerializeObject(projectData, Formatting.Indented), chartMode.ToString(), "true");
     }
     
 }

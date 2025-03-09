@@ -9,12 +9,19 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace SpreadsheetUtility.Library
 {     
+    public class ProjectGroup
+    {
+        public string ProjectGroupID { get; set; }
+        public List<Project> Projects { get; set; }
+    }
+
     public class GanttChartProcessor: IGanttChartProcessor
     {
         private List<Project> _projectList;
         private List<GanttTask> _ganttTaskList;
         private List<GanttTask> _ganttProjectList;
         private List<Developer> _developerList;
+        private int currentMaximumTaskID = 0;
 
         public GanttChartProcessor()
         {
@@ -31,13 +38,25 @@ namespace SpreadsheetUtility.Library
             _ganttTaskList = LoadTasksFromDtos(input.TaskDtos);
             _developerList = LoadTeamDataFromDtos(input.DeveloperDtos);
 
-            AssignTasks(input.PreSortTasks);
+            //group projects by ProjectGroup
+            var projectGroupList = _projectList.GroupBy(p => p.ProjectGroup)
+                .Select(g => new ProjectGroup
+                {
+                    ProjectGroupID = g.Key,
+                    Projects = g.ToList()
+                }).ToList();
 
+            foreach (var projectGroup in projectGroupList)
+            {
+                AssignTasks(projectGroup, input.PreSortTasks);
+            }
             //obtain ProjectList from aggregated tasks
             GenerateProjectListFromTasks();
 
             CalculateDeveloperSlack();
-            List<DeveloperAvailability> developerAvailability = MapDeveloperAvailability();
+
+            var developerAvailability = MapDeveloperAvailability();
+            
             return new GanttChartAllocation
             {
                 ProjectList = _projectList,
@@ -49,17 +68,17 @@ namespace SpreadsheetUtility.Library
         private void GenerateProjectListFromTasks()
         {
             _projectList = _ganttTaskList.GroupBy(t => t.ProjectName)
-                            .Select(g => new Project
-                            {
-                                ProjectID = g.First().ProjectID,
-                                ProjectName = g.Key,
-                                ProjectDependency = g.Select(t => t.ProjectDependency).Where(d => !string.IsNullOrEmpty(d)).FirstOrDefault() ?? string.Empty,
+                .Select(g => new Project
+                {
+                    ProjectID = g.First().ProjectID,
+                    ProjectName = g.Key,
+                    ProjectDependency = g.Select(t => t.ProjectDependency).Where(d => !string.IsNullOrEmpty(d)).FirstOrDefault() ?? string.Empty,
                                 
-                                StartDate = g.Min(t => t.StartDate),
-                                EndDate = g.Max(t => t.EndDate),
-                                TotalEstimatedEffortHours = g.Sum(t => t.EstimatedEffortHours),
-                                ProjectGroup = _projectList.Find(p => p.ProjectName == g.Key)?.ProjectGroup
-                            }).ToList();
+                    StartDate = g.Min(t => t.StartDate),
+                    EndDate = g.Max(t => t.EndDate),
+                    TotalEstimatedEffortHours = g.Sum(t => t.EstimatedEffortHours),
+                    ProjectGroup = _projectList.Find(p => p.ProjectName == g.Key)?.ProjectGroup
+                }).ToList();
         }
 
         private List<Project> LoadProjectsFromDtos(List<ProjectDto> projectDtos)
@@ -68,7 +87,8 @@ namespace SpreadsheetUtility.Library
             {
                 ProjectID = dto.ProjectID,
                 ProjectName = dto.ProjectName,
-                ProjectDependency = dto.ProjectDependency
+                ProjectDependency = dto.ProjectDependency,
+                ProjectGroup = dto.ProjectGroup
             }).ToList();
         }
 
@@ -385,6 +405,95 @@ namespace SpreadsheetUtility.Library
                 DateTime taskStart = assignedDeveloper.NextAvailableDate(startDate);
                 DateTime dependencyEndDate;
                 var taskStartFromDependency = DateTime.TryParse(_ganttTaskList.Find(t => t.Id == task.Dependencies)?.End ?? "", out dependencyEndDate) ? dependencyEndDate : taskStart;
+
+                taskStart = taskStart > taskStartFromDependency ? taskStart : taskStartFromDependency;
+
+                double requiredDays = Math.Ceiling(task.EstimatedEffortHours / assignedDeveloper.DailyWorkHours);
+                DateTime taskEnd = CalculateEndDate(taskStart, requiredDays, assignedDeveloper.VacationPeriods);
+
+                task.Start = taskStart.ToString("yyyy-MM-dd");
+                task.End = taskEnd.ToString("yyyy-MM-dd");
+                //TaskEndWeek is equal to the first day of the week of the task end date
+                task.TaskEndWeek = $"Week of {taskEnd.AddDays(-(int)(taskEnd.DayOfWeek - 1)).ToString("yyyy-MM-dd")}";
+
+                task.StartDate = taskStart;
+                task.EndDate = taskEnd;
+                task.AssignedDeveloper = assignedDeveloper.Name;
+                task.Name = $"{task.Name} ({assignedDeveloper.Name})";
+                task.CustomClass = task.Name.Contains("task") ? "gantt-task-blue" : "gantt-task-green";
+
+                assignedDeveloper.Tasks.Add(task);
+                assignedDeveloper.SetNextAvailableDate(taskEnd.AddDays(1));
+            }
+        }
+
+        private void AssignTasks(ProjectGroup projectGroupList, bool preSortTasks = false)
+        {
+            //filter all tasks that belong to the projects who are assigned to the projectGroupID
+            //var projectTasks = _ganttTaskList.Select(t => t.ProjectID).Intersect(projectGroupList.Projects.Select(p => p.ProjectID)).ToList();
+
+            ////filter all tasks whose ID is in the projectTasks list
+            //projectTasks = _ganttTaskList.Where(t => projectTasks.Contains(t.ProjectID)).Select(t => t.Id).ToList();
+
+            var projectTasks = _ganttTaskList.Where(t => projectGroupList.Projects.Select(p=>p.ProjectID).Contains(t.ProjectID)).ToList();
+
+            DateTime startDate = DateTime.Today;
+            while (IsWeekend(startDate))
+            {
+                startDate = startDate.AddDays(1);
+            }
+
+            if (preSortTasks)
+            {
+                List<GanttTask> sortedTasks = projectTasks;
+                // Change Dependencies from empty string to "0" for sorting
+                foreach (var task in projectTasks)
+                {
+                    if (string.IsNullOrEmpty(task.Dependencies))
+                    {
+                        task.Dependencies = "0";
+                    }
+                }
+
+                // Sort tasks by dependencies and estimated effort hours
+                sortedTasks = projectTasks.OrderBy(t => t.Dependencies).ThenByDescending(t => t.EstimatedEffortHours).ToList();
+
+                // Create a mapping of original task IDs to new task IDs
+                var idMapping = new Dictionary<string, string>();
+                for (int i = currentMaximumTaskID; i < sortedTasks.Count; i++)
+                {
+                    var originalTaskId = sortedTasks[i].Id;
+                    var newTaskId = (i + 1).ToString();
+                    idMapping[originalTaskId] = newTaskId;
+                    sortedTasks[i].Id = newTaskId;
+
+                    if (sortedTasks[i].Dependencies == "0")
+                    {
+                        sortedTasks[i].Dependencies = "";
+                    }
+                    currentMaximumTaskID = int.Parse(newTaskId);
+                }
+
+                // Update the dependencies to the new sorted order
+                foreach (var task in sortedTasks)
+                {
+                    if (!string.IsNullOrEmpty(task.Dependencies) && idMapping.ContainsKey(task.Dependencies))
+                    {
+                        task.Dependencies = idMapping[task.Dependencies];
+                    }
+                }
+
+                projectTasks = sortedTasks;
+            }
+
+            foreach (var task in projectTasks)
+            {
+                var assignedDeveloper = _developerList.OrderBy(d => d.NextAvailableDate(startDate)).FirstOrDefault();
+                if (assignedDeveloper == null) continue;
+
+                DateTime taskStart = assignedDeveloper.NextAvailableDate(startDate);
+                DateTime dependencyEndDate;
+                var taskStartFromDependency = DateTime.TryParse(projectTasks.Find(t => t.Id == task.Dependencies)?.End ?? "", out dependencyEndDate) ? dependencyEndDate : taskStart;
 
                 taskStart = taskStart > taskStartFromDependency ? taskStart : taskStartFromDependency;
 

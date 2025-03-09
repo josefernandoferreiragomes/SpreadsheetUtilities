@@ -5,11 +5,18 @@ using System.Linq;
 using System.Net.WebSockets;
 using ClosedXML.Excel;
 using Utilities.Interfaces;
+using Utilities.Services;
 
 namespace Utilities
 {
     public class SpreasheetGeneratorDoubleEntry : SpreasheetGeneratorBase
     {
+
+
+        public SpreasheetGeneratorDoubleEntry()
+            : base(new ExcelWorkbook(string.Empty), string.Empty, string.Empty, string.Empty)
+        {
+        }
 
         public SpreasheetGeneratorDoubleEntry(IExcelWorkbook workbook, string keyColumnID, string valuesColumnID, string outputFilePath, string? headersRow = null, string? worksheetIndex = null)
             : base(workbook, keyColumnID, valuesColumnID, outputFilePath, headersRow, worksheetIndex)

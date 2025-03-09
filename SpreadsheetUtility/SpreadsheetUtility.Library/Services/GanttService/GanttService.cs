@@ -35,9 +35,9 @@ namespace SpreadsheetUtility.Services
         {
             return _ganttChartProcessor.AssignProjectsFromDtos(taskDtos, developerDtos, preSortTasks);
         }
-        public GanttChartAllocation CalculateGanttChartAllocationFromDtos(List<TaskDto> taskDtos, List<DeveloperDto> developerDtos, bool preSortTasks = true)
+        public GanttChartAllocation CalculateGanttChartAllocationFromDtos(GanttChartAllocationInput input)
         {
-            return _ganttChartProcessor.CalculateGanttChartAllocationFromDtos(taskDtos, developerDtos, preSortTasks);
+            return _ganttChartProcessor.CalculateGanttChartAllocationFromDtos(input);
         }
     }
 }

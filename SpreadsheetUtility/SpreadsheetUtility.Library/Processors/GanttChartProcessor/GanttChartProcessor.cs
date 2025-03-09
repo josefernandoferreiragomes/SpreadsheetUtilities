@@ -54,10 +54,11 @@ namespace SpreadsheetUtility.Library
                                 ProjectID = g.First().ProjectID,
                                 ProjectName = g.Key,
                                 ProjectDependency = g.Select(t => t.ProjectDependency).Where(d => !string.IsNullOrEmpty(d)).FirstOrDefault() ?? string.Empty,
-            
+                                
                                 StartDate = g.Min(t => t.StartDate),
                                 EndDate = g.Max(t => t.EndDate),
-                                TotalEstimatedEffortHours = g.Sum(t => t.EstimatedEffortHours)
+                                TotalEstimatedEffortHours = g.Sum(t => t.EstimatedEffortHours),
+                                ProjectGroup = _projectList.Find(p => p.ProjectName == g.Key)?.ProjectGroup
                             }).ToList();
         }
 

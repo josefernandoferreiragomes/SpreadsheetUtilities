@@ -143,14 +143,14 @@
         foreach (var line in lines.Skip(1)) // Skip header
         {
             var columns = line.Split('\t');
-            if (columns.Length == 3)
+            if (columns.Length == 4)
             {
                 projectDtoList.Add(new ProjectDto()
                     {                        
                         ProjectID = columns[0].Trim(),
                         ProjectName = columns[1].Trim(),                        
-                        ProjectDependency = columns[2].Trim(),                        
-
+                        ProjectDependency = columns[2].Trim(),
+                        ProjectGroup = columns[3].Trim()
                     });
             }
         }        

@@ -73,6 +73,7 @@
         <PropertyColumn Property="@(p => p.EndDate.ToString("dd-MM-yyyy"))" Title="EndDate" Sortable="true" />
         <PropertyColumn Property="@(p => p.TotalEstimatedEffortHours)" Sortable="true" />              
         <PropertyColumn Property="@(p => p.ProjectDependency)" Sortable="true" />
+        <PropertyColumn Property="@(p => p.ProjectGroup)" Sortable="true" />
     </QuickGrid>
 </div>
 <div class="card-footer">
@@ -138,7 +139,7 @@
 
     private void ConvertToGanttProjects()
     {
-        var lines = excelTaskData.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+        var lines = excelProjectData.Split('\n', StringSplitOptions.RemoveEmptyEntries);
         projectDtoList = new List<ProjectDto>();
 
         foreach (var line in lines.Skip(1)) // Skip header

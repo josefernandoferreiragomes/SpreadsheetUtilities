@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace SpreadsheetUtility.Test
 {
-   
+
     public class GanttServiceTests
     {
         private readonly GanttService _ganttService;
@@ -23,7 +23,7 @@ namespace SpreadsheetUtility.Test
         public void CalculateGanttChartAllocationFromDtos_ShouldReturnCorrectAllocation_WhenValidDataProvided()
         {
             // Arrange
-            var taskDtos = new List<TaskDto>
+            var taskDtoList = new List<TaskDto>
             {
                 new TaskDto
                 {
@@ -38,7 +38,17 @@ namespace SpreadsheetUtility.Test
                 }
             };
 
-            var developerDtos = new List<DeveloperDto>
+            var projectDtoList = new List<ProjectDto>
+            {
+                new ProjectDto
+                {
+                    ProjectID = "P1",
+                    ProjectName = "Project 1",
+                    ProjectDependency = ""
+                }
+            };
+
+            var developerDtoList = new List<DeveloperDto>
             {
                 new DeveloperDto
                 {
@@ -51,8 +61,15 @@ namespace SpreadsheetUtility.Test
 
             bool preSortTasks = true;
 
+            var input = new GanttChartAllocationInput
+            {
+                TaskDtos = taskDtoList,
+                DeveloperDtos = developerDtoList,
+                ProjectDtos = projectDtoList,
+                PreSortTasks = preSortTasks
+            };
             // Act
-            var result = _ganttService.CalculateGanttChartAllocationFromDtos(taskDtos, developerDtos, preSortTasks);
+            var result = _ganttService.CalculateGanttChartAllocationFromDtos(input);
 
             // Assert
             Assert.NotNull(result);
@@ -73,8 +90,19 @@ namespace SpreadsheetUtility.Test
         public void CalculateGanttChartAllocationFromDtos_ShouldHandleEmptyTaskList()
         {
             // Arrange
-            var taskDtos = new List<TaskDto>();
-            var developerDtos = new List<DeveloperDto>
+            var taskDtoList = new List<TaskDto>();
+
+            var projectDtoList = new List<ProjectDto>
+            {
+                new ProjectDto
+                {
+                    ProjectID = "P1",
+                    ProjectName = "Project 1",
+                    ProjectDependency = ""
+                }
+            };
+
+            var developerDtoList = new List<DeveloperDto>
             {
                 new DeveloperDto
                 {
@@ -87,8 +115,16 @@ namespace SpreadsheetUtility.Test
 
             bool preSortTasks = true;
 
+            var input = new GanttChartAllocationInput
+            {
+                TaskDtos = taskDtoList,
+                DeveloperDtos = developerDtoList,
+                ProjectDtos = projectDtoList,
+                PreSortTasks = preSortTasks
+            };
+
             // Act
-            var result = _ganttService.CalculateGanttChartAllocationFromDtos(taskDtos, developerDtos, preSortTasks);
+            var result = _ganttService.CalculateGanttChartAllocationFromDtos(input);
 
             // Assert
             Assert.NotNull(result);
@@ -100,7 +136,7 @@ namespace SpreadsheetUtility.Test
         public void CalculateGanttChartAllocationFromDtos_ShouldHandleEmptyDeveloperList()
         {
             // Arrange
-            var taskDtos = new List<TaskDto>
+            var taskDtoList = new List<TaskDto>
             {
                 new TaskDto
                 {
@@ -115,12 +151,31 @@ namespace SpreadsheetUtility.Test
                 }
             };
 
-            var developerDtos = new List<DeveloperDto>();
+            var projectDtoList = new List<ProjectDto>
+            {
+                new ProjectDto
+                {
+                    ProjectID = "P1",
+                    ProjectName = "Project 1",
+                    ProjectDependency = ""                    
+                }
+            };
+
+            var developerDtoList = new List<DeveloperDto>();
 
             bool preSortTasks = true;
 
+            var input = new GanttChartAllocationInput
+            {
+                TaskDtos = taskDtoList,
+                DeveloperDtos = developerDtoList,
+                ProjectDtos = projectDtoList,
+                PreSortTasks = preSortTasks
+            };
+
+
             // Act
-            var result = _ganttService.CalculateGanttChartAllocationFromDtos(taskDtos, developerDtos, preSortTasks);
+            var result = _ganttService.CalculateGanttChartAllocationFromDtos(input);
 
             // Assert
             Assert.NotNull(result);

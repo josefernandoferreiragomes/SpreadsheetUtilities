@@ -14,9 +14,16 @@ namespace Utilities.Services
         private Lazy<IXLWorkbook> _workbook;
 
         public ExcelWorkbook(string filePath)
-        {            
-            _filePath = filePath;            
-            _workbook = new Lazy<IXLWorkbook>(() => new XLWorkbook(_filePath));
+        {
+            try
+            {
+                _filePath = filePath;
+                _workbook = new Lazy<IXLWorkbook>(() => new XLWorkbook(_filePath));
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
         }
 
         public ExcelWorkbook(string filePath, Lazy<IXLWorkbook> workbook)

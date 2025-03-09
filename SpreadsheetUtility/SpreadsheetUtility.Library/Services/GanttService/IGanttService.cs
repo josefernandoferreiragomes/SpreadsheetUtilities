@@ -13,6 +13,6 @@ namespace SpreadsheetUtility.Library
         List<GanttTask> LoadTasksFromDtos(List<TaskDto> taskDtos);
         List<DeveloperAvailability> LoadDeveloperAvailabilityFromDtos(List<DeveloperDto> taskDtos);
         List<GanttTask> AssignProjectsFromDtos(List<TaskDto> taskDtos, List<DeveloperDto> developerDtos, bool preSortTasks = false);
-        GanttChartAllocation CalculateGanttChartAllocationFromDtos(List<TaskDto> taskDtos, List<DeveloperDto> developerDtos, bool preSortTasks = false);
+        GanttChartAllocation CalculateGanttChartAllocationFromDtos(GanttChartAllocationInput input);
     }
 }

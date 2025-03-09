@@ -35,6 +35,8 @@ namespace SpreadsheetUtility.Library
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
 
+        public string? InternalID { get; set; }
+
         public double EstimatedEffortHours { get; set; }
         public string? ProjectName { get; set; }
         public string? TaskName { get; set; }

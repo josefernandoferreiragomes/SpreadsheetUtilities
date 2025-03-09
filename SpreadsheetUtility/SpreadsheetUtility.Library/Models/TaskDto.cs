@@ -16,6 +16,7 @@ namespace SpreadsheetUtility.Library
         public string? Dependencies { get; set; }
         public string? ProjectDependency { get; set; }
         public string? Progress { get; set; }
+        public string? InternalID { get; set; }
     }
 
 }

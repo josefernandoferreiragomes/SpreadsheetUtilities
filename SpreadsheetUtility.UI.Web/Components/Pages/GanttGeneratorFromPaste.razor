@@ -13,13 +13,15 @@
 <PageTitle>Gantt Generator Paste</PageTitle>
 
 <h3>Gantt Generator Paste</h3>
+<label>Projects</label>
 <div>
     <textarea @bind="excelProjectData" placeholder="Paste your project Excel data here" rows="10" cols="100"></textarea>
 </div>
+<label>Tasks</label>
 <div>
     <textarea @bind="excelTaskData" placeholder="Paste your task Excel data here" rows="10" cols="100"></textarea>
 </div>
-<p></p>
+<label>Team</label>
 <div>
     <textarea @bind="excelTeamData" placeholder="Paste your team Excel data here" rows="10" cols="100"></textarea>
 </div>
@@ -41,7 +43,6 @@
         </div>
     </InputRadioGroup>
 </div>
-<p></p>
 <div>
     <label>Pre Sort Tasks</label>
     <InputRadioGroup @bind-Value="preSortTasks">
@@ -59,12 +60,10 @@
 <p></p>
 <p>Tasks Gantt Chart:</p>
 <div id="gantt-chart-tasks"></div>
-
 <p></p>
 <p>Projects Gantt Chart:</p>
 <div id="gantt-chart-projects"></div>
 <p></p>
-
 <div>Project data</div>
 <div>
     <QuickGrid Items="@projectListOutput">
@@ -75,6 +74,9 @@
         <PropertyColumn Property="@(p => p.TotalEstimatedEffortHours)" Sortable="true" />              
         <PropertyColumn Property="@(p => p.ProjectDependency)" Sortable="true" />
     </QuickGrid>
+</div>
+<div class="card-footer">
+    Total Estimated Effort Hours: @projectListOutput?.Sum(p => p.TotalEstimatedEffortHours)
 </div>
 <p></p>
 <div>Task data</div>
@@ -90,7 +92,7 @@
         <PropertyColumn Property="@(p => p.InternalID)" Sortable="true" />
     </QuickGrid>
 </div>
-<div style="margin-top: 10px; font-weight: bold;">
+<div class="card-footer">
     Total Estimated Effort Hours: @taskListOutput?.Sum(p => p.EstimatedEffortHours)
 </div>
 <p></p>
@@ -105,11 +107,10 @@
         <PropertyColumn Property="@(p => p.VacationPeriodsSerialized)" Sortable="true" />
     </QuickGrid>
 </div>
-<div style="margin-top: 10px; font-weight: bold;">
+<div class="card-footer">
     <div>Total Allocated Hours: @developerListOutput?.Sum(p => p.AllocatedHours)</div>
     <div>Total Slack Hours: @developerListOutput?.Sum(p => p.SlackHours)</div>    
 </div>
-<p></p>
 <p></p>
 @code {
     enum ChartMode

@@ -73,20 +73,24 @@
         <PropertyColumn Property="@(p => p.ProjectDependency)" Sortable="true" />
     </QuickGrid>
 </div>
-
+<p></p>
 <div>Task data</div>
 <div>
     <QuickGrid Items="@taskListOutput">
         <PropertyColumn Property="@(p => p.Id)" Sortable="true" />
         <PropertyColumn Property="@(p => p.Name)" Sortable="true" />
-        <PropertyColumn Property="@(p => p.StartDate.ToString("dd-MM-yyyy"))" Sortable="true" />
-        <PropertyColumn Property="@(p => p.EndDate.ToString("dd-MM-yyyy"))" Sortable="true" />
+        <PropertyColumn Property="@(p => p.StartDate.ToString("dd-MM-yyyy"))" Title="StartDate" Sortable="true" />
+        <PropertyColumn Property="@(p => p.EndDate.ToString("dd-MM-yyyy"))" Title="EndDate" Sortable="true" />
         <PropertyColumn Property="@(p => p.TaskEndWeek)" Sortable="true" />
         <PropertyColumn Property="@(p => p.EstimatedEffortHours)" Sortable="true" />
         <PropertyColumn Property="@(p => p.Dependencies)" Sortable="true" />
+        <PropertyColumn Property="@(p => p.InternalID)" Sortable="true" />
     </QuickGrid>
 </div>
-
+<div style="margin-top: 10px; font-weight: bold;">
+    Total Estimated Effort Hours: @taskListOutput?.Sum(p => p.EstimatedEffortHours)
+</div>
+<p></p>
 <div>Developer data</div>
 <div>
     <QuickGrid Items="@developerListOutput">
@@ -94,11 +98,16 @@
         <PropertyColumn Property="@(p => p.DailyWorkHours)" Sortable="true" />
         <PropertyColumn Property="@(p => p.AllocatedHours)" Sortable="true" />
         <PropertyColumn Property="@(p => p.SlackHours)" Sortable="true" />
-        <PropertyColumn Property="@(p => p.NextAvailableDateForTasks.ToString("dd-MM-yyyy"))" Sortable="true" />        
+        <PropertyColumn Property="@(p => p.NextAvailableDateForTasks.ToString("dd-MM-yyyy"))" Title="NextAvailableDateForTasks" Sortable="true" />
         <PropertyColumn Property="@(p => p.VacationPeriodsSerialized)" Sortable="true" />
     </QuickGrid>
 </div>
-
+<div style="margin-top: 10px; font-weight: bold;">
+    <div>Total Allocated Hours: @developerListOutput?.Sum(p => p.AllocatedHours)</div>
+    <div>Total Slack Hours: @developerListOutput?.Sum(p => p.SlackHours)</div>    
+</div>
+<p></p>
+<p></p>
 @code {
     enum ChartMode
     {
@@ -116,7 +125,7 @@
     private string excelTeamData = "";    
     private IQueryable<DeveloperAvailability>? developerListOutput;    
     private bool preSortTasks = true;
-
+    
     private void SwapChartMode()
     {       
         LoadGanttChartTasks();
@@ -131,7 +140,7 @@
         foreach (var line in lines.Skip(1)) // Skip header
         {
             var columns = line.Split('\t');
-            if (columns.Length == 8)
+            if (columns.Length == 3)
             {
                 projectDtoList.Add(new ProjectDto()
                     {                        
@@ -152,7 +161,7 @@
         foreach (var line in lines.Skip(1)) // Skip header
         {
             var columns = line.Split('\t');
-            if (columns.Length == 8)
+            if (columns.Length == 9)
             {
                 taskDtoList.Add(new TaskDto()
                     {
@@ -163,7 +172,8 @@
                         EstimatedEffortHours = double.TryParse(columns[4].Trim(), out var effort) ? effort : 0,
                         Dependencies = columns[5].Trim(),
                         ProjectDependency = columns[6].Trim(),
-                        Progress = columns[7].Trim()
+                        Progress = columns[7].Trim(),
+                        InternalID = columns[8].Trim()
 
                     });
             }
@@ -207,7 +217,8 @@
         var ganttChartAllocation = GanttService.CalculateGanttChartAllocationFromDtos(input);
         taskListOutput = ganttChartAllocation.GanttTasks.AsQueryable();
         developerListOutput = ganttChartAllocation.DeveloperAvailability.AsQueryable();
-        projectListOutput = ganttChartAllocation.ProjectList.AsQueryable();
+        projectListOutput = ganttChartAllocation.ProjectList.AsQueryable();       
+
         JS.InvokeVoidAsync("renderGanttTasks", JsonConvert.SerializeObject(taskListOutput, Formatting.Indented), chartMode.ToString(), "true");
     }
 

@@ -37,6 +37,7 @@ namespace SpreadsheetUtility.Library
             List<DeveloperAvailability> developerAvailability = MapDeveloperAvailability();
             return new GanttChartAllocation
             {
+                ProjectList = _projectList,
                 GanttTasks = _ganttTaskList,
                 DeveloperAvailability = developerAvailability
             };
@@ -95,8 +96,10 @@ namespace SpreadsheetUtility.Library
                 EstimatedEffortHours = dto.EstimatedEffortHours,
                 Dependencies = dto.Dependencies ?? "",
                 Progress = int.TryParse(dto.Progress, out var p) ? p : 0,
+                ProjectID = dto.ProjectID ?? "",
                 ProjectName = dto.ProjectName ?? "",
-                TaskName = dto.TaskName ?? ""
+                TaskName = dto.TaskName ?? "",
+                InternalID = dto.InternalID ?? ""
             }).ToList();
         }
         private List<Developer> LoadTeamDataFromDtos(List<DeveloperDto> developerDtos)
@@ -128,7 +131,8 @@ namespace SpreadsheetUtility.Library
                 Tasks = d.Tasks,
                 AllocatedHours = d.AllocatedHours,
                 SlackHours = d.SlackHours,
-                VacationPeriodsSerialized = d.VacationPeriodsSerialized
+                VacationPeriodsSerialized = d.VacationPeriodsSerialized,
+                NextAvailableDateForTasks = d.NextAvailableDateForTasks
             }).ToList();
         }
         private List<GanttTask> ProcessDataTasksFromDtos(List<TaskDto> taskDtos, List<DeveloperDto> developerDtos, bool preSortTasks = false)
@@ -354,41 +358,35 @@ namespace SpreadsheetUtility.Library
                 _ganttTaskList = sortedTasks;
             }
 
-            // Group tasks by ProjectID and sort by ProjectID in descending order
-            var groupedTasks = _ganttTaskList.GroupBy(t => t.ProjectID)
-                                             .OrderByDescending(g => g.Key)
-                                             .ToList();
-
-            foreach (var group in groupedTasks)
+            foreach (var task in _ganttTaskList)
             {
-                foreach (var task in group)
-                {
-                    var assignedDeveloper = _developerList.OrderBy(d => d.NextAvailableDate(startDate)).FirstOrDefault();
-                    if (assignedDeveloper == null) continue;
+                var assignedDeveloper = _developerList.OrderBy(d => d.NextAvailableDate(startDate)).FirstOrDefault();
+                if (assignedDeveloper == null) continue;
 
-                    DateTime taskStart = assignedDeveloper.NextAvailableDate(startDate);
-                    DateTime dependencyEndDate;
-                    taskStart = DateTime.TryParse(_ganttTaskList.Find(t => t.Id == task.Dependencies)?.End ?? "", out dependencyEndDate) ? dependencyEndDate : taskStart;
+                DateTime taskStart = assignedDeveloper.NextAvailableDate(startDate);
+                DateTime dependencyEndDate;
+                var taskStartFromDependency = DateTime.TryParse(_ganttTaskList.Find(t => t.Id == task.Dependencies)?.End ?? "", out dependencyEndDate) ? dependencyEndDate : taskStart;
 
-                    double requiredDays = Math.Ceiling(task.EstimatedEffortHours / assignedDeveloper.DailyWorkHours);
-                    DateTime taskEnd = CalculateEndDate(taskStart, requiredDays, assignedDeveloper.VacationPeriods);
+                taskStart = taskStart > taskStartFromDependency ? taskStart : taskStartFromDependency;
 
-                    task.Start = taskStart.ToString("yyyy-MM-dd");
-                    task.End = taskEnd.ToString("yyyy-MM-dd");
-                    //TaskEndWeek is equal to the first day of the week of the task end date
-                    task.TaskEndWeek = $"Week of {taskEnd.AddDays(-(int)(taskEnd.DayOfWeek - 1)).ToString("yyyy-MM-dd")}";
+                double requiredDays = Math.Ceiling(task.EstimatedEffortHours / assignedDeveloper.DailyWorkHours);
+                DateTime taskEnd = CalculateEndDate(taskStart, requiredDays, assignedDeveloper.VacationPeriods);
 
-                    task.StartDate = taskStart;
-                    task.EndDate = taskEnd;
-                    task.AssignedDeveloper = assignedDeveloper.Name;
-                    task.Name = $"{task.Name} ({assignedDeveloper.Name})";
-                    task.CustomClass = task.Name.Contains("task") ? "gantt-task-blue" : "gantt-task-green";
+                task.Start = taskStart.ToString("yyyy-MM-dd");
+                task.End = taskEnd.ToString("yyyy-MM-dd");
+                //TaskEndWeek is equal to the first day of the week of the task end date
+                task.TaskEndWeek = $"Week of {taskEnd.AddDays(-(int)(taskEnd.DayOfWeek - 1)).ToString("yyyy-MM-dd")}";
 
-                    assignedDeveloper.Tasks.Add(task);
-                    assignedDeveloper.SetNextAvailableDate(taskEnd.AddDays(1));
-                }
+                task.StartDate = taskStart;
+                task.EndDate = taskEnd;
+                task.AssignedDeveloper = assignedDeveloper.Name;
+                task.Name = $"{task.Name} ({assignedDeveloper.Name})";
+                task.CustomClass = task.Name.Contains("task") ? "gantt-task-blue" : "gantt-task-green";
+
+                assignedDeveloper.Tasks.Add(task);
+                assignedDeveloper.SetNextAvailableDate(taskEnd.AddDays(1));                
             }
-        }
+        }        
 
         private DateTime CalculateEndDate(DateTime start, double workDays, List<(DateTime Start, DateTime End)?>? vacations)
         {

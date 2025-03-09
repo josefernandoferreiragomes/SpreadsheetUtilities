@@ -69,7 +69,10 @@
 <div>
     <QuickGrid Items="@projectListOutput">
         <PropertyColumn Property="@(p => p.ProjectID)" Sortable="true" />
-        <PropertyColumn Property="@(p => p.ProjectName)" Sortable="true" />        
+        <PropertyColumn Property="@(p => p.ProjectName)" Sortable="true" />      
+        <PropertyColumn Property="@(p => p.StartDate.ToString("dd-MM-yyyy"))" Title="StartDate" Sortable="true" />
+        <PropertyColumn Property="@(p => p.EndDate.ToString("dd-MM-yyyy"))" Title="EndDate" Sortable="true" />
+        <PropertyColumn Property="@(p => p.TotalEstimatedEffortHours)" Sortable="true" />              
         <PropertyColumn Property="@(p => p.ProjectDependency)" Sortable="true" />
     </QuickGrid>
 </div>

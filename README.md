@@ -175,3 +175,5 @@ dotnet add package Microsoft.AspNetCore.Components.QuickGrid
 
 - Add project pre sorting
 - Add task end week
+
+- Add project groupping, by projects allowed to be assigned togehter, in batches

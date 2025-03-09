@@ -33,6 +33,9 @@ namespace SpreadsheetUtility.Library
 
             AssignTasks(input.PreSortTasks);
 
+            //obtain ProjectList from aggregated tasks
+            GenerateProjectListFromTasks();
+
             CalculateDeveloperSlack();
             List<DeveloperAvailability> developerAvailability = MapDeveloperAvailability();
             return new GanttChartAllocation
@@ -41,6 +44,21 @@ namespace SpreadsheetUtility.Library
                 GanttTasks = _ganttTaskList,
                 DeveloperAvailability = developerAvailability
             };
+        }
+
+        private void GenerateProjectListFromTasks()
+        {
+            _projectList = _ganttTaskList.GroupBy(t => t.ProjectName)
+                            .Select(g => new Project
+                            {
+                                ProjectID = g.First().ProjectID,
+                                ProjectName = g.Key,
+                                ProjectDependency = g.Select(t => t.ProjectDependency).Where(d => !string.IsNullOrEmpty(d)).FirstOrDefault() ?? string.Empty,
+            
+                                StartDate = g.Min(t => t.StartDate),
+                                EndDate = g.Max(t => t.EndDate),
+                                TotalEstimatedEffortHours = g.Sum(t => t.EstimatedEffortHours)
+                            }).ToList();
         }
 
         private List<Project> LoadProjectsFromDtos(List<ProjectDto> projectDtos)

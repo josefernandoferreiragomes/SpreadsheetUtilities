@@ -32,8 +32,7 @@ namespace SpreadsheetUtility.Test
                     ProjectName = "Project 1",
                     TaskName = "Task 1",
                     EstimatedEffortHours = 10,
-                    Dependencies = "",
-                    ProjectDependency = "",
+                    Dependencies = "",                    
                     Progress = "0"
                 }
             };
@@ -43,8 +42,7 @@ namespace SpreadsheetUtility.Test
                 new ProjectDto
                 {
                     ProjectID = "P1",
-                    ProjectName = "Project 1",
-                    ProjectDependency = ""
+                    ProjectName = "Project 1",                    
                 }
             };
 
@@ -97,8 +95,7 @@ namespace SpreadsheetUtility.Test
                 new ProjectDto
                 {
                     ProjectID = "P1",
-                    ProjectName = "Project 1",
-                    ProjectDependency = ""
+                    ProjectName = "Project 1",                    
                 }
             };
 
@@ -145,8 +142,7 @@ namespace SpreadsheetUtility.Test
                     ProjectName = "Project 1",
                     TaskName = "Task 1",
                     EstimatedEffortHours = 10,
-                    Dependencies = "",
-                    ProjectDependency = "",
+                    Dependencies = "",                    
                     Progress = "0"
                 }
             };
@@ -156,8 +152,7 @@ namespace SpreadsheetUtility.Test
                 new ProjectDto
                 {
                     ProjectID = "P1",
-                    ProjectName = "Project 1",
-                    ProjectDependency = ""                    
+                    ProjectName = "Project 1",                    
                 }
             };
 

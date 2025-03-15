@@ -10,8 +10,7 @@ namespace SpreadsheetUtility.Library
     public class Project
     {
         public string? ProjectID { get; set; }
-        public string? ProjectName { get; set; }
-        public string? ProjectDependency { get; set; }
+        public string? ProjectName { get; set; }        
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public List<GanttTask>? Tasks { get; set; }

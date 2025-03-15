@@ -21,6 +21,8 @@ namespace SpreadsheetUtility.Library
         private List<GanttTask> _ganttTaskList;
         private List<GanttTask> _ganttProjectList;
         private List<Developer> _developerList;
+        private List<Holiday> _holidayList;
+        private List<Holiday> _projectHolidayList;
         private int currentMaximumTaskID = 0;
 
         public GanttChartProcessor()
@@ -29,6 +31,8 @@ namespace SpreadsheetUtility.Library
             _ganttTaskList = new List<GanttTask>();
             _ganttProjectList = new List<GanttTask>();
             _developerList = new List<Developer>();
+            _projectHolidayList = new List<Holiday>();
+            _holidayList = ProcessHolidays();
         }        
 
         #region dto processing
@@ -53,7 +57,7 @@ namespace SpreadsheetUtility.Library
             //obtain ProjectList from aggregated tasks
             GenerateProjectListFromTasks();
 
-            CalculateDeveloperSlack();
+            CalculateDeveloperHours();
 
             var developerAvailability = MapDeveloperAvailability();
             
@@ -61,7 +65,8 @@ namespace SpreadsheetUtility.Library
             {
                 ProjectList = _projectList,
                 GanttTasks = _ganttTaskList,
-                DeveloperAvailability = developerAvailability
+                DeveloperAvailability = developerAvailability,
+                HolidayList = _projectHolidayList
             };
         }
 
@@ -179,7 +184,7 @@ namespace SpreadsheetUtility.Library
             _ganttTaskList = LoadTasksFromDtos(taskDtos);
             _developerList = LoadTeamDataFromDtos(developerDtos);
             AssignTasks(preSortTasks);
-            CalculateDeveloperSlack();
+            CalculateDeveloperHours();
             Console.WriteLine(JsonConvert.SerializeObject(_ganttTaskList,
                new JsonSerializerSettings
                {
@@ -315,7 +320,7 @@ namespace SpreadsheetUtility.Library
             }
             return developers;
         }
-        private void CalculateDeveloperSlack()
+        private void CalculateDeveloperHours()
         {
             if(_ganttTaskList.Count == 0 || _developerList.Count == 0) return;
             DateTime minDate = _ganttTaskList.Min(t => t.StartDate);
@@ -328,7 +333,8 @@ namespace SpreadsheetUtility.Library
                 {
                     var calculatedIntervalDays = CalculateIntervalDays(minDate, maxDate, developer?.VacationPeriods);
                     developer.AllocatedHours = developer.Tasks?.Sum(t => t.EstimatedEffortHours) ?? 0;
-                    var slackHours = (calculatedIntervalDays * developer.DailyWorkHours) - developer.AllocatedHours;
+                    developer.TotalHours = calculatedIntervalDays * developer.DailyWorkHours;
+                    var slackHours = developer.TotalHours - developer.AllocatedHours;
                     developer.SlackHours = slackHours >= 0 ? slackHours : 0;
                 }
             }
@@ -349,7 +355,7 @@ namespace SpreadsheetUtility.Library
         private void AssignTasks(bool preSortTasks = false)
         {
             DateTime startDate = DateTime.Today;
-            while (IsWeekend(startDate))
+            while (IsWeekendOrHoliday(startDate))
             {
                 startDate = startDate.AddDays(1);
             }
@@ -438,7 +444,7 @@ namespace SpreadsheetUtility.Library
             var projectTasks = _ganttTaskList.Where(t => projectGroupList.Projects.Select(p=>p.ProjectID).Contains(t.ProjectID)).ToList();
 
             DateTime startDate = DateTime.Today;
-            while (IsWeekend(startDate))
+            while (IsWeekendOrHoliday(startDate))
             {
                 startDate = startDate.AddDays(1);
             }
@@ -521,7 +527,7 @@ namespace SpreadsheetUtility.Library
             DateTime end = start;
             while (workDays > 0)
             {
-                if (!IsVacationDay(end, vacations) && !IsWeekend(end)) workDays--;
+                if (!IsVacationDay(end, vacations) && !IsWeekendOrHoliday(end)) workDays--;
                 end = end.AddDays(1);
             }
             return end.AddDays(-1);
@@ -533,7 +539,7 @@ namespace SpreadsheetUtility.Library
             var startDate = start;
             while (startDate < end)
             {
-                if (!IsVacationDay(startDate, vacations) && !IsWeekend(startDate))
+                if (!IsVacationDay(startDate, vacations) && !IsWeekendOrHoliday(startDate))
                 {
                    days++;
                 }
@@ -547,12 +553,45 @@ namespace SpreadsheetUtility.Library
             return vacations?.Any(v => v.HasValue && date >= v.Value.Start && date <= v.Value.End) ?? false;
         }
 
+        private bool IsWeekendOrHoliday(DateTime date)
+        {
+            return IsWeekend(date) || IsHoliday(date);
+        }
         private bool IsWeekend(DateTime date)
         {
             return date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday;
         }
+        private bool IsHoliday(DateTime date)
+        {
+            bool isHoliday = false;
+            isHoliday = _holidayList.Select(h=>h.Date).Contains(date);
+            if(isHoliday)
+            {
+                if(!_projectHolidayList.Select(h => h.Date).Contains(date))
+                    _projectHolidayList.Add(_holidayList.Find(h => h.Date == date) ?? new Holiday());                
+            }
+            return isHoliday;
+        }
 
-        
+        private List<Holiday> ProcessHolidays()
+        {
+            var holidayList = new List<Holiday>();
+            var filePath = Path.Combine(AppContext.BaseDirectory, "Holidays", "2025HolidaysPT.json");
+
+            try
+            {
+                var jsonString = File.ReadAllText(filePath);
+                holidayList = JsonConvert.DeserializeObject<List<Holiday>>(jsonString) ?? new List<Holiday>();
+            }
+            catch (Exception ex)
+            {
+                // Handle exceptions (e.g., file not found, JSON parsing errors)
+                Console.WriteLine($"An error occurred processing holidays: {ex.Message}");
+            }
+
+            return holidayList;
+        }
+
         #endregion
     }
 

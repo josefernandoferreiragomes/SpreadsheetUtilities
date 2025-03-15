@@ -47,10 +47,10 @@
     <label>Pre Sort Tasks</label>
     <InputRadioGroup @bind-Value="preSortTasks">
         <div>
-            <InputRadio Value="true" /> <label>Pre Sort Tasks</label>
+            <InputRadio Value="false" /> <label>Pre Sort Tasks</label>
         </div>
         <div>
-            <InputRadio Value="false" /> <label>Do not Pre Sort Tasks</label>
+            <InputRadio Value="true" /> <label>Do not Pre Sort Tasks</label>
         </div>
     </InputRadioGroup>
 </div>
@@ -104,6 +104,7 @@
         <PropertyColumn Property="@(p => p.DailyWorkHours)" Sortable="true" />
         <PropertyColumn Property="@(p => p.AllocatedHours)" Sortable="true" />
         <PropertyColumn Property="@(p => p.SlackHours)" Sortable="true" />
+        <PropertyColumn Property="@(p => p.TotalHours)" Sortable="true" />
         <PropertyColumn Property="@(p => p.NextAvailableDateForTasks.ToString("dd-MM-yyyy"))" Title="NextAvailableDateForTasks" Sortable="true" />
         <PropertyColumn Property="@(p => p.VacationPeriodsSerialized)" Sortable="true" />
     </QuickGrid>
@@ -111,6 +112,17 @@
 <div class="card-footer">
     <div>Total Allocated Hours: @developerListOutput?.Sum(p => p.AllocatedHours)</div>
     <div>Total Slack Hours: @developerListOutput?.Sum(p => p.SlackHours)</div>    
+    <div>Total Hours Within projects: @developerListOutput?.Sum(p => p.TotalHours)</div>        
+</div>
+<div>Holidays in projects</div>
+<div>
+    <QuickGrid Items="@projectHolidayList">
+        <PropertyColumn Property="@(p => p.Date)" Sortable="true" />
+        <PropertyColumn Property="@(p => p.HolidayDescription)" Sortable="true" />
+    </QuickGrid>
+</div>
+<div class="card-footer">  
+    <div>Total Holidays in Projects: @projectHolidayList?.Count()</div>
 </div>
 <p></p>
 @code {
@@ -125,6 +137,7 @@
     private List<ProjectDto> projectDtoList = new List<ProjectDto>();
     private List<TaskDto> taskDtoList = new List<TaskDto>();
     private List<DeveloperDto> developerDtoList = new List<DeveloperDto>();
+    private IQueryable<Holiday>? projectHolidayList;
     private IQueryable<Project>? projectListOutput;    
     private IQueryable<GanttTask>? taskListOutput;    
     private string excelTeamData = "";    
@@ -223,7 +236,7 @@
         taskListOutput = ganttChartAllocation.GanttTasks.AsQueryable();
         developerListOutput = ganttChartAllocation.DeveloperAvailability.AsQueryable();
         projectListOutput = ganttChartAllocation.ProjectList.AsQueryable();       
-
+        projectHolidayList = ganttChartAllocation.HolidayList.AsQueryable();
         JS.InvokeVoidAsync("renderGanttTasks", JsonConvert.SerializeObject(taskListOutput, Formatting.Indented), chartMode.ToString(), "true");
     }
 

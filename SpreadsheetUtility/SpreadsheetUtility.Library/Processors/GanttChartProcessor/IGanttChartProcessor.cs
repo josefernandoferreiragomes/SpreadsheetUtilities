@@ -11,8 +11,7 @@ namespace SpreadsheetUtility.Library
         string ProcessExcelDataTasksFromFile(string taskFilePath, string teamFilePath, bool preSortTasks = false);
         string ProcessExcelDataProjectsFromFile(string taskFilePath, string teamFilePath, bool preSortTasks = false);
         List<GanttTask> LoadTasksFromDtos(List<TaskDto> taskDtos);
-        List<DeveloperAvailability> LoadDeveloperAvailabilityFromDtos(List<DeveloperDto> taskDtos);
-        List<GanttTask> AssignProjectsFromDtos(List<TaskDto> taskDtos, List<DeveloperDto> developerDtos, bool preSortTasks = false);
+        List<DeveloperAvailability> LoadDeveloperAvailabilityFromDtos(List<DeveloperDto> taskDtos);        
         GanttChartAllocation CalculateGanttChartAllocationFromDtos(GanttChartAllocationInput input);
     }
 }

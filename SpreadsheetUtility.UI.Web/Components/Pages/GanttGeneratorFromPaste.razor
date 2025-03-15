@@ -17,10 +17,12 @@
 <div>
     <textarea @bind="excelProjectData" placeholder="Paste your project Excel data here" rows="10" cols="100"></textarea>
 </div>
+<p></p>
 <label>Tasks</label>
 <div>
     <textarea @bind="excelTaskData" placeholder="Paste your task Excel data here" rows="10" cols="100"></textarea>
 </div>
+<p></p>
 <label>Team</label>
 <div>
     <textarea @bind="excelTeamData" placeholder="Paste your team Excel data here" rows="10" cols="100"></textarea>
@@ -28,9 +30,6 @@
 <p></p>
 <div>
     <button @onclick="LoadGanttChartTasks">Load Tasks Gantt Chart</button>
-</div>
-<div>
-    <button @onclick="LoadGanttChartProjects">Load Projects Gantt Chart</button>
 </div>
 <div>
     <h4>Chart Mode</h4>    
@@ -82,7 +81,7 @@
 <p></p>
 <div>Task data</div>
 <div>
-    <QuickGrid Items="@taskListOutput">
+    <QuickGrid Items="@ganttTaskListOutput">
         <PropertyColumn Property="@(p => p.Id)" Sortable="true" />
         <PropertyColumn Property="@(p => p.Name)" Sortable="true" />
         <PropertyColumn Property="@(p => p.StartDate.ToString("dd-MM-yyyy"))" Title="StartDate" Sortable="true" />
@@ -94,7 +93,7 @@
     </QuickGrid>
 </div>
 <div class="card-footer">
-    Total Estimated Effort Hours: @taskListOutput?.Sum(p => p.EstimatedEffortHours)
+    Total Estimated Effort Hours: @ganttTaskListOutput?.Sum(p => p.EstimatedEffortHours)
 </div>
 <p></p>
 <div>Developer data</div>
@@ -114,6 +113,7 @@
     <div>Total Slack Hours: @developerListOutput?.Sum(p => p.SlackHours)</div>    
     <div>Total Hours Within projects: @developerListOutput?.Sum(p => p.TotalHours)</div>        
 </div>
+<p></p>
 <div>Holidays in projects</div>
 <div>
     <QuickGrid Items="@projectHolidayList">
@@ -139,15 +139,15 @@
     private List<DeveloperDto> developerDtoList = new List<DeveloperDto>();
     private IQueryable<Holiday>? projectHolidayList;
     private IQueryable<Project>? projectListOutput;    
-    private IQueryable<GanttTask>? taskListOutput;    
+    private IQueryable<GanttTask>? ganttTaskListOutput;    
+    private IQueryable<GanttTask>? ganttProjectListOutput;    
     private string excelTeamData = "";    
     private IQueryable<DeveloperAvailability>? developerListOutput;    
     private bool preSortTasks = true;
     
     private void SwapChartMode()
     {       
-        LoadGanttChartTasks();
-        LoadGanttChartProjects();
+        LoadGanttChartTasks();        
     }
 
     private void ConvertToGanttProjects()
@@ -233,17 +233,13 @@
             PreSortTasks = preSortTasks
         };
         var ganttChartAllocation = GanttService.CalculateGanttChartAllocationFromDtos(input);
-        taskListOutput = ganttChartAllocation.GanttTasks.AsQueryable();
+        ganttTaskListOutput = ganttChartAllocation.GanttTasks.AsQueryable();
         developerListOutput = ganttChartAllocation.DeveloperAvailability.AsQueryable();
         projectListOutput = ganttChartAllocation.ProjectList.AsQueryable();       
         projectHolidayList = ganttChartAllocation.HolidayList.AsQueryable();
-        JS.InvokeVoidAsync("renderGanttTasks", JsonConvert.SerializeObject(taskListOutput, Formatting.Indented), chartMode.ToString(), "true");
-    }
-
-    private void LoadGanttChartProjects()
-    {
-        var projectData = GanttService.AssignProjectsFromDtos(taskDtoList, developerDtoList, preSortTasks);
-        JS.InvokeVoidAsync("renderGanttProjects", JsonConvert.SerializeObject(projectData, Formatting.Indented), chartMode.ToString(), "true");
-    }
+        ganttProjectListOutput = ganttChartAllocation.GanttProjects.AsQueryable();
+        JS.InvokeVoidAsync("renderGanttTasks", JsonConvert.SerializeObject(ganttTaskListOutput, Formatting.Indented), chartMode.ToString(), "true");
+        JS.InvokeVoidAsync("renderGanttProjects", JsonConvert.SerializeObject(ganttProjectListOutput, Formatting.Indented), chartMode.ToString(), "true");
+    }    
     
 }

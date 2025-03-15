@@ -112,8 +112,8 @@ namespace SpreadsheetUtility.Library
                     EstimatedEffortHours = g.Sum(t => t.EstimatedEffortHours),
                     Dependencies = g.Select(t => t.ProjectDependency).Where(d => !string.IsNullOrEmpty(d)).FirstOrDefault() ?? string.Empty,
                     Progress = (int)(g.Sum(t => (t.Progress * (t.EstimatedEffortHours / totalEstimatedEffortHours)))), // Summing the progress of each related task
-                    Start = g.Min(t => t.Start)?.ToString() ?? string.Empty,
-                    End = g.Max(t => t.End)?.ToString() ?? string.Empty,
+                    Start = g.Min(t => t.StartDate).ToString("yyyy-MM-dd") ?? string.Empty,
+                    End = g.Max(t => t.EndDate).ToString("yyyy-MM-dd") ?? string.Empty,
                     StartDate = DateTime.TryParse(g.Min(t => t.Start),CultureInfo.CurrentCulture,out var startDate) ? startDate : DateTime.MinValue,
                     EndDate = DateTime.TryParse(g.Max(t => t.End), CultureInfo.CurrentCulture, out var endDate) ? endDate : DateTime.MinValue
                 }).ToList();
@@ -175,6 +175,7 @@ namespace SpreadsheetUtility.Library
                 Tasks = d.Tasks,
                 AllocatedHours = d.AllocatedHours,
                 SlackHours = d.SlackHours,
+                TotalHours = d.TotalHours,
                 VacationPeriodsSerialized = d.VacationPeriodsSerialized,
                 NextAvailableDateForTasks = d.NextAvailableDateForTasks
             }).ToList();

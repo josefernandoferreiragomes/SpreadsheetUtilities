@@ -13,8 +13,7 @@ namespace SpreadsheetUtility.Library
         public string? ProjectName { get; set; }
         public required string TaskName { get; set; }
         public required double EstimatedEffortHours { get; set; }
-        public string? Dependencies { get; set; }
-        public string? ProjectDependency { get; set; }
+        public string? Dependencies { get; set; }        
         public string? Progress { get; set; }
         public string? InternalID { get; set; }
     }

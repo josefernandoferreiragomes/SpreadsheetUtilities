@@ -77,9 +77,7 @@ namespace SpreadsheetUtility.Library
                 .Select(g => new Project
                 {
                     ProjectID = g.First().ProjectID,
-                    ProjectName = g.Key,
-                    ProjectDependency = g.Select(t => t.ProjectDependency).Where(d => !string.IsNullOrEmpty(d)).FirstOrDefault() ?? string.Empty,
-                                
+                    ProjectName = g.Key,                                                    
                     StartDate = g.Min(t => t.StartDate),
                     EndDate = g.Max(t => t.EndDate),
                     TotalEstimatedEffortHours = g.Sum(t => t.EstimatedEffortHours),
@@ -124,8 +122,7 @@ namespace SpreadsheetUtility.Library
             return projectDtos.Select(dto => new Project
             {
                 ProjectID = dto.ProjectID,
-                ProjectName = dto.ProjectName,
-                ProjectDependency = dto.ProjectDependency,
+                ProjectName = dto.ProjectName,                
                 ProjectGroup = dto.ProjectGroup
             }).ToList();
         }
@@ -258,9 +255,9 @@ namespace SpreadsheetUtility.Library
                             ProjectName = row.Cell("C").GetString(),
                             TaskName = row.Cell("D").GetString(),
                             EstimatedEffortHours = row.Cell("E").GetDouble(),
-                            Dependencies = row.Cell("F").GetString(),
-                            ProjectDependency = row.Cell("G").GetString(),
-                            Progress = row.Cell("H").GetString()
+                            Dependencies = row.Cell("F").GetString(),                            
+                            Progress = row.Cell("H").GetString(),
+                            InternalID = row.Cell("G").GetString(),
                         });
                     }
                 }

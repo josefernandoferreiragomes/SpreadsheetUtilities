@@ -117,7 +117,7 @@
 <div>Holidays in projects</div>
 <div>
     <QuickGrid Items="@projectHolidayList">
-        <PropertyColumn Property="@(p => p.Date)" Sortable="true" />
+        <PropertyColumn Property="@(p => p.Date.ToString("dd-MM-yyyy"))" Sortable="true" />
         <PropertyColumn Property="@(p => p.HolidayDescription)" Sortable="true" />
     </QuickGrid>
 </div>

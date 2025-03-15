@@ -8,18 +8,17 @@ window.renderGanttTasks = (taskDataJson, viewMode, namedLanes) => {
     let tasks = JSON.parse(taskDataJson);
     document.getElementById("gantt-chart-tasks").innerHTML = ""; // Clear previous chart
 
+    //holidays are not customizable
+
     let ganttChartTaks = new Gantt("#gantt-chart-tasks", tasks, {
         on_click: (task) => console.log(task),
         on_date_change: (task, start, end) => console.log(task, start, end),
         on_progress_change: (task, progress) => console.log(task, progress),
-        on_view_change: (mode) => console.log(mode),
-        auto_move_label: false,
+        on_view_change: (mode) => console.log(mode),        
         view_mode: viewMode,
-        language: 'en',
-        //holidays: { 'var(--g - weekend - highlight - color)': 'weekend' },
+        language: 'en',        
         lines: 'both',
-        today_button: 'true',
-        //show_expected_progress: 'true',
+        today_button: 'true',        
         view_mode_select: 'true'
     });
 
@@ -41,18 +40,17 @@ window.renderGanttProjects = (taskDataJson, viewMode, namedLanes) => {
     let tasks = JSON.parse(taskDataJson);
     document.getElementById("gantt-chart-projects").innerHTML = ""; // Clear previous chart
 
+    //holidays are not customizable
+
     let ganttChartProjects = new Gantt("#gantt-chart-projects", tasks, {
         on_click: (task) => console.log(task),
         on_date_change: (task, start, end) => console.log(task, start, end),
         on_progress_change: (task, progress) => console.log(task, progress),
-        on_view_change: (mode) => console.log(mode),
-        auto_move_label: false,
+        on_view_change: (mode) => console.log(mode),        
         view_mode: viewMode,
-        language: 'en',
-        //holidays: { 'var(--g - weekend - highlight - color)': 'weekend' },
+        language: 'en',        
         lines: 'both',
-        today_button: 'true',
-        //show_expected_progress: 'true',
+        today_button: 'true',        
         view_mode_select: 'true'
     });
 

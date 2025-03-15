@@ -16,6 +16,7 @@ namespace SpreadsheetUtility.Library
         public List<GanttTask>? Tasks { get; set; }
         public double AllocatedHours { get; set; }
         public double SlackHours { get; set; }
+        public double TotalHours { get; set; }
         public string? VacationPeriodsSerialized { get; set; }
         
     }

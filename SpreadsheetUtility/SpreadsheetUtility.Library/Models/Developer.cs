@@ -17,6 +17,7 @@ namespace SpreadsheetUtility.Library
         public List<GanttTask> Tasks { get; set; } = new List<GanttTask>();
         public double AllocatedHours { get; set; }
         public double SlackHours { get; set; }
+        public double TotalHours { get; set; }
         public string VacationPeriodsSerialized => string.Join("|", VacationPeriods?.Where(v => v.HasValue)
             .Select(v => $"{v?.Start:yyyy-MM-dd};{v?.End:yyyy-MM-dd}") ?? Enumerable.Empty<string>());
         public DateTime NextAvailableDate(DateTime fromDate)

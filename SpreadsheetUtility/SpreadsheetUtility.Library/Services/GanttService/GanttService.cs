@@ -30,11 +30,7 @@ namespace SpreadsheetUtility.Services
         public List<DeveloperAvailability> LoadDeveloperAvailabilityFromDtos(List<DeveloperDto> developerDtos)
         {
             return _ganttChartProcessor.LoadDeveloperAvailabilityFromDtos(developerDtos);
-        }
-        public List<GanttTask> AssignProjectsFromDtos(List<TaskDto> taskDtos, List<DeveloperDto> developerDtos, bool preSortTasks = false)
-        {
-            return _ganttChartProcessor.AssignProjectsFromDtos(taskDtos, developerDtos, preSortTasks);
-        }
+        }     
         public GanttChartAllocation CalculateGanttChartAllocationFromDtos(GanttChartAllocationInput input)
         {
             return _ganttChartProcessor.CalculateGanttChartAllocationFromDtos(input);

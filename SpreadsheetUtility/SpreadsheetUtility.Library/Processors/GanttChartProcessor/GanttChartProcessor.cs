@@ -65,8 +65,9 @@ namespace SpreadsheetUtility.Library
             {
                 ProjectList = _projectList,
                 GanttTasks = _ganttTaskList,
+                GanttProjects = _ganttProjectList,
                 DeveloperAvailability = developerAvailability,
-                HolidayList = _projectHolidayList
+                HolidayList = _projectHolidayList                
             };
         }
 
@@ -84,6 +85,38 @@ namespace SpreadsheetUtility.Library
                     TotalEstimatedEffortHours = g.Sum(t => t.EstimatedEffortHours),
                     ProjectGroup = _projectList.Find(p => p.ProjectName == g.Key)?.ProjectGroup
                 }).ToList();
+
+            double totalEstimatedEffortHours = _ganttTaskList.Sum(t => t.EstimatedEffortHours);            
+            _ganttProjectList = _ganttTaskList.GroupBy(t => t.ProjectName)
+                .Select(g => new GanttTask
+                {
+                    Id = g.First().ProjectID ?? "",
+                    Name = $"{g.Key} ({g.Sum(t => t.EstimatedEffortHours)} hours)",
+                    Dependencies = g.Select(t => t.ProjectDependency).Where(d => !string.IsNullOrEmpty(d)).FirstOrDefault() ?? string.Empty,
+                    EstimatedEffortHours = g.Sum(t => t.EstimatedEffortHours),
+                    Progress = (int)(g.Sum(t => (t.Progress * (t.EstimatedEffortHours / totalEstimatedEffortHours)))), // Summing the progress of each related task
+                    StartDate = g.Min(t => t.StartDate),
+                    EndDate = g.Max(t => t.EndDate),
+                    Start = g.Min(t => t.StartDate).ToString("yyyy-MM-dd"),
+                    End = g.Max(t => t.EndDate).ToString("yyyy-MM-dd")
+                }).ToList();
+
+            Console.WriteLine(JsonConvert.SerializeObject(_projectList,
+                new JsonSerializerSettings
+                {
+                    ContractResolver = new CamelCasePropertyNamesContractResolver(),
+                    Formatting = Formatting.Indented
+                })
+            );
+
+            Console.WriteLine(JsonConvert.SerializeObject(_ganttProjectList,
+                new JsonSerializerSettings
+                {
+                    ContractResolver = new CamelCasePropertyNamesContractResolver(),
+                    Formatting = Formatting.Indented
+                })
+            );
+
         }
 
         private List<Project> LoadProjectsFromDtos(List<ProjectDto> projectDtos)
@@ -95,40 +128,6 @@ namespace SpreadsheetUtility.Library
                 ProjectDependency = dto.ProjectDependency,
                 ProjectGroup = dto.ProjectGroup
             }).ToList();
-        }
-
-        public List<GanttTask> AssignProjectsFromDtos(List<TaskDto> taskDtos, List<DeveloperDto> developerDtos, bool preSortTasks = false)
-        {
-            ProcessDataTasksFromDtos(taskDtos, developerDtos, preSortTasks);
-
-            //ID	ProjectName	Dependencies
-            double totalEstimatedEffortHours = _ganttTaskList.Sum(t => t.EstimatedEffortHours);
-
-            _ganttProjectList = _ganttTaskList.GroupBy(t => t.ProjectName)
-                .Select(g => new GanttTask
-                {
-                    Id = g.First().ProjectID ?? "",
-                    Name = $"{g.Key} ({g.Sum(t => t.EstimatedEffortHours)} hours)",
-                    EstimatedEffortHours = g.Sum(t => t.EstimatedEffortHours),
-                    Dependencies = g.Select(t => t.ProjectDependency).Where(d => !string.IsNullOrEmpty(d)).FirstOrDefault() ?? string.Empty,
-                    Progress = (int)(g.Sum(t => (t.Progress * (t.EstimatedEffortHours / totalEstimatedEffortHours)))), // Summing the progress of each related task
-                    Start = g.Min(t => t.StartDate).ToString("yyyy-MM-dd") ?? string.Empty,
-                    End = g.Max(t => t.EndDate).ToString("yyyy-MM-dd") ?? string.Empty,
-                    StartDate = DateTime.TryParse(g.Min(t => t.Start),CultureInfo.CurrentCulture,out var startDate) ? startDate : DateTime.MinValue,
-                    EndDate = DateTime.TryParse(g.Max(t => t.End), CultureInfo.CurrentCulture, out var endDate) ? endDate : DateTime.MinValue
-                }).ToList();
-
-
-
-            Console.WriteLine(JsonConvert.SerializeObject(_ganttProjectList,
-                new JsonSerializerSettings
-                {
-                    ContractResolver = new CamelCasePropertyNamesContractResolver(),
-                    Formatting = Formatting.Indented
-                })
-            );
-
-            return _ganttProjectList;
         }
 
         public List<GanttTask> LoadTasksFromDtos(List<TaskDto> taskDtos)
@@ -179,23 +178,7 @@ namespace SpreadsheetUtility.Library
                 VacationPeriodsSerialized = d.VacationPeriodsSerialized,
                 NextAvailableDateForTasks = d.NextAvailableDateForTasks
             }).ToList();
-        }
-        private List<GanttTask> ProcessDataTasksFromDtos(List<TaskDto> taskDtos, List<DeveloperDto> developerDtos, bool preSortTasks = false)
-        {
-            _ganttTaskList = LoadTasksFromDtos(taskDtos);
-            _developerList = LoadTeamDataFromDtos(developerDtos);
-            AssignTasks(preSortTasks);
-            CalculateDeveloperHours();
-            Console.WriteLine(JsonConvert.SerializeObject(_ganttTaskList,
-               new JsonSerializerSettings
-               {
-                   ContractResolver = new CamelCasePropertyNamesContractResolver(),
-                   Formatting = Formatting.Indented
-               })
-            );
-
-            return _ganttTaskList;
-        }
+        }     
         #endregion
 
         #region file processing

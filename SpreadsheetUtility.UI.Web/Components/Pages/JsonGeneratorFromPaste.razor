@@ -35,7 +35,7 @@
         foreach (var line in lines.Skip(1)) // Skip header
         {
             var columns = line.Split('\t');
-            if (columns.Length == 8)
+            if (columns.Length == 9)
             {
                 tasks.Add(new TaskDto()
                     {
@@ -46,8 +46,9 @@
                         EstimatedEffortHours = double.TryParse(columns[4].Trim(), out var effort) ? effort : 0,
                         Dependencies = columns[5].Trim(),
                         ProjectDependency = columns[6].Trim(),
-                        Progress = columns[7].Trim()
-                        
+                        Progress = columns[7].Trim(),
+                        InternalID = columns[8].Trim()
+
                     });
             }
         }

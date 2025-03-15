@@ -8,13 +8,11 @@
 @using SpreadsheetUtility.UI.Web.Components; <!-- Added namespace for DeveloperAvailabilityColumn -->
 @using static Microsoft.AspNetCore.Components.Web.RenderMode
 @inject IJSRuntime JS
-@rendermode InteractiveServer
-
-<PageTitle>Gantt Generator Paste</PageTitle>
-
+@rendermode InteractiveServer                  
 <h3>Gantt Generator Paste</h3>
 <label>Projects</label>
 <label>Project groups will have their assigned tasks in order. The tasks for the next project will be assigned upon completion of the previous project group.</label>
+<label>The project groups will represent dependencies... first, project group 1, then, project group 2</label>
 <label>If there is only one project group, the task assignment efficiency will be maximized</label>
 <div>
     <textarea @bind="excelProjectData" placeholder="Paste your project Excel data here" rows="10" cols="100"></textarea>

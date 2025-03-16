@@ -42,6 +42,8 @@ namespace SpreadsheetUtility.Library
             _ganttTaskList = LoadTasksFromDtos(input.TaskDtos);
             _developerList = LoadTeamDataFromDtos(input.DeveloperDtos);
 
+            SetupProjectColor();
+
             //group projects by ProjectGroup
             var projectGroupList = _projectList.GroupBy(p => p.ProjectGroup)
                 .Select(g => new ProjectGroup
@@ -96,7 +98,8 @@ namespace SpreadsheetUtility.Library
                     StartDate = g.Min(t => t.StartDate),
                     EndDate = g.Max(t => t.EndDate),
                     Start = g.Min(t => t.StartDate).ToString("yyyy-MM-dd"),
-                    End = g.Max(t => t.EndDate).ToString("yyyy-MM-dd")
+                    End = g.Max(t => t.EndDate).ToString("yyyy-MM-dd"),
+                    CustomClass = _projectList.Find(p => p.ProjectName == g.Key)?.Color ?? "delayed-task"
                 }).ToList();
 
             Console.WriteLine(JsonConvert.SerializeObject(_projectList,
@@ -139,8 +142,39 @@ namespace SpreadsheetUtility.Library
                 ProjectID = dto.ProjectID ?? "",
                 ProjectName = dto.ProjectName ?? "",
                 TaskName = dto.TaskName ?? "",
-                InternalID = dto.InternalID ?? ""
+                InternalID = dto.InternalID ?? "",
+                ActualStart = dto.ActualStart ?? "",
+                ActualEnd = dto.ActualEnd ?? "",
+                CustomClass = _projectList.Find(p => p.ProjectID == dto.ProjectID)?.Color ?? "delayed-task"
             }).ToList();
+        }
+        private void SetupProjectColor()
+        {
+            var random = new Random();
+            foreach (var project in _projectList)
+            {
+                project.Color = GetRandomColorClass();
+            }
+        }
+        private string GetRandomColorClass()
+        {
+            var random = new Random();
+            //colors from gantt-style.css classes
+                List<string> colorClasses = new List<string>
+            {
+                "task-red",
+                "task-green",
+                "task-blue",
+                "task-purple",
+                "task-brown",
+                "task-orange",
+                "task-yellow",
+                "task-cyan",
+                "task-magenta",
+                "task-lime",
+                "task-pink",
+            };
+            return colorClasses[random.Next(colorClasses.Count)];
         }
         private List<Developer> LoadTeamDataFromDtos(List<DeveloperDto> developerDtos)
         {
@@ -250,7 +284,6 @@ namespace SpreadsheetUtility.Library
                 task.EndDate = taskEnd;
                 task.AssignedDeveloper = assignedDeveloper.Name;
                 task.Name = $"{task.Name} ({assignedDeveloper.Name})";
-                task.CustomClass = task.Name.Contains("task") ? "gantt-task-blue" : "gantt-task-green";
 
                 assignedDeveloper.Tasks.Add(task);
                 assignedDeveloper.SetNextAvailableDate(taskEnd.AddDays(1));                

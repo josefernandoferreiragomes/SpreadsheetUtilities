@@ -16,5 +16,6 @@ namespace SpreadsheetUtility.Library
         public List<GanttTask>? Tasks { get; set; }
         public double TotalEstimatedEffortHours { get; set; }
         public string? ProjectGroup { get; set; }
+        public string? Color { get; set; }
     }
 }

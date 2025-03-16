@@ -1,0 +1,256 @@
+﻿@page "/ganttGeneratorFromPasteActual"
+@inject IGanttService GanttService
+@using Microsoft.JSInterop
+@using Newtonsoft.Json
+@using SpreadsheetUtility.Library
+@using Microsoft.AspNetCore.Components.QuickGrid;
+@using SpreadsheetUtility.Services
+@using SpreadsheetUtility.UI.Web.Components;
+@using static Microsoft.AspNetCore.Components.Web.RenderMode
+@inject IJSRuntime JS
+@rendermode InteractiveServer                  
+<h3>Gantt Generator Paste</h3>
+<label>Projects</label>
+<label>Project groups will have their assigned tasks in order. The tasks for the next project will be assigned upon completion of the previous project group.</label>
+<label>The properly ordered project groups will represent dependencies... first, project group 1, then, project group 2</label>
+<label>If there is only one project group, the task assignment efficiency will be maximized</label>
+<div>
+    <textarea @bind="excelProjectData" placeholder="Paste your project Excel data here" rows="10" cols="100"></textarea>
+</div>
+<p></p>
+<label>Tasks</label>
+<label>Dependencies can only exist within the same project. As the project dependencies are represented by ordered project groups above</label>
+<label>Dependencies are represented by the internal ID of the task</label>
+<label>Progress is a percentage</label>
+<div>
+    <textarea @bind="excelTaskData" placeholder="Paste your task Excel data here" rows="10" cols="100"></textarea>
+</div>
+<p></p>
+<label>Team</label>
+<label>Team members will be assigned tasks based on their availability and daily work hours</label>
+<label>Developer vacation date intervals are composed by two comma separated dates. Intervals are pipe separated</label>
+<div>
+    <textarea @bind="excelTeamData" placeholder="Paste your team Excel data here" rows="10" cols="100"></textarea>
+</div>
+<p></p>
+<div>
+    <button @onclick="LoadGanttChartTasks">Load Tasks Gantt Chart</button>
+</div>
+<div>
+    <h4>Chart Mode</h4>    
+    <InputRadioGroup @bind-Value="chartMode">
+        <div>
+            <InputRadio Value="ChartMode.Week" /> <label>Week</label>
+        </div>
+        <div>
+            <InputRadio Value="ChartMode.Day" /> <label>Day</label>
+        </div>
+    </InputRadioGroup>
+</div>
+<div>
+    <label>Pre Sort Tasks</label>
+    <InputRadioGroup @bind-Value="preSortTasks">
+        <div>
+            <InputRadio Value="false" /> <label>Pre Sort Tasks</label>
+        </div>
+        <div>
+            <InputRadio Value="true" /> <label>Do not Pre Sort Tasks</label>
+        </div>
+    </InputRadioGroup>
+</div>
+<div>
+    <button @onclick="SwapChartMode">Re Generate Charts</button>
+</div>
+<p></p>
+<p>Tasks Gantt Chart:</p>
+<div id="gantt-tasks-actual"></div>
+<p></p>
+<p>Projects Gantt Chart:</p>
+<div id="gantt-chart-projects"></div>
+<p></p>
+<div>Project data</div>
+<div>
+    <QuickGrid Items="@projectListOutput">
+        <PropertyColumn Property="@(p => p.ProjectID)" Sortable="true" />
+        <PropertyColumn Property="@(p => p.ProjectName)" Sortable="true" />      
+        <PropertyColumn Property="@(p => p.StartDate.ToString("dd-MM-yyyy"))" Title="StartDate" Sortable="true" />
+        <PropertyColumn Property="@(p => p.EndDate.ToString("dd-MM-yyyy"))" Title="EndDate" Sortable="true" />
+        <PropertyColumn Property="@(p => p.TotalEstimatedEffortHours)" Sortable="true" />                      
+        <PropertyColumn Property="@(p => p.ProjectGroup)" Sortable="true" />
+    </QuickGrid>
+</div>
+<div class="card-footer">
+    Total Estimated Effort Hours: @projectListOutput?.Sum(p => p.TotalEstimatedEffortHours)
+</div>
+<p></p>
+<div>Task data</div>
+<div>
+    <QuickGrid Items="@ganttTaskListOutput">
+        <PropertyColumn Property="@(p => p.Id)" Sortable="true" />
+        <PropertyColumn Property="@(p => p.Name)" Sortable="true" />
+        <PropertyColumn Property="@(p => p.StartDate.ToString("dd-MM-yyyy"))" Title="StartDate" Sortable="true" />
+        <PropertyColumn Property="@(p => p.EndDate.ToString("dd-MM-yyyy"))" Title="EndDate" Sortable="true" />
+        <PropertyColumn Property="@(p => p.TaskEndWeek)" Sortable="true" />
+        <PropertyColumn Property="@(p => p.EstimatedEffortHours)" Sortable="true" />
+        <PropertyColumn Property="@(p => p.Dependencies)" Sortable="true" />
+        <PropertyColumn Property="@(p => p.InternalID)" Sortable="true" />
+    </QuickGrid>
+</div>
+<div class="card-footer">
+    Total Estimated Effort Hours: @ganttTaskListOutput?.Sum(p => p.EstimatedEffortHours)
+</div>
+<p></p>
+<div>Developer data</div>
+<div>
+    <QuickGrid Items="@developerListOutput">
+        <PropertyColumn Property="@(p => p.Name)" Sortable="true" />
+        <PropertyColumn Property="@(p => p.DailyWorkHours)" Sortable="true" />
+        <PropertyColumn Property="@(p => p.AllocatedHours)" Sortable="true" />
+        <PropertyColumn Property="@(p => p.SlackHours)" Sortable="true" />
+        <PropertyColumn Property="@(p => p.TotalHours)" Sortable="true" />
+        <PropertyColumn Property="@(p => p.NextAvailableDateForTasks.ToString("dd-MM-yyyy"))" Title="NextAvailableDateForTasks" Sortable="true" />
+        <PropertyColumn Property="@(p => p.VacationPeriodsSerialized)" Sortable="true" />
+    </QuickGrid>
+</div>
+<div class="card-footer">
+    <div>Total Allocated Hours: @developerListOutput?.Sum(p => p.AllocatedHours)</div>
+    <div>Total Slack Hours: @developerListOutput?.Sum(p => p.SlackHours)</div>    
+    <div>Total Hours Within projects: @developerListOutput?.Sum(p => p.TotalHours)</div>        
+</div>
+<p></p>
+<div>Holidays in projects</div>
+<div>
+    <QuickGrid Items="@projectHolidayList">
+        <PropertyColumn Property="@(p => p.Date.ToString("dd-MM-yyyy"))" Sortable="true" />
+        <PropertyColumn Property="@(p => p.HolidayDescription)" Sortable="true" />
+    </QuickGrid>
+</div>
+<div class="card-footer">  
+    <div>Total Holidays in Projects: @projectHolidayList?.Count()</div>
+</div>
+<p></p>
+@code {
+    enum ChartMode
+    {
+        Week,
+        Day
+    }
+    private ChartMode chartMode = ChartMode.Week;
+    private string excelProjectData = "";    
+    private string excelTaskData = "";    
+    private List<ProjectDto> projectDtoList = new List<ProjectDto>();
+    private List<TaskDto> taskDtoList = new List<TaskDto>();
+    private List<DeveloperDto> developerDtoList = new List<DeveloperDto>();
+    private IQueryable<Holiday>? projectHolidayList;
+    private IQueryable<Project>? projectListOutput;    
+    private IQueryable<GanttTask>? ganttTaskListOutput;    
+    private IQueryable<GanttTask>? ganttProjectListOutput;    
+    private string excelTeamData = "";    
+    private IQueryable<DeveloperAvailability>? developerListOutput;    
+    private bool preSortTasks = true;
+
+    private void SwapChartMode()
+    {       
+        LoadGanttChartTasks();        
+    }
+
+    private void ConvertToGanttProjects()
+    {
+        var lines = excelProjectData.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+        projectDtoList = new List<ProjectDto>();
+
+        foreach (var line in lines.Skip(1)) // Skip header
+        {
+            var columns = line.Split('\t');
+            if (columns.Length == 3)
+            {
+                projectDtoList.Add(new ProjectDto()
+                    {                        
+                        ProjectID = columns[0].Trim(),
+                        ProjectName = columns[1].Trim(),                                                
+                        ProjectGroup = columns[2].Trim()
+                    });
+            }
+        }        
+    }
+
+    private void ConvertToGanttTasks()
+    {
+        var lines = excelTaskData.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+        taskDtoList = new List<TaskDto>();
+
+        foreach (var line in lines.Skip(1)) // Skip header
+        {
+            var columns = line.Split('\t');
+            if (columns.Length == 10)
+            {
+                taskDtoList.Add(new TaskDto()
+                    {
+                        Id = columns[0].Trim(),
+                        ProjectID = columns[1].Trim(),
+                        ProjectName = columns[2].Trim(),
+                        TaskName = columns[3].Trim(),
+                        EstimatedEffortHours = double.TryParse(columns[4].Trim(), out var effort) ? effort : 0,
+                        Dependencies = columns[5].Trim(),                        
+                        Progress = columns[6].Trim(),
+                        InternalID = columns[7].Trim(),
+                        ActualStart = columns[8].Trim(),
+                        ActualEnd = columns[9].Trim()
+                    });
+            }
+        }        
+    }
+
+    private void ConvertToTeamData()
+    {
+        var lines = excelTeamData.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+        developerDtoList = new List<DeveloperDto>();
+
+        foreach (var line in lines.Skip(1)) // Skip header
+        {
+            var columns = line.Split('\t');
+            if (columns.Length == 4)
+            {
+                developerDtoList.Add(new DeveloperDto()
+                    {
+                        Team = columns[0].Trim(),
+                        Name = columns[1].Trim(),
+                        VacationPeriods = columns[2].Trim(),                        
+                        DailyWorkHours = int.TryParse(columns[3].Trim(), out var hours) ? hours : 0,
+
+                    });
+            }
+        }        
+    }   
+
+    private void LoadGanttChartTasks()
+    {
+        ConvertToGanttProjects();
+        ConvertToGanttTasks();
+        ConvertToTeamData();      
+        var input = new CalculateGanttChartAllocationInput
+        {
+            DeveloperDtos = developerDtoList,
+            ProjectDtos = projectDtoList,
+            TaskDtos = taskDtoList,
+            PreSortTasks = preSortTasks
+        };
+
+        var inputMessageLog = $"input: {JsonConvert.SerializeObject(input, Formatting.Indented)}";
+        this.JS.InvokeVoidAsync("console.log", inputMessageLog);
+
+        var ganttChartAllocation = GanttService.CalculateGanttChartAllocation(input);
+        
+        var outputMessageLog = $"output: {JsonConvert.SerializeObject(ganttChartAllocation, Formatting.Indented)}";
+        this.JS.InvokeVoidAsync("console.log", outputMessageLog);
+
+        ganttTaskListOutput = ganttChartAllocation.GanttTasks.AsQueryable();
+        developerListOutput = ganttChartAllocation.DeveloperAvailability.AsQueryable();
+        projectListOutput = ganttChartAllocation.ProjectList.AsQueryable();       
+        projectHolidayList = ganttChartAllocation.HolidayList.AsQueryable();
+        ganttProjectListOutput = ganttChartAllocation.GanttProjects.AsQueryable();
+        JS.InvokeVoidAsync("renderGanttTasksActual", JsonConvert.SerializeObject(ganttTaskListOutput, Formatting.Indented), chartMode.ToString(), "true");
+        JS.InvokeVoidAsync("renderGanttProjects", JsonConvert.SerializeObject(ganttProjectListOutput, Formatting.Indented), chartMode.ToString(), "true");
+    }    
+    
+}

@@ -61,3 +61,43 @@ window.renderGanttProjects = (taskDataJson, viewMode, namedLanes) => {
     }
 
 };
+
+window.renderGanttTasksActual = (taskDataJson, viewMode, namedLanes) => {
+    if (viewMode === undefined) {
+        viewMode = 'Week';
+    }
+    const prettyJson = JSON.stringify(JSON.parse(taskDataJson), null, 2);
+    //console.log("Received Data: ", prettyJson); // Debug in browser console
+    let tasks = JSON.parse(taskDataJson);
+
+    // Initialize Gantt Chart
+    var gantt = new Gantt("#gantt-tasks-actual", tasks, {
+        view_mode: viewMode,
+        on_click: function (task) {
+            console.log("Task clicked:", task);
+        },
+        on_date_change: function (task, start, end) {
+            console.log("Date changed:", task, start, end);
+        },
+        on_progress_change: function (task, progress) {
+            console.log("Progress changed:", task, progress);
+        },
+        on_view_change: function (mode) {
+            console.log("View mode changed:", mode);
+        },
+    });
+
+    // Override the default popup
+    //gantt.show_popup = function (task) {
+    //    return `
+    //    <div class="popup-custom">
+    //        <strong>${task.name}</strong><br/>
+    //        Planned: ${task.start} → ${task.end} <br/>
+    //        Actual: ${task.actual_start ? task.actual_start : 'N/A'} → ${task.actual_end ? task.actual_end : 'N/A'}<br/>
+    //        Progress: ${task.progress}%
+    //    </div>
+    //`;
+    //};
+
+
+}

@@ -1,7 +1,60 @@
-﻿.gantt-task-blue .bar {
-    fill: #4285F4 !important; /* Google Blue */
+﻿.task-red {
+    color: #FF0000;
 }
 
-.gantt-task-green .bar {
-    fill: #34A853 !important; /* Google Green */
+.task-green {
+    color: #00FF00;
 }
+
+.task-blue {
+    color: #0000FF;
+}
+
+.task-purple {
+    color: #800080;
+}
+
+.task-brown {
+    color: #A52A2A;
+}
+
+.task-orange {
+    color: #FFA500;
+}
+
+.task-yellow {
+    color: #FFFF00;
+}
+
+.task-cyan {
+    color: #00FFFF;
+}
+
+.task-magenta {
+    color: #FF00FF;
+}
+
+.task-lime {
+    color: #32CD32;
+}
+
+.task-pink {
+    color: #FFC0CB;
+}
+
+.delayed-task .bar {
+    fill: red !important;
+}
+
+.delayed-task .bar-progress {
+    fill: darkred !important;
+}
+
+.popup-custom {
+    background: white;
+    border: 1px solid #ccc;
+    padding: 8px;
+    border-radius: 5px;
+    font-size: 14px;
+}
+

@@ -27,7 +27,7 @@ namespace SpreadsheetUtility.Library
         [JsonProperty("dependencies")]
         public string Dependencies { get; set; } = "";
 
-        [JsonProperty("customClass")]
+        [JsonProperty("custom_class")]
         public string? CustomClass { get; set; } // New property for styling
 
         [JsonProperty("resource")]
@@ -45,5 +45,9 @@ namespace SpreadsheetUtility.Library
         public string? AssignedDeveloper { get; set; }
         internal bool DependencyUpdated { get; set; } = false;
         public string? TaskEndWeek { get; set; }
+
+        public string? ActualStart { get; set; }
+        public string? ActualEnd { get; set; }
+        public int ActualProgress { get; set; }   // 0-100%
     }
 }

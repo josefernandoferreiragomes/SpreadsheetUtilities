@@ -16,6 +16,10 @@ namespace SpreadsheetUtility.Library
         public string? Dependencies { get; set; }        
         public string? Progress { get; set; }
         public string? InternalID { get; set; }
+
+        public string? ActualStart { get; set; }
+        public string? ActualEnd { get; set; }
+        public int ActualProgress { get; set; }   // 0-100%
     }
 
 }

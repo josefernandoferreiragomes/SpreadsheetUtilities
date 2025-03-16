@@ -1,10 +1,7 @@
-﻿using SpreadsheetUtility.Library;
+﻿using Newtonsoft.Json;
+using SpreadsheetUtility.Library;
 using SpreadsheetUtility.Services;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using SpreadsheetUtility.Test.Helpers;
 
 namespace SpreadsheetUtility.Test
 {
@@ -17,6 +14,48 @@ namespace SpreadsheetUtility.Test
         {
             var ganttProcessor = new GanttChartProcessor();
             _ganttService = new GanttService(ganttProcessor);
+        }
+
+        [Fact]
+        public void CalculateGanttChartAllocation()
+        {
+            // Arrange
+            var input = JsonTestHelper.ProcessMethodJson<CalculateGanttChartAllocationInput>("CalculateGanttChartAllocation","Input");
+
+            Assert.NotNull(input);
+            // Act
+            var result = _ganttService.CalculateGanttChartAllocation(input);
+
+            // Assert
+            Assert.NotNull(result);
+            var expected = JsonTestHelper.ProcessMethodJson<CalculateGanttChartAllocationOutput>("CalculateGanttChartAllocation","Output");
+            Assert.Equal(expected.GanttTasks.Count, result.GanttTasks.Count);
+            Assert.Equal(expected.DeveloperAvailability.Count, result.DeveloperAvailability.Count);
+            Assert.Equal(expected.GanttTasks[0].Name, result.GanttTasks[0].Name);
+            Assert.Equal(expected.DeveloperAvailability[0].Name, result.DeveloperAvailability[0].Name);
+            Assert.Equal(expected.DeveloperAvailability[0].DailyWorkHours, result.DeveloperAvailability[0].DailyWorkHours);
+            Assert.Equal(JsonConvert.SerializeObject(expected.GanttTasks, Formatting.Indented), JsonConvert.SerializeObject(result.GanttTasks, Formatting.Indented));
+        }
+
+        [Fact]
+        public void CalculateGanttChartAllocationNoDependencies()
+        {
+            // Arrange
+            var input = JsonTestHelper.ProcessMethodJson<CalculateGanttChartAllocationInput>("CalculateGanttChartAllocationNoDependencies", "Input");
+
+            Assert.NotNull(input);
+            // Act
+            var result = _ganttService.CalculateGanttChartAllocation(input);
+
+            // Assert
+            Assert.NotNull(result);
+            var expected = JsonTestHelper.ProcessMethodJson<CalculateGanttChartAllocationOutput>("CalculateGanttChartAllocationNoDependencies", "Output");
+            Assert.Equal(expected.GanttTasks.Count, result.GanttTasks.Count);
+            Assert.Equal(expected.DeveloperAvailability.Count, result.DeveloperAvailability.Count);
+            Assert.Equal(expected.GanttTasks[0].Name, result.GanttTasks[0].Name);
+            Assert.Equal(expected.DeveloperAvailability[0].Name, result.DeveloperAvailability[0].Name);
+            Assert.Equal(expected.DeveloperAvailability[0].DailyWorkHours, result.DeveloperAvailability[0].DailyWorkHours);
+            Assert.Equal(JsonConvert.SerializeObject(expected.GanttTasks, Formatting.Indented), JsonConvert.SerializeObject(result.GanttTasks, Formatting.Indented));
         }
 
         [Fact]
@@ -59,7 +98,7 @@ namespace SpreadsheetUtility.Test
 
             bool preSortTasks = true;
 
-            var input = new GanttChartAllocationInput
+            var input = new CalculateGanttChartAllocationInput
             {
                 TaskDtos = taskDtoList,
                 DeveloperDtos = developerDtoList,
@@ -67,7 +106,7 @@ namespace SpreadsheetUtility.Test
                 PreSortTasks = preSortTasks
             };
             // Act
-            var result = _ganttService.CalculateGanttChartAllocationFromDtos(input);
+            var result = _ganttService.CalculateGanttChartAllocation(input);
 
             // Assert
             Assert.NotNull(result);
@@ -112,7 +151,7 @@ namespace SpreadsheetUtility.Test
 
             bool preSortTasks = true;
 
-            var input = new GanttChartAllocationInput
+            var input = new CalculateGanttChartAllocationInput
             {
                 TaskDtos = taskDtoList,
                 DeveloperDtos = developerDtoList,
@@ -121,7 +160,7 @@ namespace SpreadsheetUtility.Test
             };
 
             // Act
-            var result = _ganttService.CalculateGanttChartAllocationFromDtos(input);
+            var result = _ganttService.CalculateGanttChartAllocation(input);
 
             // Assert
             Assert.NotNull(result);
@@ -160,7 +199,7 @@ namespace SpreadsheetUtility.Test
 
             bool preSortTasks = true;
 
-            var input = new GanttChartAllocationInput
+            var input = new CalculateGanttChartAllocationInput
             {
                 TaskDtos = taskDtoList,
                 DeveloperDtos = developerDtoList,
@@ -170,7 +209,7 @@ namespace SpreadsheetUtility.Test
 
 
             // Act
-            var result = _ganttService.CalculateGanttChartAllocationFromDtos(input);
+            var result = _ganttService.CalculateGanttChartAllocation(input);
 
             // Assert
             Assert.NotNull(result);

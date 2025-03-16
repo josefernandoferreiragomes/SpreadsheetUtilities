@@ -36,7 +36,7 @@ namespace SpreadsheetUtility.Library
         }        
 
         #region dto processing
-        public GanttChartAllocation CalculateGanttChartAllocationFromDtos(GanttChartAllocationInput input)
+        public CalculateGanttChartAllocationOutput CalculateGanttChartAllocation(CalculateGanttChartAllocationInput input)
         {
             _projectList = LoadProjectsFromDtos(input.ProjectDtos);
             _ganttTaskList = LoadTasksFromDtos(input.TaskDtos);
@@ -61,7 +61,7 @@ namespace SpreadsheetUtility.Library
 
             var developerAvailability = MapDeveloperAvailability();
             
-            return new GanttChartAllocation
+            return new CalculateGanttChartAllocationOutput
             {
                 ProjectList = _projectList,
                 GanttTasks = _ganttTaskList,

@@ -4,7 +4,7 @@ window.renderGanttTasks = (taskDataJson, viewMode, namedLanes) => {
         viewMode = 'Week';
     }
     const prettyJson = JSON.stringify(JSON.parse(taskDataJson), null, 2);
-    console.log("Received Data: ", prettyJson); // Debug in browser console
+    //console.log("Received Data: ", prettyJson); // Debug in browser console
     let tasks = JSON.parse(taskDataJson);
     document.getElementById("gantt-chart-tasks").innerHTML = ""; // Clear previous chart
 
@@ -36,7 +36,7 @@ window.renderGanttProjects = (taskDataJson, viewMode, namedLanes) => {
         viewMode = 'Week';
     }
     const prettyJson = JSON.stringify(JSON.parse(taskDataJson), null, 2);
-    console.log("Received Data: ", prettyJson); // Debug in browser console
+    //console.log("Received Data: ", prettyJson); // Debug in browser console
     let tasks = JSON.parse(taskDataJson);
     document.getElementById("gantt-chart-projects").innerHTML = ""; // Clear previous chart
 

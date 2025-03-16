@@ -9,6 +9,6 @@ namespace SpreadsheetUtility.Library
     public interface IGanttService
     {        
         List<GanttTask> LoadTasksFromDtos(List<TaskDto> taskDtos);       
-        GanttChartAllocation CalculateGanttChartAllocationFromDtos(GanttChartAllocationInput input);
+        CalculateGanttChartAllocationOutput CalculateGanttChartAllocation(CalculateGanttChartAllocationInput input);
     }
 }

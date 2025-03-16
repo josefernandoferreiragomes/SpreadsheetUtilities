@@ -19,9 +19,9 @@ namespace SpreadsheetUtility.Services
         {
             return _ganttChartProcessor.LoadTasksFromDtos(taskDtos);
         }        
-        public GanttChartAllocation CalculateGanttChartAllocationFromDtos(GanttChartAllocationInput input)
+        public CalculateGanttChartAllocationOutput CalculateGanttChartAllocation(CalculateGanttChartAllocationInput input)
         {
-            return _ganttChartProcessor.CalculateGanttChartAllocationFromDtos(input);
+            return _ganttChartProcessor.CalculateGanttChartAllocation(input);
         }
     }
 }

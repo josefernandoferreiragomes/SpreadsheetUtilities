@@ -5,7 +5,7 @@
 @using SpreadsheetUtility.Library
 @using Microsoft.AspNetCore.Components.QuickGrid;
 @using SpreadsheetUtility.Services
-@using SpreadsheetUtility.UI.Web.Components; <!-- Added namespace for DeveloperAvailabilityColumn -->
+@using SpreadsheetUtility.UI.Web.Components;
 @using static Microsoft.AspNetCore.Components.Web.RenderMode
 @inject IJSRuntime JS
 @rendermode InteractiveServer                  
@@ -148,7 +148,7 @@
     private string excelTeamData = "";    
     private IQueryable<DeveloperAvailability>? developerListOutput;    
     private bool preSortTasks = true;
-    
+
     private void SwapChartMode()
     {       
         LoadGanttChartTasks();        
@@ -227,14 +227,22 @@
         ConvertToGanttProjects();
         ConvertToGanttTasks();
         ConvertToTeamData();      
-        var input = new GanttChartAllocationInput
+        var input = new CalculateGanttChartAllocationInput
         {
-            TaskDtos = taskDtoList,
             DeveloperDtos = developerDtoList,
             ProjectDtos = projectDtoList,
+            TaskDtos = taskDtoList,
             PreSortTasks = preSortTasks
         };
-        var ganttChartAllocation = GanttService.CalculateGanttChartAllocationFromDtos(input);
+
+        var inputMessageLog = $"input: {JsonConvert.SerializeObject(input, Formatting.Indented)}";
+        this.JS.InvokeVoidAsync("console.log", inputMessageLog);
+
+        var ganttChartAllocation = GanttService.CalculateGanttChartAllocation(input);
+        
+        var outputMessageLog = $"output: {JsonConvert.SerializeObject(ganttChartAllocation, Formatting.Indented)}";
+        this.JS.InvokeVoidAsync("console.log", outputMessageLog);
+
         ganttTaskListOutput = ganttChartAllocation.GanttTasks.AsQueryable();
         developerListOutput = ganttChartAllocation.DeveloperAvailability.AsQueryable();
         projectListOutput = ganttChartAllocation.ProjectList.AsQueryable();       

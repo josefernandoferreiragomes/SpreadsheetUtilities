@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SpreadsheetUtility.Library
 {
-    public class GanttChartAllocationInput        
+    public class CalculateGanttChartAllocationInput        
     {
         public List<TaskDto> TaskDtos {get; set;} = new List<TaskDto>();
         public List<DeveloperDto> DeveloperDtos {get; set;} = new List<DeveloperDto>();

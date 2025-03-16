@@ -11,8 +11,8 @@ namespace SpreadsheetUtility.Library
 {     
     public class ProjectGroup
     {
-        public string ProjectGroupID { get; set; }
-        public List<Project> Projects { get; set; }
+        public string ProjectGroupID { get; set; } = "";
+        public List<Project> Projects { get; set; } = new List<Project>();
     }
 
     public class GanttChartProcessor: IGanttChartProcessor
@@ -46,7 +46,7 @@ namespace SpreadsheetUtility.Library
             var projectGroupList = _projectList.GroupBy(p => p.ProjectGroup)
                 .Select(g => new ProjectGroup
                 {
-                    ProjectGroupID = g.Key,
+                    ProjectGroupID = g.Key ?? "",
                     Projects = g.ToList()
                 }).ToList();
 
@@ -153,13 +153,7 @@ namespace SpreadsheetUtility.Library
                         .Where(d => d != null)
                         .ToList()
             }).ToList();
-        }
-
-        public List<DeveloperAvailability> LoadDeveloperAvailabilityFromDtos(List<DeveloperDto> taskDtos)
-        {
-            _developerList = LoadTeamDataFromDtos(taskDtos);
-            return MapDeveloperAvailability();
-        }
+        }        
 
         private List<DeveloperAvailability> MapDeveloperAvailability()
         {
@@ -178,129 +172,8 @@ namespace SpreadsheetUtility.Library
         }     
         #endregion
 
-        #region file processing
-        public string ProcessExcelDataTasksFromFile(string taskFilePath, string teamFilePath, bool preSortTasks = false)
-        {
-            ProcessDataTasksFromFile(taskFilePath, teamFilePath, preSortTasks);
-
-            Console.WriteLine(JsonConvert.SerializeObject(_ganttTaskList,
-                new JsonSerializerSettings
-                {
-                    ContractResolver = new CamelCasePropertyNamesContractResolver(),
-                    Formatting = Formatting.Indented
-                })
-            );
-
-            return JsonConvert.SerializeObject(_ganttTaskList);
-        }
+        #region task processing            
         
-        public string ProcessExcelDataProjectsFromFile(string taskFilePath, string teamFilePath, bool preSortTasks = false)
-        {
-            ProcessDataTasksFromFile(taskFilePath, teamFilePath, preSortTasks);
-
-            //ID	ProjectName	Dependencies
-            double totalEstimatedEffortHours = _ganttTaskList.Sum(t => t.EstimatedEffortHours);
-
-            _ganttProjectList = _ganttTaskList.GroupBy(t => t.ProjectName)
-                .Select(g => new GanttTask
-                {
-                    Id = g.First().ProjectID ?? "",
-                    Name = $"{g.Key} ({g.Sum(t => t.EstimatedEffortHours)} hours)",
-                    EstimatedEffortHours = g.Sum(t => t.EstimatedEffortHours),
-                    Dependencies = g.Select(t => t.ProjectDependency).Where(d => !string.IsNullOrEmpty(d)).FirstOrDefault() ?? string.Empty,
-                    Progress = (int)(g.Sum(t => (t.Progress * (t.EstimatedEffortHours / totalEstimatedEffortHours)))), // Summing the progress of each related task
-                    Start = g.Min(t => t.Start)?.ToString() ?? string.Empty,
-                    End = g.Max(t => t.End)?.ToString() ?? string.Empty,
-                    StartDate = DateTime.TryParse(g.Min(t => t.Start), CultureInfo.CurrentCulture, out var startDate) ? startDate : DateTime.MinValue,
-                    EndDate = DateTime.TryParse(g.Max(t => t.End), CultureInfo.CurrentCulture, out var endDate) ? endDate : DateTime.MinValue
-                }).ToList();
-
-            
-
-            Console.WriteLine(JsonConvert.SerializeObject(_ganttProjectList,
-                new JsonSerializerSettings
-                {
-                    ContractResolver = new CamelCasePropertyNamesContractResolver(),
-                    Formatting = Formatting.Indented
-                })
-            );
-
-            return JsonConvert.SerializeObject(_ganttProjectList);
-        }
-
-        private void ProcessDataTasksFromFile(string taskFilePath, string teamFilePath, bool preSortTasks = false)
-        {
-            _ganttTaskList = LoadTasksFromFile(taskFilePath);
-            _developerList = LoadDevelopersFromFile(teamFilePath);
-            AssignTasks(preSortTasks);
-        }
-
-        private List<TaskDto> LoadTaskDtosFromFile(string filePath)
-        {
-            //A ID	B ProjectID	C ProjectName	D TaskName	E EstimatedEffortHours	F TaskDependencies	G ProjectDependency	H Progress
-
-            var taskDtos = new List<TaskDto>();
-            using (var workbook = new XLWorkbook(filePath))
-            {
-                var worksheet = workbook.Worksheet(1);
-                var rangeUsed = worksheet.RangeUsed();
-                if (rangeUsed != null)
-                {
-                    foreach (var row in rangeUsed.RowsUsed().Skip(1)) // Skip header
-                    {
-                        taskDtos.Add(new TaskDto
-                        {
-                            Id = row.Cell("A").GetString(),
-                            ProjectID = row.Cell("B").GetString(),
-                            ProjectName = row.Cell("C").GetString(),
-                            TaskName = row.Cell("D").GetString(),
-                            EstimatedEffortHours = row.Cell("E").GetDouble(),
-                            Dependencies = row.Cell("F").GetString(),                            
-                            Progress = row.Cell("H").GetString(),
-                            InternalID = row.Cell("G").GetString(),
-                        });
-                    }
-                }
-            }
-            return taskDtos;
-        }
-
-        private List<GanttTask> LoadTasksFromFile(string filePath)
-        {
-            var taskDtos = LoadTaskDtosFromFile(filePath);
-            List<GanttTask> tasks = LoadTasksFromDtos(taskDtos);
-
-            return tasks;
-        }
-
-        private List<Developer> LoadDevelopersFromFile(string filePath)
-        {
-            var developers = new List<Developer>();
-            using (var workbook = new XLWorkbook(filePath))
-            {
-                var worksheet = workbook.Worksheet(1);
-                if(worksheet == null) 
-                { 
-                    foreach (var row in worksheet?.RangeUsed()?.RowsUsed()?.Skip(1)) // Skip header
-                    {
-                        var name = row.Cell(2).GetString();
-                        var dailyHours = row.Cell(4).GetDouble();
-                        var vacationDates = row.Cell(3).GetString().Split('|')
-                            .Select(ParseDateRange)
-                            .Where(d => d != null)
-                            .ToList();
-
-                        developers.Add(new Developer
-                        {
-                            Name = name,
-                            DailyWorkHours = dailyHours,
-                            VacationPeriods = vacationDates
-                        });
-                    }
-                }
-            }
-            return developers;
-        }
         private void CalculateDeveloperHours()
         {
             if(_ganttTaskList.Count == 0 || _developerList.Count == 0) return;
@@ -331,87 +204,6 @@ namespace SpreadsheetUtility.Library
                 return (start, end);
             }
             return null;
-        }
-
-        private void AssignTasks(bool preSortTasks = false)
-        {
-            DateTime startDate = DateTime.Today;
-            while (IsWeekendOrHoliday(startDate))
-            {
-                startDate = startDate.AddDays(1);
-            }
-
-            List<GanttTask> sortedTasks = _ganttTaskList;
-
-            if (preSortTasks)
-            {
-                // Change Dependencies from empty string to "0" for sorting
-                foreach (var task in _ganttTaskList)
-                {
-                    if (string.IsNullOrEmpty(task.Dependencies))
-                    {
-                        task.Dependencies = "0";
-                    }
-                }
-
-                // Sort tasks by dependencies and estimated effort hours
-                sortedTasks = _ganttTaskList.OrderBy(t => t.Dependencies).ThenByDescending(t => t.EstimatedEffortHours).ToList();
-
-                // Create a mapping of original task IDs to new task IDs
-                var idMapping = new Dictionary<string, string>();
-                for (int i = 0; i < sortedTasks.Count; i++)
-                {
-                    var originalTaskId = sortedTasks[i].Id;
-                    var newTaskId = (i + 1).ToString();
-                    idMapping[originalTaskId] = newTaskId;
-                    sortedTasks[i].Id = newTaskId;
-
-                    if (sortedTasks[i].Dependencies == "0")
-                    {
-                        sortedTasks[i].Dependencies = "";
-                    }
-                }
-
-                // Update the dependencies to the new sorted order
-                foreach (var task in sortedTasks)
-                {
-                    if (!string.IsNullOrEmpty(task.Dependencies) && idMapping.ContainsKey(task.Dependencies))
-                    {
-                        task.Dependencies = idMapping[task.Dependencies];
-                    }
-                }
-
-                _ganttTaskList = sortedTasks;
-            }
-
-            foreach (var task in _ganttTaskList)
-            {
-                var assignedDeveloper = _developerList.OrderBy(d => d.NextAvailableDate(startDate)).FirstOrDefault();
-                if (assignedDeveloper == null) continue;
-
-                DateTime taskStart = assignedDeveloper.NextAvailableDate(startDate);
-                DateTime dependencyEndDate;
-                var taskStartFromDependency = DateTime.TryParse(_ganttTaskList.Find(t => t.Id == task.Dependencies)?.End ?? "", out dependencyEndDate) ? dependencyEndDate : taskStart;
-
-                taskStart = taskStart > taskStartFromDependency ? taskStart : taskStartFromDependency;
-
-                double requiredDays = Math.Ceiling(task.EstimatedEffortHours / assignedDeveloper.DailyWorkHours);
-                DateTime taskEnd = CalculateEndDate(taskStart, requiredDays, assignedDeveloper.VacationPeriods);
-
-                task.Start = taskStart.ToString("yyyy-MM-dd");
-                task.End = taskEnd.ToString("yyyy-MM-dd");
-                //TaskEndWeek is equal to the first day of the week of the task end date
-                task.TaskEndWeek = $"Week of {taskEnd.AddDays(-(int)(taskEnd.DayOfWeek - 1)).ToString("yyyy-MM-dd")}";
-
-                task.StartDate = taskStart;
-                task.EndDate = taskEnd;
-                task.AssignedDeveloper = assignedDeveloper.Name;
-                task.Name = $"{task.Name} ({assignedDeveloper.Name})";
-                task.CustomClass = task.Name.Contains("task") ? "gantt-task-blue" : "gantt-task-green";
-
-                assignedDeveloper.Tasks.Add(task);
-                assignedDeveloper.SetNextAvailableDate(taskEnd.AddDays(1));
-            }
         }
 
         private void AssignTasks(ProjectGroup projectGroupList, bool preSortTasks = false)

@@ -12,18 +12,23 @@
 <h3>Gantt Generator Paste</h3>
 <label>Projects</label>
 <label>Project groups will have their assigned tasks in order. The tasks for the next project will be assigned upon completion of the previous project group.</label>
-<label>The project groups will represent dependencies... first, project group 1, then, project group 2</label>
+<label>The properly ordered project groups will represent dependencies... first, project group 1, then, project group 2</label>
 <label>If there is only one project group, the task assignment efficiency will be maximized</label>
 <div>
     <textarea @bind="excelProjectData" placeholder="Paste your project Excel data here" rows="10" cols="100"></textarea>
 </div>
 <p></p>
 <label>Tasks</label>
+<label>Dependencies can only exist within the same project. As the project dependencies are represented by ordered project groups above</label>
+<label>Dependencies are represented by the internal ID of the task</label>
+<label>Progress is a percentage</label>
 <div>
     <textarea @bind="excelTaskData" placeholder="Paste your task Excel data here" rows="10" cols="100"></textarea>
 </div>
 <p></p>
 <label>Team</label>
+<label>Team members will be assigned tasks based on their availability and daily work hours</label>
+<label>Developer vacation date intervals are composed by two comma separated dates. Intervals are pipe separated</label>
 <div>
     <textarea @bind="excelTeamData" placeholder="Paste your team Excel data here" rows="10" cols="100"></textarea>
 </div>

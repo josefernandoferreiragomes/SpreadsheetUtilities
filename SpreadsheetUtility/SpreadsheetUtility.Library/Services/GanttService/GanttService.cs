@@ -15,22 +15,10 @@ namespace SpreadsheetUtility.Services
         {
             _ganttChartProcessor = ganttChartProcessor;
         }
-        public string ProcessExcelDataTasksFromFile(string taskFilePath, string teamFilePath)
-        {
-            return _ganttChartProcessor.ProcessExcelDataTasksFromFile(taskFilePath, teamFilePath);
-        }
-        public string ProcessExcelDataProjectsFromFile(string taskFilePath, string teamFilePath)
-        {
-            return _ganttChartProcessor.ProcessExcelDataProjectsFromFile(taskFilePath, teamFilePath);
-        }
         public List<GanttTask> LoadTasksFromDtos(List<TaskDto> taskDtos)
         {
             return _ganttChartProcessor.LoadTasksFromDtos(taskDtos);
-        }
-        public List<DeveloperAvailability> LoadDeveloperAvailabilityFromDtos(List<DeveloperDto> developerDtos)
-        {
-            return _ganttChartProcessor.LoadDeveloperAvailabilityFromDtos(developerDtos);
-        }     
+        }        
         public GanttChartAllocation CalculateGanttChartAllocationFromDtos(GanttChartAllocationInput input)
         {
             return _ganttChartProcessor.CalculateGanttChartAllocationFromDtos(input);

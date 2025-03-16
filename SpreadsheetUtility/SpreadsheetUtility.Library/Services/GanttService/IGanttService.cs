@@ -7,11 +7,8 @@ using System.Threading.Tasks;
 namespace SpreadsheetUtility.Library
 {
     public interface IGanttService
-    {
-        string ProcessExcelDataTasksFromFile(string taskFilePath, string teamFilePath);
-        string ProcessExcelDataProjectsFromFile(string taskFilePath, string teamFilePath);
-        List<GanttTask> LoadTasksFromDtos(List<TaskDto> taskDtos);
-        List<DeveloperAvailability> LoadDeveloperAvailabilityFromDtos(List<DeveloperDto> taskDtos);
+    {        
+        List<GanttTask> LoadTasksFromDtos(List<TaskDto> taskDtos);       
         GanttChartAllocation CalculateGanttChartAllocationFromDtos(GanttChartAllocationInput input);
     }
 }

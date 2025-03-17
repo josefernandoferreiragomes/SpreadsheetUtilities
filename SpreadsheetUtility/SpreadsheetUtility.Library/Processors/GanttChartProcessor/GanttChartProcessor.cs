@@ -17,35 +17,52 @@ namespace SpreadsheetUtility.Library
 
     public class GanttChartProcessor: IGanttChartProcessor
     {
-        private List<Project> _projectList;
+        private List<Project> _projectInputList;
+        private List<Project> _projectOutputList;
         private List<GanttTask> _ganttTaskList;
         private List<GanttTask> _ganttProjectList;
         private List<Developer> _developerList;
         private List<Holiday> _holidayList;
         private List<Holiday> _projectHolidayList;
-        private int currentMaximumTaskID = 0;
+        private int _currentMaximumTaskID = 0;
+        List<string> _colorClasses;
 
         public GanttChartProcessor()
         {
-            _projectList = new List<Project>();
+            _projectInputList = new List<Project>();
+            _projectOutputList = new List<Project>();
             _ganttTaskList = new List<GanttTask>();
             _ganttProjectList = new List<GanttTask>();
             _developerList = new List<Developer>();
             _projectHolidayList = new List<Holiday>();
+            _colorClasses = new List<string>()
+            {
+                "task-red",
+                "task-green",
+                "task-blue",
+                "task-purple",
+                "task-brown",
+                "task-orange",
+                "task-yellow",
+                "task-cyan",
+                "task-magenta",
+                "task-lime",
+                "task-pink",
+            };
             _holidayList = ProcessHolidays();
         }        
 
         #region dto processing
         public CalculateGanttChartAllocationOutput CalculateGanttChartAllocation(CalculateGanttChartAllocationInput input)
         {
-            _projectList = LoadProjectsFromDtos(input.ProjectDtos);
+            _projectInputList = LoadProjectsFromDtos(input.ProjectDtos);
+            SetupProjectColor();
             _ganttTaskList = LoadTasksFromDtos(input.TaskDtos);
             _developerList = LoadTeamDataFromDtos(input.DeveloperDtos);
 
-            SetupProjectColor();
 
             //group projects by ProjectGroup
-            var projectGroupList = _projectList.GroupBy(p => p.ProjectGroup)
+            var projectGroupList = _projectInputList.GroupBy(p => p.ProjectGroup)
                 .Select(g => new ProjectGroup
                 {
                     ProjectGroupID = g.Key ?? "",
@@ -65,7 +82,7 @@ namespace SpreadsheetUtility.Library
             
             return new CalculateGanttChartAllocationOutput
             {
-                ProjectList = _projectList,
+                ProjectList = _projectOutputList,
                 GanttTasks = _ganttTaskList,
                 GanttProjects = _ganttProjectList,
                 DeveloperAvailability = developerAvailability,
@@ -75,7 +92,7 @@ namespace SpreadsheetUtility.Library
 
         private void GenerateProjectListFromTasks()
         {
-            _projectList = _ganttTaskList.GroupBy(t => t.ProjectName)
+            _projectOutputList = _ganttTaskList.GroupBy(t => t.ProjectName)
                 .Select(g => new Project
                 {
                     ProjectID = g.First().ProjectID,
@@ -83,7 +100,7 @@ namespace SpreadsheetUtility.Library
                     StartDate = g.Min(t => t.StartDate),
                     EndDate = g.Max(t => t.EndDate),
                     TotalEstimatedEffortHours = g.Sum(t => t.EstimatedEffortHours),
-                    ProjectGroup = _projectList.Find(p => p.ProjectName == g.Key)?.ProjectGroup
+                    ProjectGroup = _projectInputList.Find(p => p.ProjectName == g.Key)?.ProjectGroup
                 }).ToList();
 
             double totalEstimatedEffortHours = _ganttTaskList.Sum(t => t.EstimatedEffortHours);            
@@ -99,10 +116,10 @@ namespace SpreadsheetUtility.Library
                     EndDate = g.Max(t => t.EndDate),
                     Start = g.Min(t => t.StartDate).ToString("yyyy-MM-dd"),
                     End = g.Max(t => t.EndDate).ToString("yyyy-MM-dd"),
-                    CustomClass = _projectList.Find(p => p.ProjectName == g.Key)?.Color ?? "delayed-task"
+                    CustomClass = _projectInputList.Find(p => p.ProjectName == g.Key)?.Color ?? "task-blue"
                 }).ToList();
 
-            Console.WriteLine(JsonConvert.SerializeObject(_projectList,
+            Console.WriteLine(JsonConvert.SerializeObject(_projectInputList,
                 new JsonSerializerSettings
                 {
                     ContractResolver = new CamelCasePropertyNamesContractResolver(),
@@ -145,36 +162,30 @@ namespace SpreadsheetUtility.Library
                 InternalID = dto.InternalID ?? "",
                 ActualStart = dto.ActualStart ?? "",
                 ActualEnd = dto.ActualEnd ?? "",
-                CustomClass = _projectList.Find(p => p.ProjectID == dto.ProjectID)?.Color ?? "delayed-task"
+                CustomClass = _projectInputList.Find(p => p.ProjectID == dto.ProjectID)?.Color ?? "task-blue"
             }).ToList();
         }
         private void SetupProjectColor()
         {
             var random = new Random();
-            foreach (var project in _projectList)
-            {
-                project.Color = GetRandomColorClass();
+            foreach (var project in _projectInputList)
+            {                
+                int count = 0;
+                string color = "";
+                do
+                {
+                    color = GetRandomColorClass();
+                    count++;
+                } while (_projectInputList.Any(p => p.Color == project.Color) && count < _colorClasses.Count());
+                project.Color = color;
             }
         }
         private string GetRandomColorClass()
         {
             var random = new Random();
             //colors from gantt-style.css classes
-                List<string> colorClasses = new List<string>
-            {
-                "task-red",
-                "task-green",
-                "task-blue",
-                "task-purple",
-                "task-brown",
-                "task-orange",
-                "task-yellow",
-                "task-cyan",
-                "task-magenta",
-                "task-lime",
-                "task-pink",
-            };
-            return colorClasses[random.Next(colorClasses.Count)];
+            
+            return _colorClasses[random.Next(_colorClasses.Count-1)];
         }
         private List<Developer> LoadTeamDataFromDtos(List<DeveloperDto> developerDtos)
         {
@@ -307,7 +318,7 @@ namespace SpreadsheetUtility.Library
 
             // Create a mapping of original task IDs to new task IDs
             var idMapping = new Dictionary<string, string>();
-            for (int i = currentMaximumTaskID; i < sortedTasks.Count; i++)
+            for (int i = _currentMaximumTaskID; i < sortedTasks.Count; i++)
             {
                 var originalTaskId = sortedTasks[i].Id;
                 var newTaskId = (i + 1).ToString();
@@ -318,7 +329,7 @@ namespace SpreadsheetUtility.Library
                 {
                     sortedTasks[i].Dependencies = "";
                 }
-                currentMaximumTaskID = int.Parse(newTaskId);
+                _currentMaximumTaskID = int.Parse(newTaskId);
             }
 
             // Update the dependencies to the new sorted order

@@ -1,46 +1,93 @@
-﻿.task-red {
-    color: #FF0000;
+﻿/* CSS classes with lighter bars and darker progress bars */
+.task-red .bar {
+    fill: #FF6666 !important; /* Lighter red */
 }
 
-.task-green {
-    color: #00FF00;
+.task-red .bar-progress {
+    fill: #CC0000 !important; /* Darker red */
 }
 
-.task-blue {
-    color: #0000FF;
+.task-green .bar {
+    fill: #66FF66 !important; /* Lighter green */
 }
 
-.task-purple {
-    color: #800080;
+.task-green .bar-progress {
+    fill: #009900 !important; /* Darker green */
 }
 
-.task-brown {
-    color: #A52A2A;
+.task-blue .bar {
+    fill: #6666FF !important; /* Lighter blue */
 }
 
-.task-orange {
-    color: #FFA500;
+.task-blue .bar-progress {
+    fill: #000099 !important; /* Darker blue */
 }
 
-.task-yellow {
-    color: #FFFF00;
+.task-purple .bar {
+    fill: #D580FF !important; /* Lighter purple */
 }
 
-.task-cyan {
-    color: #00FFFF;
+.task-purple .bar-progress {
+    fill: #800080 !important; /* Darker purple */
 }
 
-.task-magenta {
-    color: #FF00FF;
+.task-brown .bar {
+    fill: #D2B48C !important; /* Lighter brown */
 }
 
-.task-lime {
-    color: #32CD32;
+.task-brown .bar-progress {
+    fill: #8B4513 !important; /* Darker brown */
 }
 
-.task-pink {
-    color: #FFC0CB;
+.task-orange .bar {
+    fill: #FFB266 !important; /* Lighter orange */
 }
+
+.task-orange .bar-progress {
+    fill: #CC5500 !important; /* Darker orange */
+}
+
+.task-yellow .bar {
+    fill: #FFFF99 !important; /* Lighter yellow */
+}
+
+.task-yellow .bar-progress {
+    fill: #CCCC00 !important; /* Darker yellow */
+}
+
+.task-cyan .bar {
+    fill: #99FFFF !important; /* Lighter cyan */
+}
+
+.task-cyan .bar-progress {
+    fill: #00CCCC !important; /* Darker cyan */
+}
+
+.task-magenta .bar {
+    fill: #FF99FF !important; /* Lighter magenta */
+}
+
+.task-magenta .bar-progress {
+    fill: #CC0099 !important; /* Darker magenta */
+}
+
+.task-lime .bar {
+    fill: #99FF99 !important; /* Lighter lime */
+}
+
+.task-lime .bar-progress {
+    fill: #32CD32 !important; /* Darker lime */
+}
+
+.task-pink .bar {
+    fill: #FFCCE5 !important; /* Lighter pink */
+}
+
+.task-pink .bar-progress {
+    fill: #FF69B4 !important; /* Darker pink */
+}
+
+
 
 .delayed-task .bar {
     fill: red !important;

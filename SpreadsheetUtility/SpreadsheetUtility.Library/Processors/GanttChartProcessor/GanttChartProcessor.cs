@@ -25,7 +25,6 @@ namespace SpreadsheetUtility.Library
         private List<Holiday> _holidayList;
         private List<Holiday> _projectHolidayList;
         private int _currentMaximumTaskID = 0;
-        List<string> _colorClasses;
 
         public GanttChartProcessor()
         {
@@ -34,29 +33,14 @@ namespace SpreadsheetUtility.Library
             _ganttTaskList = new List<GanttTask>();
             _ganttProjectList = new List<GanttTask>();
             _developerList = new List<Developer>();
-            _projectHolidayList = new List<Holiday>();
-            _colorClasses = new List<string>()
-            {
-                "task-red",
-                "task-green",
-                "task-blue",
-                "task-purple",
-                "task-brown",
-                "task-orange",
-                "task-yellow",
-                "task-cyan",
-                "task-magenta",
-                "task-lime",
-                "task-pink",
-            };
+            _projectHolidayList = new List<Holiday>();            
             _holidayList = ProcessHolidays();
         }        
 
         #region dto processing
         public CalculateGanttChartAllocationOutput CalculateGanttChartAllocation(CalculateGanttChartAllocationInput input)
         {
-            _projectInputList = LoadProjectsFromDtos(input.ProjectDtos);
-            SetupProjectColor();
+            _projectInputList = LoadProjectsFromDtos(input.ProjectDtos);            
             _ganttTaskList = LoadTasksFromDtos(input.TaskDtos);
             _developerList = LoadTeamDataFromDtos(input.DeveloperDtos);
 
@@ -116,7 +100,8 @@ namespace SpreadsheetUtility.Library
                     EndDate = g.Max(t => t.EndDate),
                     Start = g.Min(t => t.StartDate).ToString("yyyy-MM-dd"),
                     End = g.Max(t => t.EndDate).ToString("yyyy-MM-dd"),
-                    CustomClass = _projectInputList.Find(p => p.ProjectName == g.Key)?.Color ?? "task-blue"
+                    ProjectName = g.Key,
+                    ProjectID = g.First().ProjectID ?? "",
                 }).ToList();
 
             Console.WriteLine(JsonConvert.SerializeObject(_projectInputList,
@@ -161,32 +146,10 @@ namespace SpreadsheetUtility.Library
                 TaskName = dto.TaskName ?? "",
                 InternalID = dto.InternalID ?? "",
                 ActualStart = dto.ActualStart ?? "",
-                ActualEnd = dto.ActualEnd ?? "",
-                CustomClass = _projectInputList.Find(p => p.ProjectID == dto.ProjectID)?.Color ?? "task-blue"
+                ActualEnd = dto.ActualEnd ?? "",                
             }).ToList();
         }
-        private void SetupProjectColor()
-        {
-            var random = new Random();
-            foreach (var project in _projectInputList)
-            {                
-                int count = 0;
-                string color = "";
-                do
-                {
-                    color = GetRandomColorClass();
-                    count++;
-                } while (_projectInputList.Any(p => p.Color == project.Color) && count < _colorClasses.Count());
-                project.Color = color;
-            }
-        }
-        private string GetRandomColorClass()
-        {
-            var random = new Random();
-            //colors from gantt-style.css classes
-            
-            return _colorClasses[random.Next(_colorClasses.Count-1)];
-        }
+               
         private List<Developer> LoadTeamDataFromDtos(List<DeveloperDto> developerDtos)
         {
             return developerDtos.Select(dto => new Developer
@@ -294,8 +257,7 @@ namespace SpreadsheetUtility.Library
                 task.StartDate = taskStart;
                 task.EndDate = taskEnd;
                 task.AssignedDeveloper = assignedDeveloper.Name;
-                task.Name = $"{task.Name} ({assignedDeveloper.Name})";
-
+                task.Name = $"{task.Name} ({assignedDeveloper.Name})";                
                 assignedDeveloper.Tasks.Add(task);
                 assignedDeveloper.SetNextAvailableDate(taskEnd.AddDays(1));                
             }

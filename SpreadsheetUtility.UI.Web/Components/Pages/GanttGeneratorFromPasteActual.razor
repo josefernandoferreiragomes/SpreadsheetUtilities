@@ -130,6 +130,20 @@
 </div>
 <p></p>
 @code {
+    private List<string> colorClasses = new List<string>()
+    {
+        "task-red",
+        "task-green",
+        "task-blue",
+        "task-purple",
+        "task-brown",
+        "task-orange",
+        "task-yellow",
+        "task-cyan",
+        "task-magenta",
+        "task-lime",
+        "task-pink",
+    };
     enum ChartMode
     {
         Week,
@@ -148,6 +162,38 @@
     private string excelTeamData = "";    
     private IQueryable<DeveloperAvailability>? developerListOutput;    
     private bool preSortTasks = true;
+
+
+
+    private void SetupProjectColor()
+    {
+        var random = new Random();
+        foreach (var project in ganttProjectListOutput)
+        {                
+            int count = 0;
+            string color = "";
+            do
+            {
+                color = GetRandomColorClass();
+                count++;
+            } while (ganttProjectListOutput.ToList().Any(p => p.CustomClass == color) && count < (colorClasses.Count()));
+            
+            project.CustomClass = color;
+            var tempTasks = ganttTaskListOutput.Where(t => t.ProjectID == project.ProjectID);
+            foreach (var task in tempTasks)
+            {
+                task.CustomClass = color;
+            }
+        }
+    }    
+
+    private string GetRandomColorClass()
+    {
+        var random = new Random();
+        //colors from gantt-style.css classes
+
+        return colorClasses[random.Next(colorClasses.Count - 1)];
+    }
 
     private void SwapChartMode()
     {       
@@ -240,15 +286,18 @@
         this.JS.InvokeVoidAsync("console.log", inputMessageLog);
 
         var ganttChartAllocation = GanttService.CalculateGanttChartAllocation(input);
-        
+
         var outputMessageLog = $"output: {JsonConvert.SerializeObject(ganttChartAllocation, Formatting.Indented)}";
         this.JS.InvokeVoidAsync("console.log", outputMessageLog);
-
+        
         ganttTaskListOutput = ganttChartAllocation.GanttTasks.AsQueryable();
         developerListOutput = ganttChartAllocation.DeveloperAvailability.AsQueryable();
         projectListOutput = ganttChartAllocation.ProjectList.AsQueryable();       
         projectHolidayList = ganttChartAllocation.HolidayList.AsQueryable();
         ganttProjectListOutput = ganttChartAllocation.GanttProjects.AsQueryable();
+        
+        SetupProjectColor();
+        
         JS.InvokeVoidAsync("renderGanttTasksActual", JsonConvert.SerializeObject(ganttTaskListOutput, Formatting.Indented), chartMode.ToString(), "true");
         JS.InvokeVoidAsync("renderGanttProjects", JsonConvert.SerializeObject(ganttProjectListOutput, Formatting.Indented), chartMode.ToString(), "true");
     }    

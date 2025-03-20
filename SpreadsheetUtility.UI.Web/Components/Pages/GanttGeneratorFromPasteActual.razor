@@ -6,10 +6,11 @@
 @using Microsoft.AspNetCore.Components.QuickGrid;
 @using SpreadsheetUtility.Services
 @using SpreadsheetUtility.UI.Web.Components;
+@using SpreadsheetUtility.UI.Web.Helpers
 @using static Microsoft.AspNetCore.Components.Web.RenderMode
 @inject IJSRuntime JS
 @rendermode InteractiveServer                  
-<h3>Gantt Generator Paste</h3>
+<h3>Gantt Generator Paste with actual dates (Work In Progress ...)</h3>
 <label>Projects</label>
 <label>Project groups will have their assigned tasks in order. The tasks for the next project will be assigned upon completion of the previous project group.</label>
 <label>The properly ordered project groups will represent dependencies... first, project group 1, then, project group 2</label>
@@ -130,20 +131,7 @@
 </div>
 <p></p>
 @code {
-    private List<string> colorClasses = new List<string>()
-    {
-        "task-red",
-        "task-green",
-        "task-blue",
-        "task-purple",
-        "task-brown",
-        "task-orange",
-        "task-yellow",
-        "task-cyan",
-        "task-magenta",
-        "task-lime",
-        "task-pink",
-    };
+    
     enum ChartMode
     {
         Week,
@@ -161,119 +149,18 @@
     private IQueryable<GanttTask>? ganttProjectListOutput;    
     private string excelTeamData = "";    
     private IQueryable<DeveloperAvailability>? developerListOutput;    
-    private bool preSortTasks = true;
-
-
-
-    private void SetupProjectColor()
-    {
-        var random = new Random();
-        foreach (var project in ganttProjectListOutput)
-        {                
-            int count = 0;
-            string color = "";
-            do
-            {
-                color = GetRandomColorClass();
-                count++;
-            } while (ganttProjectListOutput.ToList().Any(p => p.CustomClass == color) && count < (colorClasses.Count()));
-            
-            project.CustomClass = color;
-            var tempTasks = ganttTaskListOutput.Where(t => t.ProjectID == project.ProjectID);
-            foreach (var task in tempTasks)
-            {
-                task.CustomClass = color;
-            }
-        }
-    }    
-
-    private string GetRandomColorClass()
-    {
-        var random = new Random();
-        //colors from gantt-style.css classes
-
-        return colorClasses[random.Next(colorClasses.Count - 1)];
-    }
+    private bool preSortTasks = true;    
 
     private void SwapChartMode()
     {       
         LoadGanttChartTasks();        
-    }
-
-    private void ConvertToGanttProjects()
-    {
-        var lines = excelProjectData.Split('\n', StringSplitOptions.RemoveEmptyEntries);
-        projectDtoList = new List<ProjectDto>();
-
-        foreach (var line in lines.Skip(1)) // Skip header
-        {
-            var columns = line.Split('\t');
-            if (columns.Length == 3)
-            {
-                projectDtoList.Add(new ProjectDto()
-                    {                        
-                        ProjectID = columns[0].Trim(),
-                        ProjectName = columns[1].Trim(),                                                
-                        ProjectGroup = columns[2].Trim()
-                    });
-            }
-        }        
-    }
-
-    private void ConvertToGanttTasks()
-    {
-        var lines = excelTaskData.Split('\n', StringSplitOptions.RemoveEmptyEntries);
-        taskDtoList = new List<TaskDto>();
-
-        foreach (var line in lines.Skip(1)) // Skip header
-        {
-            var columns = line.Split('\t');
-            if (columns.Length == 10)
-            {
-                taskDtoList.Add(new TaskDto()
-                    {
-                        Id = columns[0].Trim(),
-                        ProjectID = columns[1].Trim(),
-                        ProjectName = columns[2].Trim(),
-                        TaskName = columns[3].Trim(),
-                        EstimatedEffortHours = double.TryParse(columns[4].Trim(), out var effort) ? effort : 0,
-                        Dependencies = columns[5].Trim(),                        
-                        Progress = columns[6].Trim(),
-                        InternalID = columns[7].Trim(),
-                        ActualStart = columns[8].Trim(),
-                        ActualEnd = columns[9].Trim()
-                    });
-            }
-        }        
-    }
-
-    private void ConvertToTeamData()
-    {
-        var lines = excelTeamData.Split('\n', StringSplitOptions.RemoveEmptyEntries);
-        developerDtoList = new List<DeveloperDto>();
-
-        foreach (var line in lines.Skip(1)) // Skip header
-        {
-            var columns = line.Split('\t');
-            if (columns.Length == 4)
-            {
-                developerDtoList.Add(new DeveloperDto()
-                    {
-                        Team = columns[0].Trim(),
-                        Name = columns[1].Trim(),
-                        VacationPeriods = columns[2].Trim(),                        
-                        DailyWorkHours = int.TryParse(columns[3].Trim(), out var hours) ? hours : 0,
-
-                    });
-            }
-        }        
-    }   
-
+    }    
+    
     private void LoadGanttChartTasks()
     {
-        ConvertToGanttProjects();
-        ConvertToGanttTasks();
-        ConvertToTeamData();      
+        projectDtoList = GanttMapperHelper.ConvertToGanttProjects(excelProjectData);
+        taskDtoList = GanttMapperHelper.ConvertToGanttTasksWithActual(excelTaskData);
+        developerDtoList = GanttMapperHelper.ConvertToTeamData(excelTeamData);
         var input = new CalculateGanttChartAllocationInput
         {
             DeveloperDtos = developerDtoList,
@@ -296,7 +183,7 @@
         projectHolidayList = ganttChartAllocation.HolidayList.AsQueryable();
         ganttProjectListOutput = ganttChartAllocation.GanttProjects.AsQueryable();
         
-        SetupProjectColor();
+        GanttColorHelper.SetupProjectColor(ganttProjectListOutput, ganttTaskListOutput);
         
         JS.InvokeVoidAsync("renderGanttTasksActual", JsonConvert.SerializeObject(ganttTaskListOutput, Formatting.Indented), chartMode.ToString(), "true");
         JS.InvokeVoidAsync("renderGanttProjects", JsonConvert.SerializeObject(ganttProjectListOutput, Formatting.Indented), chartMode.ToString(), "true");

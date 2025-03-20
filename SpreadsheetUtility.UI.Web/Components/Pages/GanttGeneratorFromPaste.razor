@@ -35,6 +35,11 @@
 </div>
 <p></p>
 <div>
+    <label>Projects start Date</label>
+    <InputDate @bind-Value="projectStartDate" />
+</div>
+<p></p>
+<div>
     <button @onclick="LoadGanttChartTasks">Load Tasks Gantt Chart</button>
 </div>
 <div>
@@ -136,6 +141,7 @@
         Week,
         Day
     }
+    private DateTime projectStartDate = DateTime.Now;
     private ChartMode chartMode = ChartMode.Week;
     private string excelProjectData = "";    
     private string excelTaskData = "";    
@@ -166,7 +172,8 @@
             DeveloperDtos = developerDtoList,
             ProjectDtos = projectDtoList,
             TaskDtos = taskDtoList,
-            PreSortTasks = preSortTasks
+            PreSortTasks = preSortTasks,
+            ProjectStartDate = projectStartDate
         };
 
         var inputMessageLog = $"input: {JsonConvert.SerializeObject(input, Formatting.Indented)}";

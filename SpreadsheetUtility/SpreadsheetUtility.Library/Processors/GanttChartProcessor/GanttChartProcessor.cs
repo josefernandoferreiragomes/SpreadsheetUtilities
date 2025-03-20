@@ -25,7 +25,7 @@ namespace SpreadsheetUtility.Library
         private List<Holiday> _holidayList;
         private List<Holiday> _projectHolidayList;
         private int _currentMaximumTaskID = 0;
-
+        private DateTime _projectStartDate = DateTime.Now;
         public GanttChartProcessor()
         {
             _projectInputList = new List<Project>();
@@ -43,7 +43,7 @@ namespace SpreadsheetUtility.Library
             _projectInputList = LoadProjectsFromDtos(input.ProjectDtos);            
             _ganttTaskList = LoadTasksFromDtos(input.TaskDtos);
             _developerList = LoadTeamDataFromDtos(input.DeveloperDtos);
-
+            _projectStartDate = input.ProjectStartDate;
 
             //group projects by ProjectGroup
             var projectGroupList = _projectInputList.GroupBy(p => p.ProjectGroup)
@@ -72,6 +72,23 @@ namespace SpreadsheetUtility.Library
                 DeveloperAvailability = developerAvailability,
                 HolidayList = _projectHolidayList                
             };
+        }
+        public List<GanttTask> LoadTasksFromDtos(List<TaskDto> taskDtos)
+        {
+            return taskDtos.Select(dto => new GanttTask
+            {
+                Id = dto.Id ?? "",
+                Name = $"{dto.ProjectName} : {dto.TaskName}",
+                EstimatedEffortHours = dto.EstimatedEffortHours,
+                Dependencies = dto.Dependencies ?? "",
+                Progress = int.TryParse(dto.Progress, out var p) ? p : 0,
+                ProjectID = dto.ProjectID ?? "",
+                ProjectName = dto.ProjectName ?? "",
+                TaskName = dto.TaskName ?? "",
+                InternalID = dto.InternalID ?? "",
+                ActualStart = dto.ActualStart ?? "",
+                ActualEnd = dto.ActualEnd ?? "",                
+            }).ToList();
         }
 
         private void GenerateProjectListFromTasks()
@@ -132,23 +149,6 @@ namespace SpreadsheetUtility.Library
             }).ToList();
         }
 
-        public List<GanttTask> LoadTasksFromDtos(List<TaskDto> taskDtos)
-        {
-            return taskDtos.Select(dto => new GanttTask
-            {
-                Id = dto.Id ?? "",
-                Name = $"{dto.ProjectName} : {dto.TaskName}",
-                EstimatedEffortHours = dto.EstimatedEffortHours,
-                Dependencies = dto.Dependencies ?? "",
-                Progress = int.TryParse(dto.Progress, out var p) ? p : 0,
-                ProjectID = dto.ProjectID ?? "",
-                ProjectName = dto.ProjectName ?? "",
-                TaskName = dto.TaskName ?? "",
-                InternalID = dto.InternalID ?? "",
-                ActualStart = dto.ActualStart ?? "",
-                ActualEnd = dto.ActualEnd ?? "",                
-            }).ToList();
-        }
                
         private List<Developer> LoadTeamDataFromDtos(List<DeveloperDto> developerDtos)
         {
@@ -224,7 +224,7 @@ namespace SpreadsheetUtility.Library
 
             var projectTasks = _ganttTaskList.Where(t => projectGroupList.Projects.Select(p=>p.ProjectID).Contains(t.ProjectID)).ToList();
 
-            DateTime startDate = DateTime.Today;
+            DateTime startDate = _projectStartDate;
             while (IsWeekendOrHoliday(startDate))
             {
                 startDate = startDate.AddDays(1);

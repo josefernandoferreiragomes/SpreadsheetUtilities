@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SpreadsheetUtility.Library.Providers;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,14 +13,21 @@ namespace SpreadsheetUtility.Library
         public required string Name { get; set; }
         public double DailyWorkHours { get; set; }
         public List<(DateTime Start, DateTime End)?>? VacationPeriods { get; set; }
-
-        public DateTime NextAvailableDateForTasks = DateTime.Today;
+        public DateTime NextAvailableDateForTasks { get; set; }
         public List<GanttTask> Tasks { get; set; } = new List<GanttTask>();
         public double AllocatedHours { get; set; }
         public double SlackHours { get; set; }
         public double TotalHours { get; set; }
         public string VacationPeriodsSerialized => string.Join("|", VacationPeriods?.Where(v => v.HasValue)
             .Select(v => $"{v?.Start:yyyy-MM-dd};{v?.End:yyyy-MM-dd}") ?? Enumerable.Empty<string>());
+        
+        private IDateTimeProvider _dateTimeProvider;
+        public Developer(IDateTimeProvider dateTimeProvider)
+        {
+            _dateTimeProvider = dateTimeProvider;
+            NextAvailableDateForTasks = _dateTimeProvider.Today;
+        }
+
         public DateTime NextAvailableDate(DateTime fromDate)
         {
             DateTime date = fromDate > NextAvailableDateForTasks ? fromDate : NextAvailableDateForTasks;

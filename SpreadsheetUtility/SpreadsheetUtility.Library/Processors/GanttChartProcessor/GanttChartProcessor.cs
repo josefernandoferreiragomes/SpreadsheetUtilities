@@ -6,6 +6,7 @@ using DocumentFormat.OpenXml.Spreadsheet;
 using System.Collections.Generic;
 using DocumentFormat.OpenXml.Wordprocessing;
 using static System.Runtime.InteropServices.JavaScript.JSType;
+using SpreadsheetUtility.Library.Providers;
 
 namespace SpreadsheetUtility.Library
 {     
@@ -25,15 +26,18 @@ namespace SpreadsheetUtility.Library
         private List<Holiday> _holidayList;
         private List<Holiday> _projectHolidayList;
         private int _currentMaximumTaskID = 0;
-        private DateTime _projectStartDate = DateTime.Now;
-        public GanttChartProcessor()
+        private readonly IDateTimeProvider _dateTimeProvider;
+        private DateTime _projectStartDate;
+        public GanttChartProcessor(IDateTimeProvider dateTimeProvider)
         {
             _projectInputList = new List<Project>();
             _projectOutputList = new List<Project>();
             _ganttTaskList = new List<GanttTask>();
             _ganttProjectList = new List<GanttTask>();
             _developerList = new List<Developer>();
-            _projectHolidayList = new List<Holiday>();            
+            _projectHolidayList = new List<Holiday>();
+            _dateTimeProvider = dateTimeProvider;
+            _projectStartDate = _dateTimeProvider.Today;
             _holidayList = ProcessHolidays();
         }        
 
@@ -152,7 +156,7 @@ namespace SpreadsheetUtility.Library
                
         private List<Developer> LoadTeamDataFromDtos(List<DeveloperDto> developerDtos)
         {
-            return developerDtos.Select(dto => new Developer
+            return developerDtos.Select(dto => new Developer(_dateTimeProvider)
             {
                 Name = $"{dto.Team} : {dto.Name}",
                 DailyWorkHours = dto.DailyWorkHours,

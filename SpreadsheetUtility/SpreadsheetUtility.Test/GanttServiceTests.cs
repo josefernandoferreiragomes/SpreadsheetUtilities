@@ -1,5 +1,7 @@
-﻿using Newtonsoft.Json;
+﻿using Moq;
+using Newtonsoft.Json;
 using SpreadsheetUtility.Library;
+using SpreadsheetUtility.Library.Providers;
 using SpreadsheetUtility.Services;
 using SpreadsheetUtility.Test.Helpers;
 
@@ -9,19 +11,22 @@ namespace SpreadsheetUtility.Test
     public class GanttServiceTests
     {
         private readonly GanttService _ganttService;
+        private readonly Mock<IDateTimeProvider> _mockDateTimeProvider;
 
         public GanttServiceTests()
         {
-            var ganttProcessor = new GanttChartProcessor();
+            _mockDateTimeProvider = new Mock<IDateTimeProvider>();
+            var ganttProcessor = new GanttChartProcessor(_mockDateTimeProvider?.Object!);
             _ganttService = new GanttService(ganttProcessor);
         }
-
+        
         [Fact]
         public void CalculateGanttChartAllocation()
         {
             // Arrange
             var input = JsonTestHelper.ProcessMethodJson<CalculateGanttChartAllocationInput>("CalculateGanttChartAllocation","Input");
-
+            var fixedDateTime = new DateTime(2025, 03, 20);
+            _mockDateTimeProvider.Setup(m => m.Today).Returns(fixedDateTime);
             Assert.NotNull(input);
             // Act
             var result = _ganttService.CalculateGanttChartAllocation(input);

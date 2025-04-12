@@ -21,6 +21,10 @@ namespace SpreadsheetUtility.UI.Web.Helpers
 
         public static void SetupProjectColor(IQueryable<GanttTask>? ganttProjectListOutput, IQueryable<GanttTask>? ganttTaskListOutput)
         {
+            if (ganttProjectListOutput == null || ganttTaskListOutput == null)
+            {
+                return;
+            }
             var random = new Random();
             foreach (var project in ganttProjectListOutput)
             {

@@ -22,6 +22,8 @@ namespace Utilities.Services
             }
             catch (Exception ex)
             {
+                //TODO: Property Log the exception
+                Console.Write(ex.ToString());
                 throw;
             }
         }

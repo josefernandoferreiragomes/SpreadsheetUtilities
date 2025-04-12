@@ -22,6 +22,9 @@
     <Content Update="Components\Pages\JsonGeneratorFromPaste.razor">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
     </Content>
+    <Content Update="wwwroot\frappe-gantt-custom.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Update="wwwroot\gantt-style.css">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

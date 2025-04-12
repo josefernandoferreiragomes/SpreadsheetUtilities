@@ -116,7 +116,7 @@ namespace SpreadsheetUtility.Library
                     StartDate = g.Min(t => t.StartDate),
                     EndDate = g.Max(t => t.EndDate),
                     Start = g.Min(t => t.StartDate).ToString("yyyy-MM-dd"),
-                    End = g.Max(t => t.EndDate.AddDays(1)).ToString("yyyy-MM-dd"),
+                    End = g.Max(t => t.EndDate).ToString("yyyy-MM-dd"),
                     ProjectName = g.Key,
                     ProjectID = g.First().ProjectID ?? "",
                 }).ToList();
@@ -249,7 +249,7 @@ namespace SpreadsheetUtility.Library
                 DateTime taskEnd = CalculateEndDate(taskStart, requiredDays, assignedDeveloper.VacationPeriods);
 
                 task.Start = taskStart.ToString("yyyy-MM-dd");
-                task.End = taskEnd.AddDays(1).ToString("yyyy-MM-dd");
+                task.End = taskEnd.ToString("yyyy-MM-dd");
                 //TaskEndWeek is equal to the first day of the week of the task end date
                 task.TaskEndWeek = $"Week of {taskEnd.AddDays(-(int)(taskEnd.DayOfWeek - 1)).ToString("yyyy-MM-dd")}";
 

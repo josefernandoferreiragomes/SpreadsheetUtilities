@@ -48,3 +48,20 @@ dotnet run .\..\ExampleFiles\input.xlsx 2 5 output.xlsx
 	```bash	
 	Install-Package
 	```
+- Fix end date glitch, where frappe gantt displays the end date missing one day, in the taskbar
+- downloaded the frappe-gantt source code, and in the file bar.js, changed in line 619:
+```javascript
+replaced: d <= this.task._end; 
+with:  d <= this.task._end;
+```
+- installed node.js from https://nodejs.org/
+- in the frappe-gantt local source code folder, executed
+```bash
+	npm install
+	npm run build
+```
+- then copied the files from the frappe-gantt dist folder, to SpreadsheetUtilities' wwwroot folder
+```bash
+	frappe-gantt.umd.js
+	frappe-gantt.css
+```

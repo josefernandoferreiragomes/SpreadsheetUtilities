@@ -19,7 +19,7 @@
       "ProjectName": "Project A",
       "TaskName": "Implement Backend",
       "EstimatedEffortHours": 55.0,
-      "Dependencies": "1",
+      "Dependencies": "",
       "Progress": "",
       "InternalID": "1235",
       "ActualStart": null,
@@ -32,7 +32,7 @@
       "ProjectName": "Project A",
       "TaskName": "Testing",
       "EstimatedEffortHours": 15.0,
-      "Dependencies": "2",
+      "Dependencies": "",
       "Progress": "",
       "InternalID": "123",
       "ActualStart": null,
@@ -58,7 +58,7 @@
       "ProjectName": "Project B",
       "TaskName": "API Development",
       "EstimatedEffortHours": 50.0,
-      "Dependencies": "4",
+      "Dependencies": "",
       "Progress": "",
       "InternalID": "1236",
       "ActualStart": null,
@@ -205,5 +205,6 @@
       "ProjectGroup": "1"
     }
   ],
-  "PreSortTasks": true
+  "PreSortTasks": true,
+  "ProjectStartDate": "2025-04-13T00:00:00+01:00"
 }

@@ -47,7 +47,8 @@ namespace SpreadsheetUtility.Test
         {
             // Arrange
             var input = JsonTestHelper.ProcessMethodJson<CalculateGanttChartAllocationInput>("CalculateGanttChartAllocationNoDependencies", "Input");
-
+            var fixedDateTime = new DateTime(2025, 03, 20);
+            _mockDateTimeProvider.Setup(m => m.Today).Returns(fixedDateTime);
             Assert.NotNull(input);
             // Act
             var result = _ganttService.CalculateGanttChartAllocation(input);

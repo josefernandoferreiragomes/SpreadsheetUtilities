@@ -80,7 +80,7 @@
     </InputRadioGroup>
 </div>
 <div>
-    <label>Pre Sort Tasks</label>
+    <label>Pre Sort Tasks (experimental)</label>
     <InputRadioGroup @bind-Value="preSortTasks">
         <div>
             <InputRadio Value="false" /> <label>Pre Sort Tasks</label>
@@ -180,7 +180,7 @@
     private IQueryable<GanttTask>? ganttProjectListOutput;    
     private string excelTeamData = "";    
     private IQueryable<DeveloperAvailability>? developerListOutput;    
-    private bool preSortTasks = true;
+    private bool preSortTasks = false;
 
     private void SwapChartMode()
     {       

@@ -66,7 +66,7 @@
       "ActualProgress": 0
     },
     {
-      "id": "2",
+      "id": "5",
       "name": "Project A : Implement Backend (Team Beta : Charlie)",
       "start": "2025-04-30",
       "end": "2025-05-12",
@@ -89,7 +89,7 @@
       "ActualProgress": 0
     },
     {
-      "id": "3",
+      "id": "12",
       "name": "Project A : Testing (Team Alpha : Bob)",
       "start": "2025-05-21",
       "end": "2025-05-22",
@@ -112,7 +112,7 @@
       "ActualProgress": 0
     },
     {
-      "id": "4",
+      "id": "3",
       "name": "Project B : Database Setup (Team Beta : Charlie)",
       "start": "2025-04-14",
       "end": "2025-04-29",
@@ -135,7 +135,7 @@
       "ActualProgress": 0
     },
     {
-      "id": "5",
+      "id": "6",
       "name": "Project B : API Development (Team Alpha : Bob)",
       "start": "2025-05-02",
       "end": "2025-05-12",
@@ -158,7 +158,7 @@
       "ActualProgress": 0
     },
     {
-      "id": "6",
+      "id": "11",
       "name": "Project C : Database Setup (Team Alpha : Alice)",
       "start": "2025-05-19",
       "end": "2025-05-23",
@@ -181,7 +181,7 @@
       "ActualProgress": 0
     },
     {
-      "id": "7",
+      "id": "4",
       "name": "Project C : UI Development (Team Beta : Dave)",
       "start": "2025-04-14",
       "end": "2025-04-30",
@@ -204,7 +204,7 @@
       "ActualProgress": 0
     },
     {
-      "id": "8",
+      "id": "7",
       "name": "Project D : Backend Analysis (Team Beta : Dave)",
       "start": "2025-05-02",
       "end": "2025-05-13",
@@ -227,7 +227,7 @@
       "ActualProgress": 0
     },
     {
-      "id": "9",
+      "id": "2",
       "name": "Project D : Database Setup (Team Alpha : Bob)",
       "start": "2025-04-14",
       "end": "2025-04-30",
@@ -273,7 +273,7 @@
       "ActualProgress": 0
     },
     {
-      "id": "11",
+      "id": "9",
       "name": "Project D : UI Development (Team Beta : Charlie)",
       "start": "2025-05-13",
       "end": "2025-05-21",
@@ -296,7 +296,7 @@
       "ActualProgress": 0
     },
     {
-      "id": "12",
+      "id": "8",
       "name": "Project D : Testing (Team Alpha : Bob)",
       "start": "2025-05-13",
       "end": "2025-05-20",
@@ -453,7 +453,7 @@
           "ActualProgress": 0
         },
         {
-          "id": "6",
+          "id": "11",
           "name": "Project C : Database Setup (Team Alpha : Alice)",
           "start": "2025-05-19",
           "end": "2025-05-23",
@@ -488,7 +488,7 @@
       "NextAvailableDateForTasks": "2025-05-23T00:00:00+01:00",
       "Tasks": [
         {
-          "id": "9",
+          "id": "2",
           "name": "Project D : Database Setup (Team Alpha : Bob)",
           "start": "2025-04-14",
           "end": "2025-04-30",
@@ -511,7 +511,7 @@
           "ActualProgress": 0
         },
         {
-          "id": "5",
+          "id": "6",
           "name": "Project B : API Development (Team Alpha : Bob)",
           "start": "2025-05-02",
           "end": "2025-05-12",
@@ -534,7 +534,7 @@
           "ActualProgress": 0
         },
         {
-          "id": "12",
+          "id": "8",
           "name": "Project D : Testing (Team Alpha : Bob)",
           "start": "2025-05-13",
           "end": "2025-05-20",
@@ -557,7 +557,7 @@
           "ActualProgress": 0
         },
         {
-          "id": "3",
+          "id": "12",
           "name": "Project A : Testing (Team Alpha : Bob)",
           "start": "2025-05-21",
           "end": "2025-05-22",
@@ -597,7 +597,7 @@
       "NextAvailableDateForTasks": "2025-05-22T00:00:00+01:00",
       "Tasks": [
         {
-          "id": "4",
+          "id": "3",
           "name": "Project B : Database Setup (Team Beta : Charlie)",
           "start": "2025-04-14",
           "end": "2025-04-29",
@@ -620,7 +620,7 @@
           "ActualProgress": 0
         },
         {
-          "id": "2",
+          "id": "5",
           "name": "Project A : Implement Backend (Team Beta : Charlie)",
           "start": "2025-04-30",
           "end": "2025-05-12",
@@ -643,7 +643,7 @@
           "ActualProgress": 0
         },
         {
-          "id": "11",
+          "id": "9",
           "name": "Project D : UI Development (Team Beta : Charlie)",
           "start": "2025-05-13",
           "end": "2025-05-21",
@@ -683,7 +683,7 @@
       "NextAvailableDateForTasks": "2025-05-26T00:00:00+01:00",
       "Tasks": [
         {
-          "id": "7",
+          "id": "4",
           "name": "Project C : UI Development (Team Beta : Dave)",
           "start": "2025-04-14",
           "end": "2025-04-30",
@@ -706,7 +706,7 @@
           "ActualProgress": 0
         },
         {
-          "id": "8",
+          "id": "7",
           "name": "Project D : Backend Analysis (Team Beta : Dave)",
           "start": "2025-05-02",
           "end": "2025-05-13",

@@ -7,14 +7,18 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ClosedXML" Version="0.104.2" />
-    <PackageReference Include="newtonsoft.json" Version="13.0.3" />
+    <None Remove="Holidays\2025HolidaysPT.json" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Holidays\2025HolidaysPT.json">
+    <Content Include="Holidays\2025HolidaysPT.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ClosedXML" Version="0.104.2" />
+    <PackageReference Include="newtonsoft.json" Version="13.0.3" />
   </ItemGroup>
 
 </Project>

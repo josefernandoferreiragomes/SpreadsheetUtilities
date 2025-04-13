@@ -226,13 +226,10 @@ namespace SpreadsheetUtility.Library
             ////filter all tasks whose ID is in the projectTasks list
             //projectTasks = _ganttTaskList.Where(t => projectTasks.Contains(t.ProjectID)).Select(t => t.Id).ToList();
 
-            var projectTasks = _ganttTaskList.Where(t => projectGroupList.Projects.Select(p=>p.ProjectID).Contains(t.ProjectID)).ToList();
+            var projectTasks = _ganttTaskList.Where(t => projectGroupList.Projects.Select(p => p.ProjectID).Contains(t.ProjectID)).ToList();
 
             DateTime startDate = _projectStartDate;
-            while (IsWeekendOrHoliday(startDate))
-            {
-                startDate = startDate.AddDays(1);
-            }
+            startDate = GetNextWorkingDay(startDate);
 
             if (preSortTasks)
             {
@@ -245,9 +242,9 @@ namespace SpreadsheetUtility.Library
                 if (assignedDeveloper == null) continue;
 
                 DateTime taskStart = assignedDeveloper.NextAvailableDate(startDate);
-                var taskStartFromDependency = projectTasks.Find(t => t.Id == task.Dependencies)?.EndDate ?? taskStart;
+                var taskStartFromDependency = projectTasks.Find(t => t.Id == task.Dependencies)?.EndDate ?? DateTime.MinValue;
 
-                taskStart = taskStart > taskStartFromDependency ? taskStart : taskStartFromDependency;
+                taskStart = taskStart > taskStartFromDependency ? taskStart : GetNextWorkingDay(taskStartFromDependency.AddDays(1));
 
                 double requiredDays = Math.Ceiling(task.EstimatedEffortHours / assignedDeveloper.DailyWorkHours);
                 DateTime taskEnd = CalculateEndDate(taskStart, requiredDays, assignedDeveloper.VacationPeriods);
@@ -260,10 +257,20 @@ namespace SpreadsheetUtility.Library
                 task.StartDate = taskStart;
                 task.EndDate = taskEnd;
                 task.AssignedDeveloper = assignedDeveloper.Name;
-                task.Name = $"{task.Name} ({assignedDeveloper.Name})";                
+                task.Name = $"{task.Name} ({assignedDeveloper.Name})";
                 assignedDeveloper.Tasks.Add(task);
-                assignedDeveloper.SetNextAvailableDate(taskEnd.AddDays(1));                
+                assignedDeveloper.SetNextAvailableDate(GetNextWorkingDay(taskEnd.AddDays(1)));
             }
+        }
+
+        private DateTime GetNextWorkingDay(DateTime startDate)
+        {
+            while (IsWeekendOrHoliday(startDate))
+            {
+                startDate = startDate.AddDays(1);
+            }
+
+            return startDate;
         }
 
         private List<GanttTask> PreSortTasks(List<GanttTask> projectTasks)

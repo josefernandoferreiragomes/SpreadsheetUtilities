@@ -1,6 +1,8 @@
-﻿using Moq;
+﻿using Microsoft.Extensions.Logging;
+using Moq;
 using Newtonsoft.Json;
 using SpreadsheetUtility.Library;
+using SpreadsheetUtility.Library.Mappers;
 using SpreadsheetUtility.Library.Providers;
 using SpreadsheetUtility.Services;
 using SpreadsheetUtility.Test.Helpers;
@@ -12,11 +14,13 @@ namespace SpreadsheetUtility.Test
     {
         private readonly GanttService _ganttService;
         private readonly Mock<IDateTimeProvider> _mockDateTimeProvider;
+        private readonly Mock<ILogger> _mockLogger;
 
         public GanttServiceTests()
         {
             _mockDateTimeProvider = new Mock<IDateTimeProvider>();
-            var ganttProcessor = new GanttChartProcessor(_mockDateTimeProvider?.Object!);
+            var mapper = new GanttChartMapper(_mockDateTimeProvider.Object);
+            var ganttProcessor = new GanttChartProcessor(_mockLogger.Object, _mockDateTimeProvider?.Object!, mapper);
             _ganttService = new GanttService(ganttProcessor);
         }
         

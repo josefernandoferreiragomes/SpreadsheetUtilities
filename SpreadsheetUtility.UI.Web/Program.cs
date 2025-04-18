@@ -1,6 +1,7 @@
 using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 using Microsoft.JSInterop;
 using SpreadsheetUtility.Library;
+using SpreadsheetUtility.Library.Mappers;
 using SpreadsheetUtility.Library.Providers;
 using SpreadsheetUtility.Services;
 using SpreadsheetUtility.UI.Web.Components;
@@ -23,6 +24,8 @@ builder.Services.AddLogging(logging =>
 builder.Services.AddScoped<IGanttChartProcessor, GanttChartProcessor>();
 builder.Services.AddScoped<IGanttService, GanttService>();
 builder.Services.AddScoped<IDateTimeProvider, DateTimeProvider>();
+builder.Services.AddScoped<IGanttChartMapper, GanttChartMapper>();
+
 
 var app = builder.Build();
 

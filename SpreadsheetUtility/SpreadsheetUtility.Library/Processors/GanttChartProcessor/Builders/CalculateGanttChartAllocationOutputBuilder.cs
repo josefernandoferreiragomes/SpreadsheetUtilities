@@ -24,7 +24,11 @@ namespace SpreadsheetUtility.Library.Processors.GanttChartProcessor.Builders
             _output.GanttProjects = projects;
             return this;
         }
-
+        public CalculateGanttChartAllocationOutputBuilder WithDeveloperTasks(List<GanttTask> developerGanttTaskList)
+        {
+            _output.DeveloperGanttTaskList = developerGanttTaskList;
+            return this;
+        }
         public CalculateGanttChartAllocationOutputBuilder WithDeveloperAvailability(List<DeveloperAvailability> availability)
         {
             _output.DeveloperAvailability = availability;

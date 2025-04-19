@@ -35,10 +35,10 @@
     <label>Tasks</label>
 </div>
 <div>
-    <label>Dependencies can only exist within the same project. As the project dependencies are represented by ordered project groups above</label>
+    <label>Dependencies (experimental) can only exist within the same project. As the project dependencies are represented by ordered project groups above</label>
 </div>
 <div>
-    <label>Dependencies are represented by the internal ID of the task</label>
+    <label>Dependencies are represented by the internal ID of the task. As if there are dependencies, it is recommended to pre sort the tasks</label>
 </div>
 <div>
     <label>Progress is a percentage</label>
@@ -80,7 +80,7 @@
     </InputRadioGroup>
 </div>
 <div>
-    <label>Pre Sort Tasks by project group (experimental)</label>
+    <label>Pre Sort Tasks by project group (useful if there are dependencies, but it is experimental)</label>
     <InputRadioGroup @bind-Value="preSortTasks">
         <div>
             <InputRadio Value="true" /> <label>Pre Sort Tasks</label>
@@ -99,6 +99,9 @@
 <p></p>
 <p>Projects Gantt Chart:</p>
 <div id="gantt-chart-projects"></div>
+<p></p>
+<p>Developer Tasks Gantt Chart:</p>
+<div id="developer-gantt-chart-tasks"></div>
 <p></p>
 <div>Project data</div>
 <div>
@@ -178,6 +181,8 @@
     private IQueryable<Project>? projectListOutput;    
     private IQueryable<GanttTask>? ganttTaskListOutput;    
     private IQueryable<GanttTask>? ganttProjectListOutput;    
+    private IQueryable<GanttTask>? developerGanttTaskListOutput;
+
     private string excelTeamData = "";    
     private IQueryable<DeveloperAvailability>? developerListOutput;    
     private bool preSortTasks = false;
@@ -215,11 +220,13 @@
         projectListOutput = ganttChartAllocation.ProjectList.AsQueryable();       
         projectHolidayList = ganttChartAllocation.HolidayList.AsQueryable();
         ganttProjectListOutput = ganttChartAllocation.GanttProjects.AsQueryable();
+        developerGanttTaskListOutput = ganttChartAllocation.DeveloperGanttTaskList.AsQueryable();
 
         GanttColorHelper.SetupProjectColor(ganttProjectListOutput, ganttTaskListOutput);
 
         JS.InvokeVoidAsync("renderGanttTasks", JsonConvert.SerializeObject(ganttTaskListOutput, Formatting.Indented), chartMode.ToString(), "true");
         JS.InvokeVoidAsync("renderGanttProjects", JsonConvert.SerializeObject(ganttProjectListOutput, Formatting.Indented), chartMode.ToString(), "true");
+        JS.InvokeVoidAsync("renderDeveloperGanttTasks", JsonConvert.SerializeObject(developerGanttTaskListOutput, Formatting.Indented), chartMode.ToString(), "true");
     }    
     
 }

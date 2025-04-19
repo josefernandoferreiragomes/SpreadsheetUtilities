@@ -62,13 +62,7 @@ namespace SpreadsheetUtility.Library
             _developerList = _ganttChartMapper.MapDevelopersFromDeveloperDtos(input.DeveloperDtos);
             _projectStartDate = input.ProjectStartDate;
             //group projects by ProjectGroup
-            List<ProjectGroup> projectGroupList = GroupProjectsByProjectGroup();
-
-            //full pre sort tasks sort
-            //if (input.PreSortTasks)
-            //{
-            //    _ganttTaskList = PreSortTasks_Experimental(_ganttTaskList);
-            //}
+            List<ProjectGroup> projectGroupList = GroupProjectsByProjectGroup();          
 
             foreach (var projectGroup in projectGroupList)
             {

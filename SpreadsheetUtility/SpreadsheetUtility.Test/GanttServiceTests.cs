@@ -13,6 +13,8 @@ namespace SpreadsheetUtility.Test
 
     public class GanttServiceTests
     {
+        private const string ParameterTypeInput = "Input";
+        private const string ParameterTypeOutput = "Output";
         private readonly Mock<ILogger<List<GanttTask>>> _mockLogger;
         private readonly Mock<ILogger<List<Holiday>>> _mockHolidayProviderLogger;
         private readonly GanttService _ganttService;
@@ -25,7 +27,7 @@ namespace SpreadsheetUtility.Test
             _mockDateTimeProvider = new Mock<IDateTimeProvider>();
             var mapper = new GanttChartMapper(_mockDateTimeProvider.Object);
             var holidayProvider = new Mock<IHolidayProvider>();
-            var holidayInput = JsonTestHelper.ProcessMethodJson<List<Holiday>>("2025HolidaysPT", "Input");
+            var holidayInput = JsonTestHelper.ProcessMethodJson<List<Holiday>>("2025HolidaysPT", ParameterTypeInput);
             holidayProvider.Setup(h=>h.LoadHolidaysFromConfigurationFile()).Returns(holidayInput);
             var dateCalculator = new DateCalculator(holidayProvider.Object);
             var ganttProcessor = new GanttChartProcessor(_mockLogger!.Object, _mockDateTimeProvider?.Object!, mapper, dateCalculator);
@@ -33,10 +35,11 @@ namespace SpreadsheetUtility.Test
         }        
         
         [Fact]
-        public void CalculateGanttChartAllocation()
+        public void CalculateGanttChartAllocationSort()
         {
             // Arrange
-            var input = JsonTestHelper.ProcessMethodJson<CalculateGanttChartAllocationInput>("CalculateGanttChartAllocation","Input");
+            var methodName = System.Reflection.MethodBase.GetCurrentMethod()?.Name ?? "";
+            var input = JsonTestHelper.ProcessMethodJson<CalculateGanttChartAllocationInput>(methodName, ParameterTypeInput);
             var fixedDateTime = new DateTime(2025, 03, 20);
             _mockDateTimeProvider!.Setup(m => m.Today).Returns(fixedDateTime);
             Assert.NotNull(input);
@@ -45,7 +48,7 @@ namespace SpreadsheetUtility.Test
 
             // Assert
             Assert.NotNull(result);
-            var expected = JsonTestHelper.ProcessMethodJson<CalculateGanttChartAllocationOutput>("CalculateGanttChartAllocation","Output");
+            var expected = JsonTestHelper.ProcessMethodJson<CalculateGanttChartAllocationOutput>(methodName, ParameterTypeOutput);
             Assert.Equal(expected.GanttTasks.Count, result.GanttTasks.Count);
             Assert.Equal(expected.DeveloperAvailability.Count, result.DeveloperAvailability.Count);
             Assert.Equal(expected.GanttTasks[0].Name, result.GanttTasks[0].Name);
@@ -53,12 +56,56 @@ namespace SpreadsheetUtility.Test
             Assert.Equal(expected.DeveloperAvailability[0].DailyWorkHours, result.DeveloperAvailability[0].DailyWorkHours);
             Assert.Equal(JsonConvert.SerializeObject(expected.GanttTasks, Formatting.Indented), JsonConvert.SerializeObject(result.GanttTasks, Formatting.Indented));
         }
+        [Fact]
+        public void CalculateGanttChartAllocation()
+        {
+            // Arrange
+            var methodName = System.Reflection.MethodBase.GetCurrentMethod()?.Name ?? "";
+            var input = JsonTestHelper.ProcessMethodJson<CalculateGanttChartAllocationInput>(methodName, ParameterTypeInput);
+            var fixedDateTime = new DateTime(2025, 03, 20);
+            _mockDateTimeProvider!.Setup(m => m.Today).Returns(fixedDateTime);
+            Assert.NotNull(input);
+            // Act
+            var result = _ganttService.CalculateGanttChartAllocation(input);
 
+            // Assert
+            Assert.NotNull(result);
+            var expected = JsonTestHelper.ProcessMethodJson<CalculateGanttChartAllocationOutput>(methodName, ParameterTypeOutput);
+            Assert.Equal(expected.GanttTasks.Count, result.GanttTasks.Count);
+            Assert.Equal(expected.DeveloperAvailability.Count, result.DeveloperAvailability.Count);
+            Assert.Equal(expected.GanttTasks[0].Name, result.GanttTasks[0].Name);
+            Assert.Equal(expected.DeveloperAvailability[0].Name, result.DeveloperAvailability[0].Name);
+            Assert.Equal(expected.DeveloperAvailability[0].DailyWorkHours, result.DeveloperAvailability[0].DailyWorkHours);
+            Assert.Equal(JsonConvert.SerializeObject(expected.GanttTasks, Formatting.Indented), JsonConvert.SerializeObject(result.GanttTasks, Formatting.Indented));
+        }
+        [Fact]
+        public void CalculateGanttChartAllocationNoDependenciesSort()
+        {
+            // Arrange
+            var methodName = System.Reflection.MethodBase.GetCurrentMethod()?.Name ?? "";
+            var input = JsonTestHelper.ProcessMethodJson<CalculateGanttChartAllocationInput>(methodName, ParameterTypeInput);
+            var fixedDateTime = new DateTime(2025, 03, 20);
+            _mockDateTimeProvider!.Setup(m => m.Today).Returns(fixedDateTime);
+            Assert.NotNull(input);
+            // Act
+            var result = _ganttService.CalculateGanttChartAllocation(input);
+
+            // Assert
+            Assert.NotNull(result);
+            var expected = JsonTestHelper.ProcessMethodJson<CalculateGanttChartAllocationOutput>(methodName, ParameterTypeOutput);
+            Assert.Equal(expected.GanttTasks.Count, result.GanttTasks.Count);
+            Assert.Equal(expected.DeveloperAvailability.Count, result.DeveloperAvailability.Count);
+            Assert.Equal(expected.GanttTasks[0].Name, result.GanttTasks[0].Name);
+            Assert.Equal(expected.DeveloperAvailability[0].Name, result.DeveloperAvailability[0].Name);
+            Assert.Equal(expected.DeveloperAvailability[0].DailyWorkHours, result.DeveloperAvailability[0].DailyWorkHours);
+            Assert.Equal(JsonConvert.SerializeObject(expected.GanttTasks, Formatting.Indented), JsonConvert.SerializeObject(result.GanttTasks, Formatting.Indented));
+        }
         [Fact]
         public void CalculateGanttChartAllocationNoDependencies()
         {
             // Arrange
-            var input = JsonTestHelper.ProcessMethodJson<CalculateGanttChartAllocationInput>("CalculateGanttChartAllocationNoDependencies", "Input");
+            var methodName = System.Reflection.MethodBase.GetCurrentMethod()?.Name ?? "";
+            var input = JsonTestHelper.ProcessMethodJson<CalculateGanttChartAllocationInput>(methodName, ParameterTypeInput);
             var fixedDateTime = new DateTime(2025, 03, 20);
             _mockDateTimeProvider!.Setup(m => m.Today).Returns(fixedDateTime);
             Assert.NotNull(input);
@@ -67,7 +114,7 @@ namespace SpreadsheetUtility.Test
 
             // Assert
             Assert.NotNull(result);
-            var expected = JsonTestHelper.ProcessMethodJson<CalculateGanttChartAllocationOutput>("CalculateGanttChartAllocationNoDependencies", "Output");
+            var expected = JsonTestHelper.ProcessMethodJson<CalculateGanttChartAllocationOutput>(methodName, ParameterTypeOutput);
             Assert.Equal(expected.GanttTasks.Count, result.GanttTasks.Count);
             Assert.Equal(expected.DeveloperAvailability.Count, result.DeveloperAvailability.Count);
             Assert.Equal(expected.GanttTasks[0].Name, result.GanttTasks[0].Name);
@@ -75,7 +122,6 @@ namespace SpreadsheetUtility.Test
             Assert.Equal(expected.DeveloperAvailability[0].DailyWorkHours, result.DeveloperAvailability[0].DailyWorkHours);
             Assert.Equal(JsonConvert.SerializeObject(expected.GanttTasks, Formatting.Indented), JsonConvert.SerializeObject(result.GanttTasks, Formatting.Indented));
         }
-
         [Fact]
         public void CalculateGanttChartAllocationFromDtos_ShouldReturnCorrectAllocation_WhenValidDataProvided()
         {

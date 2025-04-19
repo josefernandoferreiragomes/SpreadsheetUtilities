@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="TestData\GanttService\2025HolidaysPTInput.json">
+    <Content Include="TestData\GanttService\2025HolidaysPT_Input.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
@@ -32,16 +32,28 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="TestData\GanttService\CalculateGanttChartAllocationInput.json">
+    <None Update="TestData\GanttService\CalculateGanttChartAllocationNoDependenciesSort_Input.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="TestData\GanttService\CalculateGanttChartAllocationNoDependenciesInput.json">
+    <None Update="TestData\GanttService\CalculateGanttChartAllocationNoDependenciesSort_Output.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="TestData\GanttService\CalculateGanttChartAllocationNoDependenciesOutput.json">
+    <None Update="TestData\GanttService\CalculateGanttChartAllocationSort_Input.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="TestData\GanttService\CalculateGanttChartAllocationOutput.json">
+    <None Update="TestData\GanttService\CalculateGanttChartAllocation_Input.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TestData\GanttService\CalculateGanttChartAllocationNoDependencies_Input.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TestData\GanttService\CalculateGanttChartAllocationNoDependencies_Output.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TestData\GanttService\CalculateGanttChartAllocationSort_Output.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TestData\GanttService\CalculateGanttChartAllocation_Output.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

@@ -1,7 +1,8 @@
 using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 using Microsoft.JSInterop;
 using SpreadsheetUtility.Library;
-using SpreadsheetUtility.Library.Mappers;
+using SpreadsheetUtility.Library.Processors.GanttChartProcessor.Calculators;
+using SpreadsheetUtility.Library.Processors.GanttChartProcessor.Mappers;
 using SpreadsheetUtility.Library.Providers;
 using SpreadsheetUtility.Services;
 using SpreadsheetUtility.UI.Web.Components;
@@ -13,7 +14,6 @@ builder.Services.AddRazorComponents(options =>
         options.DetailedErrors = builder.Environment.IsDevelopment()
     )
     .AddInteractiveServerComponents();
-
 builder.Services.AddLogging(logging =>
 {
     logging.SetMinimumLevel(LogLevel.Debug);
@@ -25,6 +25,8 @@ builder.Services.AddScoped<IGanttChartProcessor, GanttChartProcessor>();
 builder.Services.AddScoped<IGanttService, GanttService>();
 builder.Services.AddScoped<IDateTimeProvider, DateTimeProvider>();
 builder.Services.AddScoped<IGanttChartMapper, GanttChartMapper>();
+builder.Services.AddScoped<IDateCalculator, DateCalculator>();
+builder.Services.AddScoped<IHolidayProvider, HolidayProvider>();
 
 
 var app = builder.Build();

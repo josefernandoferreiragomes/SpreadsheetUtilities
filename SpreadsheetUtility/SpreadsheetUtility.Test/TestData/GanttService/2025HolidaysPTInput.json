@@ -1,0 +1,66 @@
+[
+  {
+    "Date": "2025-01-01",
+    "HolidayDescription": "New Year's Day"
+  },
+  {
+    "Date": "2025-03-04",
+    "HolidayDescription": "Carnival"
+  },
+  {
+    "Date": "2025-04-17",
+    "HolidayDescription": "Good Friday Eve"
+  },
+  {
+    "Date": "2025-04-18",
+    "HolidayDescription": "Good Friday"
+  },
+  {
+    "Date": "2025-04-20",
+    "HolidayDescription": "Easter"
+  },
+  {
+    "Date": "2025-04-25",
+    "HolidayDescription": "Freedom Day"
+  },
+  {
+    "Date": "2025-05-01",
+    "HolidayDescription": "Labor Day"
+  },
+  {
+    "Date": "2025-06-10",
+    "HolidayDescription": "Portugal Day, Camões, and Portuguese Communities"
+  },
+  {
+    "Date": "2025-06-19",
+    "HolidayDescription": "Corpus Christi"
+  },
+  {
+    "Date": "2025-08-15",
+    "HolidayDescription": "Assumption of Our Lady"
+  },
+  {
+    "Date": "2025-10-05",
+    "HolidayDescription": "Proclamation of the Republic"
+  },
+  {
+    "Date": "2025-11-01",
+    "HolidayDescription": "All Saints' Day"
+  },
+  {
+    "Date": "2025-12-01",
+    "HolidayDescription": "Restoration of Independence"
+  },
+  {
+    "Date": "2025-12-08",
+    "HolidayDescription": "Immaculate Conception Day"
+  },
+  {
+    "Date": "2025-12-24",
+    "HolidayDescription": "Christmas eve"
+  },
+  {
+    "Date": "2025-12-25",
+    "HolidayDescription": "Christmas"
+  }
+]

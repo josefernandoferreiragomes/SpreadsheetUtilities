@@ -1,7 +1,7 @@
 ﻿using SpreadsheetUtility.Library.Providers;
 using System.Globalization;
 
-namespace SpreadsheetUtility.Library.Mappers
+namespace SpreadsheetUtility.Library.Processors.GanttChartProcessor.Mappers
 {
     public interface IGanttChartMapper
     {

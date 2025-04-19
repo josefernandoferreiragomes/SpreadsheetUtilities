@@ -64,16 +64,17 @@ namespace SpreadsheetUtility.Library
             //group projects by ProjectGroup
             List<ProjectGroup> projectGroupList = GroupProjectsByProjectGroup();
 
-            if (input.PreSortTasks)
-            {
-                _ganttTaskList = PreSortTasks_Experimental(_ganttTaskList);
-            }
+            //full pre sort tasks sort
+            //if (input.PreSortTasks)
+            //{
+            //    _ganttTaskList = PreSortTasks_Experimental(_ganttTaskList);
+            //}
 
             foreach (var projectGroup in projectGroupList)
             {
                 //filter all tasks that belong to the projects who are assigned to the projectGroupID                
                 var projectTasks = _ganttTaskList.Where(t => projectGroup.Projects.Select(p => p.ProjectID).Contains(t.ProjectID)).ToList();
-                AssignTasks(projectGroup, _developerList, projectTasks);
+                AssignTasks(projectGroup, _developerList, projectTasks, input.PreSortTasks);
             }
             //obtain ProjectList from aggregated tasks
             var projectOutputList = GenerateProjectListFromTasks();            
@@ -103,11 +104,17 @@ namespace SpreadsheetUtility.Library
                     Projects = g.ToList()
                 }).ToList();
 
-        private void AssignTasks(ProjectGroup projectGroupList, List<Developer> developerList, List<GanttTask> projectTasks)
+        private void AssignTasks(ProjectGroup projectGroupList, List<Developer> developerList, List<GanttTask> projectTasks, bool preSortTasks = false)
         {                        
 
             DateTime startDate = _projectStartDate;
-            startDate = _dateCalculator.GetNextWorkingDay(startDate);            
+            startDate = _dateCalculator.GetNextWorkingDay(startDate);
+
+            //pre sort tasks by project group
+            if (preSortTasks)
+            {
+                projectTasks = PreSortTasks_Experimental(projectTasks);
+            }
 
             foreach (var task in projectTasks)
             {

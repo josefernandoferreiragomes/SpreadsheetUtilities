@@ -2,7 +2,8 @@
 using Moq;
 using Newtonsoft.Json;
 using SpreadsheetUtility.Library;
-using SpreadsheetUtility.Library.Mappers;
+using SpreadsheetUtility.Library.Processors.GanttChartProcessor.Calculators;
+using SpreadsheetUtility.Library.Processors.GanttChartProcessor.Mappers;
 using SpreadsheetUtility.Library.Providers;
 using SpreadsheetUtility.Services;
 using SpreadsheetUtility.Test.Helpers;
@@ -12,17 +13,24 @@ namespace SpreadsheetUtility.Test
 
     public class GanttServiceTests
     {
+        private readonly Mock<ILogger<List<GanttTask>>> _mockLogger;
+        private readonly Mock<ILogger<List<Holiday>>> _mockHolidayProviderLogger;
         private readonly GanttService _ganttService;
-        private readonly Mock<IDateTimeProvider> _mockDateTimeProvider;
-        private readonly Mock<ILogger> _mockLogger;
+        private readonly Mock<IDateTimeProvider>? _mockDateTimeProvider;
 
         public GanttServiceTests()
         {
+            _mockLogger = new Mock<ILogger<List<GanttTask>>>();
+            _mockHolidayProviderLogger = new Mock<ILogger<List<Holiday>>>();
             _mockDateTimeProvider = new Mock<IDateTimeProvider>();
             var mapper = new GanttChartMapper(_mockDateTimeProvider.Object);
-            var ganttProcessor = new GanttChartProcessor(_mockLogger.Object, _mockDateTimeProvider?.Object!, mapper);
+            var holidayProvider = new Mock<IHolidayProvider>();
+            var holidayInput = JsonTestHelper.ProcessMethodJson<List<Holiday>>("2025HolidaysPT", "Input");
+            holidayProvider.Setup(h=>h.LoadHolidaysFromConfigurationFile()).Returns(holidayInput);
+            var dateCalculator = new DateCalculator(holidayProvider.Object);
+            var ganttProcessor = new GanttChartProcessor(_mockLogger!.Object, _mockDateTimeProvider?.Object!, mapper, dateCalculator);
             _ganttService = new GanttService(ganttProcessor);
-        }
+        }        
         
         [Fact]
         public void CalculateGanttChartAllocation()
@@ -30,7 +38,7 @@ namespace SpreadsheetUtility.Test
             // Arrange
             var input = JsonTestHelper.ProcessMethodJson<CalculateGanttChartAllocationInput>("CalculateGanttChartAllocation","Input");
             var fixedDateTime = new DateTime(2025, 03, 20);
-            _mockDateTimeProvider.Setup(m => m.Today).Returns(fixedDateTime);
+            _mockDateTimeProvider!.Setup(m => m.Today).Returns(fixedDateTime);
             Assert.NotNull(input);
             // Act
             var result = _ganttService.CalculateGanttChartAllocation(input);
@@ -52,7 +60,7 @@ namespace SpreadsheetUtility.Test
             // Arrange
             var input = JsonTestHelper.ProcessMethodJson<CalculateGanttChartAllocationInput>("CalculateGanttChartAllocationNoDependencies", "Input");
             var fixedDateTime = new DateTime(2025, 03, 20);
-            _mockDateTimeProvider.Setup(m => m.Today).Returns(fixedDateTime);
+            _mockDateTimeProvider!.Setup(m => m.Today).Returns(fixedDateTime);
             Assert.NotNull(input);
             // Act
             var result = _ganttService.CalculateGanttChartAllocation(input);

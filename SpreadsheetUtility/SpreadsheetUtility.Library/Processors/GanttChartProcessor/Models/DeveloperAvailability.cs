@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace SpreadsheetUtility.Library
+﻿namespace SpreadsheetUtility.Library
 {
-    
+
     public class DeveloperAvailability
     {
         public string? Name { get; set; }

@@ -1,48 +1,51 @@
-﻿using ClosedXML.Excel;
-using Newtonsoft.Json.Serialization;
-using Newtonsoft.Json;
-using System.Globalization;
-using DocumentFormat.OpenXml.Spreadsheet;
-using System.Collections.Generic;
-using DocumentFormat.OpenXml.Wordprocessing;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-using SpreadsheetUtility.Library.Providers;
-using SpreadsheetUtility.Library.Mappers;
+﻿using DocumentFormat.OpenXml.Office2010.Excel;
+using DocumentFormat.OpenXml.Office2021.DocumentTasks;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
+using SpreadsheetUtility.Library.Processors.GanttChartProcessor.Builders;
+using SpreadsheetUtility.Library.Processors.GanttChartProcessor.Calculators;
+using SpreadsheetUtility.Library.Processors.GanttChartProcessor.Mappers;
+using SpreadsheetUtility.Library.Providers;
+using System;
 
 namespace SpreadsheetUtility.Library
-{     
+{
     public class ProjectGroup
     {
         public string ProjectGroupID { get; set; } = "";
         public List<Project> Projects { get; set; } = new List<Project>();
     }
 
-    public class GanttChartProcessor: IGanttChartProcessor
+    public class GanttChartProcessor : IGanttChartProcessor, IObserver<Holiday>
     {
+        private readonly ILogger<List<GanttTask>> _logger;
         private readonly IDateTimeProvider _dateTimeProvider;
         private readonly IGanttChartMapper _ganttChartMapper;
-        private List<Project> _projectInputList;
-        private List<Project> _projectOutputList;
-        private List<GanttTask> _ganttTaskList;
-        private List<GanttTask> _ganttProjectList;
-        private List<Developer> _developerList;
-        private List<Holiday> _holidayList;
+        private readonly IDateCalculator _dateCalculator;        
+        private List<Project> _projectInputList;        
+        private List<GanttTask> _ganttTaskList;        
+        private List<Developer> _developerList;       
         private List<Holiday> _projectHolidayList;
         private int _currentMaximumTaskID = 0;
         private DateTime _projectStartDate;
-        public GanttChartProcessor(ILogger logger, IDateTimeProvider dateTimeProvider, IGanttChartMapper ganttChartMapper)
+
+        public GanttChartProcessor(
+            ILogger<List<GanttTask>> logger,
+            IDateTimeProvider dateTimeProvider,
+            IGanttChartMapper ganttChartMapper,
+            IDateCalculator dateCalculator
+        )
         {
+            _logger = logger;
+            _dateTimeProvider = dateTimeProvider;
             _ganttChartMapper = ganttChartMapper;
-            _projectInputList = new List<Project>();
-            _projectOutputList = new List<Project>();
-            _ganttTaskList = new List<GanttTask>();
-            _ganttProjectList = new List<GanttTask>();
+            _dateCalculator = dateCalculator;           
+            _projectInputList = new List<Project>();            
+            _ganttTaskList = new List<GanttTask>();            
             _developerList = new List<Developer>();
             _projectHolidayList = new List<Holiday>();
-            _dateTimeProvider = dateTimeProvider;
-            _projectStartDate = _dateTimeProvider.Today;
-            _holidayList = ProcessHolidays();
+            _projectStartDate = _dateTimeProvider.Today;            
         }
 
         public List<GanttTask> LoadTasksFromDtos(List<TaskDto> taskDtos)
@@ -50,32 +53,41 @@ namespace SpreadsheetUtility.Library
             return _ganttChartMapper.MapGanttTasksFromTaskDtos(taskDtos);
         }
 
-        #region dto processing
+        #region Processing
         public CalculateGanttChartAllocationOutput CalculateGanttChartAllocation(CalculateGanttChartAllocationInput input)
         {
+            _dateCalculator.AddObserver(this);
             _projectInputList = _ganttChartMapper.MapProjectsFromProjectDtos(input.ProjectDtos);
             _ganttTaskList = _ganttChartMapper.MapGanttTasksFromTaskDtos(input.TaskDtos);
             _developerList = _ganttChartMapper.MapDevelopersFromDeveloperDtos(input.DeveloperDtos);
             _projectStartDate = input.ProjectStartDate;
-
             //group projects by ProjectGroup
             List<ProjectGroup> projectGroupList = GroupProjectsByProjectGroup();
 
+            if (input.PreSortTasks)
+            {
+                _ganttTaskList = PreSortTasks_Experimental(_ganttTaskList);
+            }
+
             foreach (var projectGroup in projectGroupList)
             {
-                AssignTasks(projectGroup, _developerList, input.PreSortTasks);
+                //filter all tasks that belong to the projects who are assigned to the projectGroupID                
+                var projectTasks = _ganttTaskList.Where(t => projectGroup.Projects.Select(p => p.ProjectID).Contains(t.ProjectID)).ToList();
+                AssignTasks(projectGroup, _developerList, projectTasks);
             }
             //obtain ProjectList from aggregated tasks
-            GenerateProjectListFromTasks();
-
+            var projectOutputList = GenerateProjectListFromTasks();            
+            var ganttProjectList = GenerateGanttProjectListFromTasks();
             CalculateDeveloperHours();
 
             var developerAvailability = _ganttChartMapper.MapDeveloperAvailabilitiesFromDevelopers(_developerList);
 
+            PerformLogging(ganttProjectList);
+
             var output = new CalculateGanttChartAllocationOutputBuilder()
-               .WithProjects(_projectOutputList)
+               .WithProjects(projectOutputList)
                .WithGanttTasks(_ganttTaskList)
-               .WithGanttProjects(_ganttProjectList)
+               .WithGanttProjects(ganttProjectList)
                .WithDeveloperAvailability(developerAvailability)
                .WithHolidayList(_projectHolidayList)
                .Build();
@@ -84,30 +96,63 @@ namespace SpreadsheetUtility.Library
         }
 
         private List<ProjectGroup> GroupProjectsByProjectGroup()
-        {
-            return _projectInputList.GroupBy(p => p.ProjectGroup)
-                            .Select(g => new ProjectGroup
-                            {
-                                ProjectGroupID = g.Key ?? "",
-                                Projects = g.ToList()
-                            }).ToList();
+            => _projectInputList.GroupBy(p => p.ProjectGroup)
+                .Select(g => new ProjectGroup
+                {
+                    ProjectGroupID = g.Key ?? "",
+                    Projects = g.ToList()
+                }).ToList();
+
+        private void AssignTasks(ProjectGroup projectGroupList, List<Developer> developerList, List<GanttTask> projectTasks)
+        {                        
+
+            DateTime startDate = _projectStartDate;
+            startDate = _dateCalculator.GetNextWorkingDay(startDate);            
+
+            foreach (var task in projectTasks)
+            {
+                var assignedDeveloper = developerList.OrderBy(d => d.NextAvailableDate(startDate)).FirstOrDefault();
+                if (assignedDeveloper == null) continue;
+
+                DateTime taskStart = assignedDeveloper.NextAvailableDate(startDate);
+                var taskStartFromDependency = projectTasks.Find(t => t.Id == task.Dependencies)?.EndDate ?? DateTime.MinValue;
+
+                taskStart = taskStart > taskStartFromDependency ? taskStart : _dateCalculator.GetNextWorkingDay(taskStartFromDependency.AddDays(1));
+
+                double requiredDays = Math.Ceiling(task.EstimatedEffortHours / assignedDeveloper.DailyWorkHours);
+                DateTime taskEnd = _dateCalculator.CalculateEndDate(taskStart, requiredDays, assignedDeveloper.VacationPeriods);
+
+                task.Start = taskStart.ToString("yyyy-MM-dd");
+                task.End = taskEnd.ToString("yyyy-MM-dd");
+                //TaskEndWeek is equal to the first day of the week of the task end date
+                task.TaskEndWeek = $"Week of {taskEnd.AddDays(-(int)(taskEnd.DayOfWeek - 1)).ToString("yyyy-MM-dd")}";
+
+                task.StartDate = taskStart;
+                task.EndDate = taskEnd;
+                task.AssignedDeveloper = assignedDeveloper.Name;
+                task.Name = $"{task.Name} ({assignedDeveloper.Name})";
+                assignedDeveloper.Tasks.Add(task);
+                assignedDeveloper.SetNextAvailableDate(_dateCalculator.GetNextWorkingDay(taskEnd.AddDays(1)));
+            }
         }
 
-        private void GenerateProjectListFromTasks()
-        {
-            _projectOutputList = _ganttTaskList.GroupBy(t => t.ProjectName)
+        private List<Project> GenerateProjectListFromTasks()        
+            => _ganttTaskList.GroupBy(t => t.ProjectName)
                 .Select(g => new Project
                 {
                     ProjectID = g.First().ProjectID,
-                    ProjectName = g.Key,                                                    
+                    ProjectName = g.Key,
                     StartDate = g.Min(t => t.StartDate),
                     EndDate = g.Max(t => t.EndDate),
                     TotalEstimatedEffortHours = g.Sum(t => t.EstimatedEffortHours),
                     ProjectGroup = _projectInputList.Find(p => p.ProjectName == g.Key)?.ProjectGroup
                 }).ToList();
 
-            double totalEstimatedEffortHours = _ganttTaskList.Sum(t => t.EstimatedEffortHours);            
-            _ganttProjectList = _ganttTaskList.GroupBy(t => t.ProjectName)
+        private List<GanttTask> GenerateGanttProjectListFromTasks()
+        { 
+            double totalEstimatedEffortHours = _ganttTaskList.Sum(t => t.EstimatedEffortHours);
+
+            var ganttProjectList = _ganttTaskList.GroupBy(t => t.ProjectName)
                 .Select(g => new GanttTask
                 {
                     Id = g.First().ProjectID ?? "",
@@ -122,105 +167,52 @@ namespace SpreadsheetUtility.Library
                     ProjectName = g.Key,
                     ProjectID = g.First().ProjectID ?? "",
                 }).ToList();
-
-            Console.WriteLine(JsonConvert.SerializeObject(_projectInputList,
-                new JsonSerializerSettings
-                {
-                    ContractResolver = new CamelCasePropertyNamesContractResolver(),
-                    Formatting = Formatting.Indented
-                })
-            );
-
-            Console.WriteLine(JsonConvert.SerializeObject(_ganttProjectList,
-                new JsonSerializerSettings
-                {
-                    ContractResolver = new CamelCasePropertyNamesContractResolver(),
-                    Formatting = Formatting.Indented
-                })
-            );
-
+            return ganttProjectList;
         }
-                
-        #endregion
+        private void PerformLogging(List<GanttTask> ganttProjectList)
+        {
+            _logger.LogDebug(JsonConvert.SerializeObject(_projectInputList,
+               new JsonSerializerSettings
+               {
+                   ContractResolver = new CamelCasePropertyNamesContractResolver(),
+                   Formatting = Formatting.Indented
+               })
+           );
 
-        #region task processing            
-        
+            _logger.LogDebug(JsonConvert.SerializeObject(ganttProjectList,
+                new JsonSerializerSettings
+                {
+                    ContractResolver = new CamelCasePropertyNamesContractResolver(),
+                    Formatting = Formatting.Indented
+                })
+            );
+        }
         private void CalculateDeveloperHours()
         {
-            if(_ganttTaskList.Count == 0 || _developerList.Count == 0) return;
+            if (_ganttTaskList.Count == 0 || _developerList.Count == 0) return;
             DateTime minDate = _ganttTaskList.Min(t => t.StartDate);
             DateTime maxDate = _ganttTaskList.Max(t => t.EndDate);
 
             //calculate the sum of hours of non allocation for each developer
             foreach (var developer in _developerList)
             {
-                if(developer != null)
+                if (developer != null)
                 {
-                    var calculatedIntervalDays = CalculateIntervalDays(minDate, maxDate, developer?.VacationPeriods);
-                    developer.AllocatedHours = developer.Tasks?.Sum(t => t.EstimatedEffortHours) ?? 0;
+                    var calculatedIntervalDays = _dateCalculator.CalculateIntervalDays(minDate, maxDate, developer?.VacationPeriods);
+                    developer!.AllocatedHours = developer.Tasks?.Sum(t => t.EstimatedEffortHours) ?? 0;
                     developer.TotalHours = calculatedIntervalDays * developer.DailyWorkHours;
                     var slackHours = developer.TotalHours - developer.AllocatedHours;
                     developer.SlackHours = slackHours >= 0 ? slackHours : 0;
                 }
             }
-        }        
-
-        private void AssignTasks(ProjectGroup projectGroupList, List<Developer> developerList, bool preSortTasks = false)
-        {
-            //filter all tasks that belong to the projects who are assigned to the projectGroupID
-            //var projectTasks = _ganttTaskList.Select(t => t.ProjectID).Intersect(projectGroupList.Projects.Select(p => p.ProjectID)).ToList();
-
-            ////filter all tasks whose ID is in the projectTasks list
-            //projectTasks = _ganttTaskList.Where(t => projectTasks.Contains(t.ProjectID)).Select(t => t.Id).ToList();
-
-            var projectTasks = _ganttTaskList.Where(t => projectGroupList.Projects.Select(p => p.ProjectID).Contains(t.ProjectID)).ToList();
-
-            DateTime startDate = _projectStartDate;
-            startDate = GetNextWorkingDay(startDate);
-
-            if (preSortTasks)
-            {
-                projectTasks = PreSortTasks(projectTasks);
-            }
-
-            foreach (var task in projectTasks)
-            {
-                var assignedDeveloper = developerList.OrderBy(d => d.NextAvailableDate(startDate)).FirstOrDefault();
-                if (assignedDeveloper == null) continue;
-
-                DateTime taskStart = assignedDeveloper.NextAvailableDate(startDate);
-                var taskStartFromDependency = projectTasks.Find(t => t.Id == task.Dependencies)?.EndDate ?? DateTime.MinValue;
-
-                taskStart = taskStart > taskStartFromDependency ? taskStart : GetNextWorkingDay(taskStartFromDependency.AddDays(1));
-
-                double requiredDays = Math.Ceiling(task.EstimatedEffortHours / assignedDeveloper.DailyWorkHours);
-                DateTime taskEnd = CalculateEndDate(taskStart, requiredDays, assignedDeveloper.VacationPeriods);
-
-                task.Start = taskStart.ToString("yyyy-MM-dd");
-                task.End = taskEnd.ToString("yyyy-MM-dd");
-                //TaskEndWeek is equal to the first day of the week of the task end date
-                task.TaskEndWeek = $"Week of {taskEnd.AddDays(-(int)(taskEnd.DayOfWeek - 1)).ToString("yyyy-MM-dd")}";
-
-                task.StartDate = taskStart;
-                task.EndDate = taskEnd;
-                task.AssignedDeveloper = assignedDeveloper.Name;
-                task.Name = $"{task.Name} ({assignedDeveloper.Name})";
-                assignedDeveloper.Tasks.Add(task);
-                assignedDeveloper.SetNextAvailableDate(GetNextWorkingDay(taskEnd.AddDays(1)));
-            }
         }
 
-        private DateTime GetNextWorkingDay(DateTime startDate)
-        {
-            while (IsWeekendOrHoliday(startDate))
-            {
-                startDate = startDate.AddDays(1);
-            }
+        #endregion
 
-            return startDate;
-        }
 
-        private List<GanttTask> PreSortTasks(List<GanttTask> projectTasks)
+
+
+        private List<GanttTask> PreSortTasks_Experimental(List<GanttTask> projectTasks)
         {
             List<GanttTask> sortedTasks = projectTasks;
             // Change Dependencies from empty string to "0" for sorting
@@ -264,77 +256,27 @@ namespace SpreadsheetUtility.Library
             return projectTasks;
         }
 
-        private DateTime CalculateEndDate(DateTime start, double workDays, List<(DateTime Start, DateTime End)?>? vacations)
+        #region Observable
+        public void OnCompleted()
         {
-            DateTime end = start;
-            while (workDays > 0)
-            {
-                if (!IsVacationDay(end, vacations) && !IsWeekendOrHoliday(end)) workDays--;
-                end = end.AddDays(1);
-            }
-            return end.AddDays(-1);
+            throw new NotImplementedException();
         }
 
-        private int CalculateIntervalDays(DateTime start, DateTime end, List<(DateTime Start, DateTime End)?>? vacations)
+        public void OnError(Exception error)
         {
-            int days = 0;
-            var startDate = start;
-            while (startDate < end)
-            {
-                if (!IsVacationDay(startDate, vacations) && !IsWeekendOrHoliday(startDate))
-                {
-                   days++;
-                }
-                startDate = startDate.AddDays(1);
-            }
-            return days;
+            throw error;
         }
 
-        private bool IsVacationDay(DateTime date, List<(DateTime Start, DateTime End)?>? vacations)
+        public void OnNext(Holiday holiday)
         {
-            return vacations?.Any(v => v.HasValue && date >= v.Value.Start && date <= v.Value.End) ?? false;
+            //iff the holiday is not already in the list, add it
+            if (_projectHolidayList.Any(h => h.Date == holiday.Date && h.HolidayDescription == holiday.HolidayDescription))
+                return;
+            //add the holiday to the list
+            _projectHolidayList.Add(holiday);
         }
-
-        private bool IsWeekendOrHoliday(DateTime date)
-        {
-            return IsWeekend(date) || IsHoliday(date);
-        }
-        private bool IsWeekend(DateTime date)
-        {
-            return date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday;
-        }
-        private bool IsHoliday(DateTime date)
-        {
-            bool isHoliday = false;
-            isHoliday = _holidayList.Select(h=>h.Date).Contains(date);
-            if(isHoliday)
-            {
-                if(!_projectHolidayList.Select(h => h.Date).Contains(date))
-                    _projectHolidayList.Add(_holidayList.Find(h => h.Date == date) ?? new Holiday());                
-            }
-            return isHoliday;
-        }
-
-        private List<Holiday> ProcessHolidays()
-        {
-            var holidayList = new List<Holiday>();
-            var filePath = Path.Combine(AppContext.BaseDirectory, "Holidays", "2025HolidaysPT.json");
-
-            try
-            {
-                var jsonString = File.ReadAllText(filePath);
-                holidayList = JsonConvert.DeserializeObject<List<Holiday>>(jsonString) ?? new List<Holiday>();
-            }
-            catch (Exception ex)
-            {
-                // Handle exceptions (e.g., file not found, JSON parsing errors)
-                Console.WriteLine($"An error occurred processing holidays: {ex.Message}");
-            }
-
-            return holidayList;
-        }        
 
         #endregion
     }
-
+    
 }

@@ -74,7 +74,7 @@ namespace SpreadsheetUtility.Library
             var projectOutputList = GenerateProjectListFromTasks();            
             var ganttProjectList = GenerateGanttProjectListFromTasks();
             CalculateDeveloperHours();
-
+            var developerGanttTasks = GenerateGanttTaskListFromDevelopers();
             var developerAvailability = _ganttChartMapper.MapDeveloperAvailabilitiesFromDevelopers(_developerList);
 
             PerformLogging(ganttProjectList);
@@ -83,6 +83,7 @@ namespace SpreadsheetUtility.Library
                .WithProjects(projectOutputList)
                .WithGanttTasks(_ganttTaskList)
                .WithGanttProjects(ganttProjectList)
+               .WithDeveloperTasks(developerGanttTasks)
                .WithDeveloperAvailability(developerAvailability)
                .WithHolidayList(_projectHolidayList)
                .Build();
@@ -169,6 +170,59 @@ namespace SpreadsheetUtility.Library
                     ProjectID = g.First().ProjectID ?? "",
                 }).ToList();
             return ganttProjectList;
+        }
+        
+        private List<GanttTask> GenerateGanttTaskListFromDevelopers()
+        {
+            var ganttTaskList = new List<GanttTask>();
+            foreach (var developer in _developerList)
+            {
+                foreach (var task in developer.Tasks)
+                {
+                    ganttTaskList.Add(new GanttTask
+                    {
+                        Id = task.Id,
+                        Name = task.Name,
+                        Start = task.Start,
+                        End = task.End,
+                        Progress = task.Progress,
+                        Dependencies = task.Dependencies,
+                        CustomClass = "task",
+                        Resource = developer.Name,
+                        StartDate = task.StartDate,
+                        EndDate = task.EndDate,
+                        ProjectName = task.ProjectName,
+                        ProjectID = task.ProjectID,
+                        TaskName = task.TaskName,
+                        InternalID = task.InternalID
+                    });
+                }
+                // Add vacation periods as separate tasks
+                int vacationId = 1;
+                foreach (var vacation in developer.VacationPeriods ?? new List<(DateTime Start, DateTime End)?>())
+                {
+                    if (!vacation.HasValue) continue;
+                    var start = vacation.Value.Start;
+                    var end = vacation.Value.End;
+                    ganttTaskList.Add(new GanttTask
+                    {
+                        Id = vacationId.ToString(),
+                        Name = $"{developer.Name} - Vacation {vacationId}",
+                        Start = start.ToString("yyyy-MM-dd"),
+                        End = end.ToString("yyyy-MM-dd"),
+                        CustomClass = "task",
+                        Resource = developer.Name,
+                        StartDate = start,
+                        EndDate = end,
+                        ProjectName = "Vacation",
+                        ProjectID = "VacationID",
+                        TaskName = "Vacation",
+                    });
+                    vacationId++;
+                }
+
+            }
+            return ganttTaskList;
         }
         private void PerformLogging(List<GanttTask> ganttProjectList)
         {

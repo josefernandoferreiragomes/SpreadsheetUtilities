@@ -42,6 +42,7 @@ namespace SpreadsheetUtility.Library.Processors.GanttChartProcessor.Mappers
             => developerDtos.Select(dto => new Developer(_dateTimeProvider)
             {
                 Name = $"{dto.Team} : {dto.Name}",
+                DeveloperId = dto.DeveloperId,
                 DailyWorkHours = dto.DailyWorkHours,
                 VacationPeriods = dto.VacationPeriods.Split('|')
                     .Select(ParseDateRange)
@@ -54,6 +55,7 @@ namespace SpreadsheetUtility.Library.Processors.GanttChartProcessor.Mappers
             return developerList.Select(d => new DeveloperAvailability
             {
                 Name = d.Name,
+                DeveloperId = d.DeveloperId,
                 DailyWorkHours = d.DailyWorkHours,
                 VacationPeriods = d.VacationPeriods,
                 Tasks = d.Tasks,

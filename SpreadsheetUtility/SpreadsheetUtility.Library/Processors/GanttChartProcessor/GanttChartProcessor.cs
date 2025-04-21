@@ -128,12 +128,13 @@ namespace SpreadsheetUtility.Library
                 task.End = taskEnd.ToString("yyyy-MM-dd");
                 //TaskEndWeek is equal to the first day of the week of the task end date
                 task.TaskEndWeek = $"Week of {taskEnd.AddDays(-(int)(taskEnd.DayOfWeek - 1)).ToString("yyyy-MM-dd")}";
-
                 task.StartDate = taskStart;
                 task.EndDate = taskEnd;
                 task.AssignedDeveloper = assignedDeveloper.Name;
+                task.AssignedDeveloperId = assignedDeveloper.DeveloperId;
                 task.Name = $"{task.Name} ({assignedDeveloper.Name})";
                 assignedDeveloper.Tasks.Add(task);
+                
                 assignedDeveloper.SetNextAvailableDate(_dateCalculator.GetNextWorkingDay(taskEnd.AddDays(1)));
             }
         }
@@ -187,6 +188,8 @@ namespace SpreadsheetUtility.Library
                         End = task.End,
                         Progress = task.Progress,
                         Dependencies = task.Dependencies,
+                        AssignedDeveloper = task.AssignedDeveloper,
+                        AssignedDeveloperId = task.AssignedDeveloperId,
                         CustomClass = "task",
                         Resource = developer.Name,
                         StartDate = task.StartDate,
@@ -201,7 +204,7 @@ namespace SpreadsheetUtility.Library
                 int vacationId = 1;
                 foreach (var vacation in developer.VacationPeriods ?? new List<(DateTime Start, DateTime End)?>())
                 {
-                    if (!vacation.HasValue) continue;
+                    if (!vacation.HasValue || vacation.Value.Start < _projectStartDate) continue;
                     var start = vacation.Value.Start;
                     var end = vacation.Value.End;
                     ganttTaskList.Add(new GanttTask

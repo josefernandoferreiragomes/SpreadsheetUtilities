@@ -160,24 +160,28 @@
   "DeveloperDtos": [
     {
       "Team": "Team Alpha",
+      "DeveloperId": "1",
       "Name": "Alice",
       "DailyWorkHours": 6.0,
       "VacationPeriods": "2025-03-10;2025-03-15|2025-05-10;2025-05-15"
     },
     {
       "Team": "Team Alpha",
+      "DeveloperId": "2",
       "Name": "Bob",
       "DailyWorkHours": 8.0,
       "VacationPeriods": ""
     },
     {
       "Team": "Team Beta",
+      "DeveloperId": "3",
       "Name": "Charlie",
       "DailyWorkHours": 7.0,
       "VacationPeriods": "2025-04-05;2025-04-10|"
     },
     {
       "Team": "Team Beta",
+      "DeveloperId": "4",
       "Name": "Dave",
       "DailyWorkHours": 6.0,
       "VacationPeriods": "2025-02-25;2025-02-28|"

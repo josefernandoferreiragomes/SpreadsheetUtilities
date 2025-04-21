@@ -6,6 +6,7 @@ namespace SpreadsheetUtility.Library
     public class Developer
     {
         public required string Name { get; set; }
+        public required string DeveloperId { get; set; }
         public double DailyWorkHours { get; set; }
         public List<(DateTime Start, DateTime End)?>? VacationPeriods { get; set; }
         public DateTime NextAvailableDateForTasks { get; set; }

@@ -38,6 +38,7 @@ namespace SpreadsheetUtility.Library
         public string? ProjectID { get; set; }
         public string? ProjectDependency { get; set; }
         public string? AssignedDeveloper { get; set; }
+        public string? AssignedDeveloperId { get; set; }
         internal bool DependencyUpdated { get; set; } = false;
         public string? TaskEndWeek { get; set; }
 

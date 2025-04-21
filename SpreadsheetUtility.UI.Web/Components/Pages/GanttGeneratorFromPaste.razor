@@ -223,6 +223,7 @@
         developerGanttTaskListOutput = ganttChartAllocation.DeveloperGanttTaskList.AsQueryable();
 
         GanttColorHelper.SetupProjectColor(ganttProjectListOutput, ganttTaskListOutput);
+        GanttColorHelper.SetupDeveloperColor(developerListOutput, developerGanttTaskListOutput);
 
         JS.InvokeVoidAsync("renderGanttTasks", JsonConvert.SerializeObject(ganttTaskListOutput, Formatting.Indented), chartMode.ToString(), "true");
         JS.InvokeVoidAsync("renderGanttProjects", JsonConvert.SerializeObject(ganttProjectListOutput, Formatting.Indented), chartMode.ToString(), "true");

@@ -92,14 +92,15 @@ namespace SpreadsheetUtility.UI.Web.Helpers
             foreach (var line in lines.Skip(1)) // Skip header
             {
                 var columns = line.Split('\t');
-                if (columns.Length == 4)
+                if (columns.Length == 5)
                 {
                     developerDtoList.Add(new DeveloperDto()
                     {
                         Team = columns[0].Trim(),
-                        Name = columns[1].Trim(),
-                        VacationPeriods = columns[2].Trim(),
-                        DailyWorkHours = int.TryParse(columns[3].Trim(), out var hours) ? hours : 0,
+                        DeveloperId = columns[1].Trim(),
+                        Name = columns[2].Trim(),
+                        VacationPeriods = columns[3].Trim(),
+                        DailyWorkHours = int.TryParse(columns[4].Trim(), out var hours) ? hours : 0,
 
                     });
                 }

@@ -45,6 +45,32 @@ namespace SpreadsheetUtility.UI.Web.Helpers
             }
         }
 
+        public static void SetupDeveloperColor(IQueryable<DeveloperAvailability>? developerListOutput, IQueryable<GanttTask>? ganttTaskListOutput)
+        {
+            if (developerListOutput == null || ganttTaskListOutput == null)
+            {
+                return;
+            }
+            var random = new Random();
+            foreach (var developer in developerListOutput)
+            {
+                int count = 0;
+                string color = "";
+                do
+                {
+                    color = GetRandomColorClass();
+                    count++;
+                } while (developerListOutput.ToList().Any(p => p.CustomClass == color) && count < (colorClasses.Count()));
+
+                developer.CustomClass = color;
+                var tempTasks = ganttTaskListOutput.Where(t => t.AssignedDeveloperId == developer.DeveloperId);
+                foreach (var task in tempTasks)
+                {
+                    task.CustomClass = color;
+                }
+            }
+        }
+
         private static string GetRandomColorClass()
         {
             var random = new Random();

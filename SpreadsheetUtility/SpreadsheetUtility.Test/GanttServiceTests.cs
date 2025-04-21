@@ -154,6 +154,7 @@ namespace SpreadsheetUtility.Test
                 new DeveloperDto
                 {
                     Team = "Team 1",
+                    DeveloperId = "1",
                     Name = "Dev 1",
                     VacationPeriods = "",
                     DailyWorkHours = 8
@@ -207,6 +208,7 @@ namespace SpreadsheetUtility.Test
                 new DeveloperDto
                 {
                     Team = "Team 1",
+                    DeveloperId = "1",
                     Name = "Dev 1",
                     VacationPeriods = "",
                     DailyWorkHours = 8

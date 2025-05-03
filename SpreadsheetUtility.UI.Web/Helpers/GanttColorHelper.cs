@@ -1,4 +1,5 @@
 ﻿using SpreadsheetUtility.Library;
+using SpreadsheetUtility.Library.Models;
 
 namespace SpreadsheetUtility.UI.Web.Helpers
 {

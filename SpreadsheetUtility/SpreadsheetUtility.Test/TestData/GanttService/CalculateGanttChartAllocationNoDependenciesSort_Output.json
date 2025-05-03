@@ -429,6 +429,7 @@
     {
       "Name": "Team Alpha : Alice",
       "DeveloperId": "1",
+      "Team": "Team Alpha",
       "DailyWorkHours": 6.0,
       "VacationPeriods": [
         {
@@ -499,6 +500,7 @@
     {
       "Name": "Team Alpha : Bob",
       "DeveloperId": "2",
+      "Team": "Team Alpha",
       "DailyWorkHours": 8.0,
       "VacationPeriods": [],
       "NextAvailableDateForTasks": "2025-05-23T00:00:00+01:00",
@@ -608,6 +610,7 @@
     {
       "Name": "Team Beta : Charlie",
       "DeveloperId": "3",
+      "Team": "Team Beta",
       "DailyWorkHours": 7.0,
       "VacationPeriods": [
         {
@@ -698,6 +701,7 @@
     {
       "Name": "Team Beta : Dave",
       "DeveloperId": "4",
+      "Team": "Team Beta",
       "DailyWorkHours": 6.0,
       "VacationPeriods": [
         {

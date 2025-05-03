@@ -1,27 +1,22 @@
 ﻿using SpreadsheetUtility.Library;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using SpreadsheetUtility.Library.Models;
+using SpreadsheetUtility.Library.Processors;
 
-namespace SpreadsheetUtility.Services
+namespace SpreadsheetUtility.Library.Services;
+
+public class GanttService : IGanttService
 {
-    
-    public class GanttService : IGanttService
+    IGanttChartProcessor _ganttChartProcessor;
+    public GanttService(IGanttChartProcessor ganttChartProcessor)
     {
-        IGanttChartProcessor _ganttChartProcessor;
-        public GanttService(IGanttChartProcessor ganttChartProcessor)
-        {
-            _ganttChartProcessor = ganttChartProcessor;
-        }
-        public List<GanttTask> LoadTasksFromDtos(List<TaskDto> taskDtos)
-        {
-            return _ganttChartProcessor.LoadTasksFromDtos(taskDtos);
-        }        
-        public CalculateGanttChartAllocationOutput CalculateGanttChartAllocation(CalculateGanttChartAllocationInput input)
-        {
-            return _ganttChartProcessor.CalculateGanttChartAllocation(input);
-        }
+        _ganttChartProcessor = ganttChartProcessor;
+    }
+    public List<GanttTask> LoadTasksFromDtos(List<TaskDto> taskDtos)
+    {
+        return _ganttChartProcessor.LoadTasksFromDtos(taskDtos);
+    }        
+    public CalculateGanttChartAllocationOutput CalculateGanttChartAllocation(CalculateGanttChartAllocationInput input)
+    {
+        return _ganttChartProcessor.CalculateGanttChartAllocation(input);
     }
 }

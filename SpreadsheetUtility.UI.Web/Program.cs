@@ -1,10 +1,14 @@
-using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
-using Microsoft.JSInterop;
 using SpreadsheetUtility.Library;
-using SpreadsheetUtility.Library.Processors.GanttChartProcessor.Calculators;
-using SpreadsheetUtility.Library.Processors.GanttChartProcessor.Mappers;
+using SpreadsheetUtility.Library.Calculators;
+using SpreadsheetUtility.Library.Grouppers;
+using SpreadsheetUtility.Library.ListGenerators;
+using SpreadsheetUtility.Library.Mappers;
+using SpreadsheetUtility.Library.Models;
+using SpreadsheetUtility.Library.Processors;
 using SpreadsheetUtility.Library.Providers;
-using SpreadsheetUtility.Services;
+using SpreadsheetUtility.Library.Services;
+using SpreadsheetUtility.Library.TaskAssigners;
+using SpreadsheetUtility.Library.TaskSorters;
 using SpreadsheetUtility.UI.Web.Components;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -25,11 +29,56 @@ builder.Services.AddScoped<IGanttChartProcessor, GanttChartProcessor>();
 builder.Services.AddScoped<IGanttService, GanttService>();
 builder.Services.AddScoped<IDateTimeProvider, DateTimeProvider>();
 builder.Services.AddScoped<IGanttChartMapper, GanttChartMapper>();
-builder.Services.AddScoped<IDateCalculator, DateCalculator>();
 builder.Services.AddScoped<IHolidayProvider, HolidayProvider>();
+builder.Services.AddScoped<ITaskAssignmentStrategyFactory, TaskAssignmentStrategyFactory>();
+builder.Services.AddScoped<ITaskSortingStrategyFactory, TaskSortingStrategyFactory>();
+builder.Services.AddScoped<DefaultTaskAssignmentStrategy>();
+builder.Services.AddScoped<DefaultTaskSortingStrategy>();
+builder.Services.AddScoped<TaskSortingStrategyEffortBased>();
+// Register the generalized ListGenerator implementations
+builder.Services.AddScoped<IListGenerator<GanttTask, Project>, GanttTaskProjectListGenerator>();
+builder.Services.AddScoped<IListGenerator<GanttTask, GanttTask>, GanttTaskListGenerator>();
+builder.Services.AddScoped<IListGenerator<Developer, GanttTask>, DeveloperTaskListGenerator>();
 
+builder.Services.AddScoped<IDateCalculator, DateCalculator>();
+builder.Services.AddScoped<IDeveloperHoursCalculator, DeveloperHoursCalculator>();
+builder.Services.AddScoped<ICalculatorFacade, CalculatorFacade>();
+builder.Services.AddScoped<LoggingInvoker>();
+builder.Services.AddScoped<GroupProjectsByProjectGroupQuery>();
 
 var app = builder.Build();
+
+// Validate all scoped services (optional manual step)
+using (var scope = app.Services.CreateScope())
+{
+    var servicesToValidate = new Type[]
+    {
+        typeof(IGanttChartProcessor),
+        typeof(IGanttService),
+        typeof(IDateTimeProvider),
+        typeof(IGanttChartMapper),
+        typeof(IDateCalculator),
+        typeof(IHolidayProvider),
+        typeof(ITaskAssignmentStrategyFactory),
+        typeof(ITaskSortingStrategyFactory),
+        typeof(DefaultTaskAssignmentStrategy),
+        typeof(DefaultTaskSortingStrategy),
+        typeof(TaskSortingStrategyEffortBased),
+        typeof(IListGenerator<GanttTask, Project>),
+        typeof(IListGenerator<GanttTask, GanttTask>),
+        typeof(IListGenerator<Developer, GanttTask>),
+        typeof(IDeveloperHoursCalculator),
+        typeof(ICalculatorFacade),
+        typeof(LoggingInvoker),
+        typeof(GroupProjectsByProjectGroupQuery),
+        
+    };
+
+    foreach (var serviceType in servicesToValidate)
+    {
+        scope.ServiceProvider.GetRequiredService(serviceType); // Throws if not registered
+    }
+}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

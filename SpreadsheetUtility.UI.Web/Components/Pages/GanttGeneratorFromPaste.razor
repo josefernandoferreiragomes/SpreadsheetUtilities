@@ -4,7 +4,8 @@
 @using Newtonsoft.Json
 @using SpreadsheetUtility.Library
 @using Microsoft.AspNetCore.Components.QuickGrid;
-@using SpreadsheetUtility.Services
+@using SpreadsheetUtility.Library.Models
+@using SpreadsheetUtility.Library.Services
 @using SpreadsheetUtility.UI.Web.Components;
 @using SpreadsheetUtility.UI.Web.Helpers
 @using static Microsoft.AspNetCore.Components.Web.RenderMode
@@ -91,6 +92,17 @@
     </InputRadioGroup>
 </div>
 <div>
+    <label>Team to Project Group Task Assignment (experimental)</label>
+    <InputRadioGroup @bind-Value="setTeamsToProjectGroups">
+        <div>
+            <InputRadio Value="true" /> <label>Fix Team To Project Group</label>
+        </div>
+        <div>
+            <InputRadio Value="false" /> <label>Do not Fix Team</label>
+        </div>
+    </InputRadioGroup>
+</div>
+<div>
     <button @onclick="SwapChartMode">Re Generate Charts</button>
 </div>
 <p></p>
@@ -112,6 +124,7 @@
         <PropertyColumn Property="@(p => p.EndDate.ToString("dd-MM-yyyy"))" Title="EndDate" Sortable="true" />
         <PropertyColumn Property="@(p => p.TotalEstimatedEffortHours)" Sortable="true" />                      
         <PropertyColumn Property="@(p => p.ProjectGroup)" Sortable="true" />
+        <PropertyColumn Property="@(p => p.TeamId)" Sortable="true" />
     </QuickGrid>
 </div>
 <div class="card-footer">
@@ -186,6 +199,7 @@
     private string excelTeamData = "";    
     private IQueryable<DeveloperAvailability>? developerListOutput;    
     private bool preSortTasks = false;
+    private bool setTeamsToProjectGroups = false;
 
     private void SwapChartMode()
     {       
@@ -204,7 +218,8 @@
             ProjectDtos = projectDtoList,
             TaskDtos = taskDtoList,
             PreSortTasks = preSortTasks,
-            ProjectStartDate = projectStartDate
+            ProjectStartDate = projectStartDate,
+            SetTeamsToProjectGroups = setTeamsToProjectGroups,
         };
 
         var inputMessageLog = $"input: {JsonConvert.SerializeObject(input, Formatting.Indented)}";

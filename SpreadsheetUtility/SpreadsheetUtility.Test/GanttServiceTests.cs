@@ -1,12 +1,18 @@
 ﻿using Microsoft.Extensions.Logging;
 using Moq;
 using Newtonsoft.Json;
-using SpreadsheetUtility.Library;
-using SpreadsheetUtility.Library.Processors.GanttChartProcessor.Calculators;
-using SpreadsheetUtility.Library.Processors.GanttChartProcessor.Mappers;
+using SpreadsheetUtility.Library.Calculators;
+using SpreadsheetUtility.Library.ListGenerators;
+using SpreadsheetUtility.Library.Mappers;
+using SpreadsheetUtility.Library.Models;
+using SpreadsheetUtility.Library.Processors;
 using SpreadsheetUtility.Library.Providers;
-using SpreadsheetUtility.Services;
+using SpreadsheetUtility.Library.TaskAssigners;
+using SpreadsheetUtility.Library.Services;
 using SpreadsheetUtility.Test.Helpers;
+using SpreadsheetUtility.Library.Grouppers;
+using SpreadsheetUtility.Library.TaskSorters;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace SpreadsheetUtility.Test
 {
@@ -22,18 +28,93 @@ namespace SpreadsheetUtility.Test
 
         public GanttServiceTests()
         {
+            // Create a service collection
+            var services = new ServiceCollection();
+
+            // Mock ILogger
             _mockLogger = new Mock<ILogger<List<GanttTask>>>();
             _mockHolidayProviderLogger = new Mock<ILogger<List<Holiday>>>();
             _mockDateTimeProvider = new Mock<IDateTimeProvider>();
-            var mapper = new GanttChartMapper(_mockDateTimeProvider.Object);
-            var holidayProvider = new Mock<IHolidayProvider>();
+
+            // Register mocks and dependencies
+            services.AddSingleton(_mockLogger.Object);
+            services.AddSingleton(_mockHolidayProviderLogger.Object);            
+
+            // Register IDateTimeProvider mock
+            _mockDateTimeProvider.Setup(m => m.Today).Returns(new DateTime(2025, 03, 20));
+            services.AddSingleton<IDateTimeProvider>(_mockDateTimeProvider.Object);
+
+            // Register GanttChartMapper
+            services.AddSingleton<IGanttChartMapper, GanttChartMapper>();
+
+            // Register IHolidayProvider mock
+            var holidayProviderMock = new Mock<IHolidayProvider>();
             var holidayInput = JsonTestHelper.ProcessMethodJson<List<Holiday>>("2025HolidaysPT", ParameterTypeInput);
-            holidayProvider.Setup(h=>h.LoadHolidaysFromConfigurationFile()).Returns(holidayInput);
-            var dateCalculator = new DateCalculator(holidayProvider.Object);
-            var ganttProcessor = new GanttChartProcessor(_mockLogger!.Object, _mockDateTimeProvider?.Object!, mapper, dateCalculator);
+            holidayProviderMock.Setup(h => h.LoadHolidaysFromConfigurationFile()).Returns(holidayInput);
+            services.AddSingleton<IHolidayProvider>(holidayProviderMock.Object);
+
+            //add GanttChartProcessor to middleware services:
+            services.AddScoped<IGanttChartProcessor, GanttChartProcessor>();
+            services.AddScoped<IGanttService, GanttService>();
+            
+            services.AddScoped<IGanttChartMapper, GanttChartMapper>();
+            services.AddScoped<IDateCalculator, DateCalculator>();
+            
+            services.AddScoped<ITaskAssignmentStrategyFactory, TaskAssignmentStrategyFactory>();
+            services.AddScoped<ITaskSortingStrategyFactory, TaskSortingStrategyFactory>();
+            services.AddScoped<DefaultTaskAssignmentStrategy>();
+            services.AddScoped<DefaultTaskSortingStrategy>();
+            services.AddScoped<TaskSortingStrategyFactory>();
+            services.AddScoped<TaskSortingStrategyEffortBased>();
+            // Register the generalized ListGenerator implementations
+            services.AddScoped<IListGenerator<GanttTask, Project>, GanttTaskProjectListGenerator>();
+            services.AddScoped<IListGenerator<GanttTask, GanttTask>, GanttTaskListGenerator>();
+            services.AddScoped<IListGenerator<Developer, GanttTask>, DeveloperTaskListGenerator>();
+
+            services.AddScoped<IDateCalculator, DateCalculator>();
+            services.AddScoped<IDeveloperHoursCalculator, DeveloperHoursCalculator>();
+            services.AddScoped<ICalculatorFacade, CalculatorFacade>();
+            services.AddScoped<LoggingInvoker>();
+            services.AddScoped<GroupProjectsByProjectGroupQuery>();
+
+            // Build the service provider
+            var serviceProvider = services.BuildServiceProvider();
+            // Validate all scoped services (optional manual step)
+            using (var scope = serviceProvider.CreateScope())
+            {
+                var servicesToValidate = new Type[]
+                {
+                    typeof(IGanttChartProcessor),
+                    typeof(IGanttService),
+                    typeof(IDateTimeProvider),
+                    typeof(IGanttChartMapper),
+                    typeof(IDateCalculator),
+                    typeof(IHolidayProvider),
+                    typeof(ITaskAssignmentStrategyFactory),
+                    typeof(ITaskSortingStrategyFactory),
+                    typeof(DefaultTaskAssignmentStrategy),
+                    typeof(DefaultTaskSortingStrategy),
+                    typeof(TaskSortingStrategyEffortBased),
+                    typeof(IListGenerator<GanttTask, Project>),
+                    typeof(IListGenerator<GanttTask, GanttTask>),
+                    typeof(IListGenerator<Developer, GanttTask>),
+                    typeof(IDeveloperHoursCalculator),
+                    typeof(ICalculatorFacade),
+                    typeof(LoggingInvoker),
+                    typeof(GroupProjectsByProjectGroupQuery),
+
+                };
+
+                foreach (var serviceType in servicesToValidate)
+                {
+                    scope.ServiceProvider.GetRequiredService(serviceType); // Throws if not registered
+                }
+            }
+
+            // Resolve GanttChartProcessor and GanttService
+            var ganttProcessor = serviceProvider.GetRequiredService<IGanttChartProcessor>();
             _ganttService = new GanttService(ganttProcessor);
-        }        
-        
+        }
         [Fact]
         public void CalculateGanttChartAllocationSort()
         {
@@ -55,6 +136,7 @@ namespace SpreadsheetUtility.Test
             Assert.Equal(expected.DeveloperAvailability[0].Name, result.DeveloperAvailability[0].Name);
             Assert.Equal(expected.DeveloperAvailability[0].DailyWorkHours, result.DeveloperAvailability[0].DailyWorkHours);
             Assert.Equal(JsonConvert.SerializeObject(expected.GanttTasks, Formatting.Indented), JsonConvert.SerializeObject(result.GanttTasks, Formatting.Indented));
+            Assert.Equal(JsonConvert.SerializeObject(expected.DeveloperAvailability, Formatting.Indented), JsonConvert.SerializeObject(result.DeveloperAvailability, Formatting.Indented));
         }
         [Fact]
         public void CalculateGanttChartAllocation()
@@ -77,6 +159,8 @@ namespace SpreadsheetUtility.Test
             Assert.Equal(expected.DeveloperAvailability[0].Name, result.DeveloperAvailability[0].Name);
             Assert.Equal(expected.DeveloperAvailability[0].DailyWorkHours, result.DeveloperAvailability[0].DailyWorkHours);
             Assert.Equal(JsonConvert.SerializeObject(expected.GanttTasks, Formatting.Indented), JsonConvert.SerializeObject(result.GanttTasks, Formatting.Indented));
+            Assert.Equal(JsonConvert.SerializeObject(expected.DeveloperAvailability, Formatting.Indented), JsonConvert.SerializeObject(result.DeveloperAvailability, Formatting.Indented));
+            //Assert.Equal(JsonConvert.SerializeObject(expected.GanttProjects, Formatting.Indented), JsonConvert.SerializeObject(result.GanttProjects, Formatting.Indented));
         }
         [Fact]
         public void CalculateGanttChartAllocationNoDependenciesSort()
@@ -98,6 +182,7 @@ namespace SpreadsheetUtility.Test
             Assert.Equal(expected.GanttTasks[0].Name, result.GanttTasks[0].Name);
             Assert.Equal(expected.DeveloperAvailability[0].Name, result.DeveloperAvailability[0].Name);
             Assert.Equal(expected.DeveloperAvailability[0].DailyWorkHours, result.DeveloperAvailability[0].DailyWorkHours);
+            Assert.Equal(JsonConvert.SerializeObject(expected.DeveloperAvailability, Formatting.Indented), JsonConvert.SerializeObject(result.DeveloperAvailability, Formatting.Indented));
             Assert.Equal(JsonConvert.SerializeObject(expected.GanttTasks, Formatting.Indented), JsonConvert.SerializeObject(result.GanttTasks, Formatting.Indented));
         }
         [Fact]
@@ -120,6 +205,7 @@ namespace SpreadsheetUtility.Test
             Assert.Equal(expected.GanttTasks[0].Name, result.GanttTasks[0].Name);
             Assert.Equal(expected.DeveloperAvailability[0].Name, result.DeveloperAvailability[0].Name);
             Assert.Equal(expected.DeveloperAvailability[0].DailyWorkHours, result.DeveloperAvailability[0].DailyWorkHours);
+            Assert.Equal(JsonConvert.SerializeObject(expected.DeveloperAvailability, Formatting.Indented), JsonConvert.SerializeObject(result.DeveloperAvailability, Formatting.Indented));
             Assert.Equal(JsonConvert.SerializeObject(expected.GanttTasks, Formatting.Indented), JsonConvert.SerializeObject(result.GanttTasks, Formatting.Indented));
         }
         [Fact]
@@ -145,7 +231,9 @@ namespace SpreadsheetUtility.Test
                 new ProjectDto
                 {
                     ProjectID = "P1",
-                    ProjectName = "Project 1",                    
+                    ProjectName = "Project 1",
+                    ProjectGroup = "1",
+                    TeamId = "1",
                 }
             };
 
@@ -153,6 +241,7 @@ namespace SpreadsheetUtility.Test
             {
                 new DeveloperDto
                 {
+                    TeamId = "1",
                     Team = "Team 1",
                     DeveloperId = "1",
                     Name = "Dev 1",
@@ -170,6 +259,10 @@ namespace SpreadsheetUtility.Test
                 ProjectDtos = projectDtoList,
                 PreSortTasks = preSortTasks
             };
+
+            var fixedDateTime = new DateTime(2025, 03, 20);
+            _mockDateTimeProvider!.Setup(m => m.Today).Returns(fixedDateTime);
+
             // Act
             var result = _ganttService.CalculateGanttChartAllocation(input);
 
@@ -207,6 +300,7 @@ namespace SpreadsheetUtility.Test
             {
                 new DeveloperDto
                 {
+                    TeamId = "1",
                     Team = "Team 1",
                     DeveloperId = "1",
                     Name = "Dev 1",
@@ -224,6 +318,9 @@ namespace SpreadsheetUtility.Test
                 ProjectDtos = projectDtoList,
                 PreSortTasks = preSortTasks
             };
+
+            var fixedDateTime = new DateTime(2025, 03, 20);
+            _mockDateTimeProvider!.Setup(m => m.Today).Returns(fixedDateTime);
 
             // Act
             var result = _ganttService.CalculateGanttChartAllocation(input);

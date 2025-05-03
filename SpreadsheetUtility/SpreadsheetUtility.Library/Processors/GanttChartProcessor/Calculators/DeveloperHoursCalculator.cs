@@ -1,0 +1,25 @@
+using SpreadsheetUtility.Library.Models;
+
+namespace SpreadsheetUtility.Library.Calculators;
+public class DeveloperHoursCalculator : IDeveloperHoursCalculator
+{
+    public void CalculateDeveloperHours(List<GanttTask> ganttTaskList, List<Developer> developerList, IDateCalculator dateCalculator)
+    {
+        if (ganttTaskList.Count == 0 || developerList.Count == 0) return;
+
+        DateTime minDate = ganttTaskList.Min(t => t.StartDate);
+        DateTime maxDate = ganttTaskList.Max(t => t.EndDate);
+
+        foreach (var developer in developerList)
+        {
+            if (developer != null)
+            {
+                var calculatedIntervalDays = dateCalculator.CalculateIntervalDays(minDate, maxDate, developer?.VacationPeriods);
+                developer!.AllocatedHours = developer.Tasks?.Sum(t => t.EstimatedEffortHours) ?? 0;
+                developer.TotalHours = calculatedIntervalDays * developer.DailyWorkHours;
+                var slackHours = developer.TotalHours - developer.AllocatedHours;
+                developer.SlackHours = slackHours >= 0 ? slackHours : 0;
+            }
+        }
+    }
+}

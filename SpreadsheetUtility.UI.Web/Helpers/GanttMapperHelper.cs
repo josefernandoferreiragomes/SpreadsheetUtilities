@@ -1,4 +1,5 @@
 ﻿using SpreadsheetUtility.Library;
+using SpreadsheetUtility.Library.Models;
 
 namespace SpreadsheetUtility.UI.Web.Helpers
 {
@@ -13,13 +14,14 @@ namespace SpreadsheetUtility.UI.Web.Helpers
             foreach (var line in lines.Skip(1)) // Skip header
             {
                 var columns = line.Split('\t');
-                if (columns.Length == 3)
+                if (columns.Length == 4)
                 {
                     projectDtoList.Add(new ProjectDto()
                     {
                         ProjectID = columns[0].Trim(),
                         ProjectName = columns[1].Trim(),
-                        ProjectGroup = columns[2].Trim()
+                        ProjectGroup = columns[2].Trim(),
+                        TeamId = columns[3].Trim()
                     });
                 }
             }
@@ -92,15 +94,16 @@ namespace SpreadsheetUtility.UI.Web.Helpers
             foreach (var line in lines.Skip(1)) // Skip header
             {
                 var columns = line.Split('\t');
-                if (columns.Length == 5)
+                if (columns.Length == 6)
                 {
                     developerDtoList.Add(new DeveloperDto()
                     {
-                        Team = columns[0].Trim(),
-                        DeveloperId = columns[1].Trim(),
-                        Name = columns[2].Trim(),
-                        VacationPeriods = columns[3].Trim(),
-                        DailyWorkHours = int.TryParse(columns[4].Trim(), out var hours) ? hours : 0,
+                        TeamId = columns[0].Trim(),
+                        Team = columns[1].Trim(),
+                        DeveloperId = columns[2].Trim(),
+                        Name = columns[3].Trim(),
+                        VacationPeriods = columns[4].Trim(),
+                        DailyWorkHours = int.TryParse(columns[5].Trim(), out var hours) ? hours : 0,
 
                     });
                 }

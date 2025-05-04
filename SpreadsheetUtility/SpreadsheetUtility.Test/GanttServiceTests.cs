@@ -69,7 +69,7 @@ namespace SpreadsheetUtility.Test
             // Register the generalized ListGenerator implementations
             services.AddScoped<IListGenerator<GanttTask, Project>, GanttTaskProjectListGenerator>();
             services.AddScoped<IListGenerator<GanttTask, GanttTask>, GanttTaskListGenerator>();
-            services.AddScoped<IListGenerator<Developer, GanttTask>, DeveloperTaskListGenerator>();
+            services.AddScoped<IListGenerator<Developer, List<GanttTask>>, DeveloperTaskListGenerator>();
 
             services.AddScoped<IDateCalculator, DateCalculator>();
             services.AddScoped<IDeveloperHoursCalculator, DeveloperHoursCalculator>();
@@ -97,7 +97,7 @@ namespace SpreadsheetUtility.Test
                     typeof(TaskSortingStrategyEffortBased),
                     typeof(IListGenerator<GanttTask, Project>),
                     typeof(IListGenerator<GanttTask, GanttTask>),
-                    typeof(IListGenerator<Developer, GanttTask>),
+                    typeof(IListGenerator<Developer, List<GanttTask>>),
                     typeof(IDeveloperHoursCalculator),
                     typeof(ICalculatorFacade),
                     typeof(LoggingInvoker),

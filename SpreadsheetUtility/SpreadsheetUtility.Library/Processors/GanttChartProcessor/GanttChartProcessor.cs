@@ -26,7 +26,7 @@ public class GanttChartProcessor : IGanttChartProcessor, IObserver<Holiday>
     private readonly ITaskSortingStrategyFactory _taskSortingStrategyFactory;
     private readonly IListGenerator<GanttTask, Project> _projectListGenerator;
     private readonly IListGenerator<GanttTask, GanttTask> _ganttTaskListGenerator;
-    private readonly IListGenerator<Developer, GanttTask> _developerListGenerator;
+    private readonly IListGenerator<Developer, List<GanttTask>> _developerTaskListGenerator;
     private readonly ICalculatorFacade _calculatorFacade;
     private readonly LoggingInvoker _loggingInvoker;
     private readonly GroupProjectsByProjectGroupQuery _groupProjectsQuery;
@@ -40,7 +40,7 @@ public class GanttChartProcessor : IGanttChartProcessor, IObserver<Holiday>
         ITaskSortingStrategyFactory taskSortingStrategyFactory,
         IListGenerator<GanttTask, Project> projectListGenerator,
         IListGenerator<GanttTask, GanttTask> ganttTaskListGenerator,
-        IListGenerator<Developer, GanttTask> developerListGenerator,
+        IListGenerator<Developer, List<GanttTask>> developerListGenerator,
         ICalculatorFacade calculatorFacade,
         LoggingInvoker loggingInvoker,
         GroupProjectsByProjectGroupQuery groupProjectsQuery
@@ -59,7 +59,7 @@ public class GanttChartProcessor : IGanttChartProcessor, IObserver<Holiday>
         _taskSortingStrategyFactory = taskSortingStrategyFactory;
         _projectListGenerator = projectListGenerator;
         _ganttTaskListGenerator = ganttTaskListGenerator;
-        _developerListGenerator = developerListGenerator;
+        _developerTaskListGenerator = developerListGenerator;
         _calculatorFacade = calculatorFacade;
         _loggingInvoker = loggingInvoker;
         _groupProjectsQuery = groupProjectsQuery;
@@ -172,17 +172,17 @@ public class GanttChartProcessor : IGanttChartProcessor, IObserver<Holiday>
                 projectInputList = _projectInputList,
                 projectStartDate = _projectStartDate,
             }
-        );    
+        );
 
-    private List<GanttTask> GenerateGanttTaskListFromDevelopers()    
-        => _developerListGenerator.GenerateList(
-            _developerList, 
+    private List<GanttTask> GenerateGanttTaskListFromDevelopers()
+        => _developerTaskListGenerator.GenerateList(
+            _developerList,
             new ListGeneratorInput()
             {
                 projectInputList = _projectInputList,
                 projectStartDate = _projectStartDate,
             }
-        );    
+        ).SelectMany(x => x).ToList();
 
     private void PerformLogging(List<GanttTask> ganttProjectList)
     {

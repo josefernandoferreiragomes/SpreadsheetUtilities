@@ -38,13 +38,15 @@ builder.Services.AddScoped<TaskSortingStrategyEffortBased>();
 // Register the generalized ListGenerator implementations
 builder.Services.AddScoped<IListGenerator<GanttTask, Project>, GanttTaskProjectListGenerator>();
 builder.Services.AddScoped<IListGenerator<GanttTask, GanttTask>, GanttTaskListGenerator>();
-builder.Services.AddScoped<IListGenerator<Developer, GanttTask>, DeveloperTaskListGenerator>();
+builder.Services.AddScoped<IListGenerator<Developer, List<GanttTask>>, DeveloperTaskListGenerator>();
 
 builder.Services.AddScoped<IDateCalculator, DateCalculator>();
 builder.Services.AddScoped<IDeveloperHoursCalculator, DeveloperHoursCalculator>();
 builder.Services.AddScoped<ICalculatorFacade, CalculatorFacade>();
 builder.Services.AddScoped<LoggingInvoker>();
 builder.Services.AddScoped<GroupProjectsByProjectGroupQuery>();
+
+
 
 var app = builder.Build();
 
@@ -66,7 +68,7 @@ using (var scope = app.Services.CreateScope())
         typeof(TaskSortingStrategyEffortBased),
         typeof(IListGenerator<GanttTask, Project>),
         typeof(IListGenerator<GanttTask, GanttTask>),
-        typeof(IListGenerator<Developer, GanttTask>),
+        typeof(IListGenerator<Developer, List<GanttTask>>),
         typeof(IDeveloperHoursCalculator),
         typeof(ICalculatorFacade),
         typeof(LoggingInvoker),

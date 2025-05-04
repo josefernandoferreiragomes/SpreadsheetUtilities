@@ -1,17 +1,20 @@
 using SpreadsheetUtility.Library.Models;
 
 namespace SpreadsheetUtility.Library.ListGenerators;
-public class DeveloperTaskListGenerator : ListGenerator<Developer, GanttTask>
+public class DeveloperTaskListGenerator : ListGenerator<Developer, List<GanttTask>>
 {
-    protected override string GetGroupKey(Developer developer) => developer.DeveloperId;
-
-    protected override GanttTask GenerateItem(string groupKey, IEnumerable<Developer> developers)
+    protected override string GetGroupKey(Developer item)
     {
-        var developer = developers.First(); // Since developers are grouped by DeveloperId, this will always be a single developer.
+        return item.Name; // or item.ID if more appropriate
+    }
+
+    protected override List<GanttTask> GenerateItem(string groupKey, IEnumerable<Developer> items)
+    {
+        var developer = items.First(); // only one per groupKey due to grouping
 
         var ganttTasks = new List<GanttTask>();
 
-        // Add tasks assigned to the developer
+        // Developer tasks
         foreach (var task in developer.Tasks)
         {
             ganttTasks.Add(new GanttTask
@@ -35,31 +38,31 @@ public class DeveloperTaskListGenerator : ListGenerator<Developer, GanttTask>
             });
         }
 
-        // Add vacation periods as separate tasks
+        // Vacation tasks
         int vacationId = 1;
-        foreach (var vacation in developer.VacationPeriods ?? new List<(DateTime Start, DateTime End)?>())
+        foreach (var vacation in developer.VacationPeriods ?? Enumerable.Empty<(DateTime Start, DateTime End)?>())
         {
             if (!vacation.HasValue || vacation.Value.Start < _projectStartDate) continue;
-            var start = vacation.Value.Start;
-            var end = vacation.Value.End;
+
             ganttTasks.Add(new GanttTask
             {
-                Id = vacationId.ToString(),
+                Id = $"vacation-{developer.Name}-{vacationId}",
                 Name = $"{developer.Name} - Vacation {vacationId}",
-                Start = start.ToString("yyyy-MM-dd"),
-                End = end.ToString("yyyy-MM-dd"),
+                Start = vacation.Value.Start.ToString("yyyy-MM-dd"),
+                End = vacation.Value.End.ToString("yyyy-MM-dd"),
                 CustomClass = "task",
                 Resource = developer.Name,
-                StartDate = start,
-                EndDate = end,
+                StartDate = vacation.Value.Start,
+                EndDate = vacation.Value.End,
                 ProjectName = "Vacation",
                 ProjectID = "VacationID",
-                TaskName = "Vacation",
+                TaskName = "Vacation"
             });
+
             vacationId++;
         }
 
-        // Return the combined list of tasks
-        return ganttTasks.First(); // Adjust this logic if you need to return a single GanttTask or a collection.
+        return ganttTasks;
     }
 }
+

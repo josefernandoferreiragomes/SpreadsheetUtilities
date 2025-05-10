@@ -23,7 +23,7 @@ public class TaskSortingStrategyEffortBased : ITaskSortingStrategy
         }
 
         // Sort tasks by dependencies and estimated effort hours
-        sortedTasks = projectTasks.OrderBy(t => t.Dependencies).ThenByDescending(t => t.EstimatedEffortHours).ToList();
+        sortedTasks = projectTasks.OrderBy(t => t.Dependencies).ThenByDescending(t => t.EffortHours).ToList();
 
         // Create a mapping of original task IDs to new task IDs
         var idMapping = new Dictionary<string, string>();

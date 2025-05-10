@@ -33,7 +33,7 @@ public class GanttTask
 
     public string? InternalID { get; set; }
 
-    public double EstimatedEffortHours { get; set; }
+    public double EffortHours { get; set; }
     public string? ProjectName { get; set; }
     public string? TaskName { get; set; }
     public string? ProjectID { get; set; }

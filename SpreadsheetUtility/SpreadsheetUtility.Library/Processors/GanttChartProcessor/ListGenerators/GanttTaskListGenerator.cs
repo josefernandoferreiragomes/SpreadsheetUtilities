@@ -7,15 +7,15 @@ public class GanttTaskListGenerator : ListGenerator<GanttTask, GanttTask>
 
     protected override GanttTask GenerateItem(string groupKey, IEnumerable<GanttTask> items)
     {
-        double totalEstimatedEffortHours = items.Sum(t => t.EstimatedEffortHours);
+        double totalEstimatedEffortHours = items.Sum(t => t.EffortHours);
 
         return new GanttTask
         {         
             Id = items.First().ProjectID ?? "",
-            Name = $"{groupKey} ({items.Sum(t => t.EstimatedEffortHours)} hours)",
+            Name = $"{groupKey} ({items.Sum(t => t.EffortHours)} hours)",
             Dependencies = items.Select(t => t.ProjectDependency).Where(d => !string.IsNullOrEmpty(d)).FirstOrDefault() ?? string.Empty,
-            EstimatedEffortHours = items.Sum(t => t.EstimatedEffortHours),
-            Progress = (int)(items.Sum(t => (t.Progress * (t.EstimatedEffortHours / totalEstimatedEffortHours)))), // Summing the progress of each related task
+            EffortHours = items.Sum(t => t.EffortHours),
+            Progress = (int)(items.Sum(t => (t.Progress * (t.EffortHours / totalEstimatedEffortHours)))), // Summing the progress of each related task
             StartDate = items.Min(t => t.StartDate),
             EndDate = items.Max(t => t.EndDate),
             Start = items.Min(t => t.StartDate).ToString("yyyy-MM-dd"),

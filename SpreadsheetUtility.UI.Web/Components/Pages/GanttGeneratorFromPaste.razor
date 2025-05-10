@@ -139,7 +139,7 @@
         <PropertyColumn Property="@(p => p.StartDate.ToString("dd-MM-yyyy"))" Title="StartDate" Sortable="true" />
         <PropertyColumn Property="@(p => p.EndDate.ToString("dd-MM-yyyy"))" Title="EndDate" Sortable="true" />
         <PropertyColumn Property="@(p => p.TaskEndWeekDescription)" Sortable="true" />
-        <PropertyColumn Property="@(p => p.EstimatedEffortHours)" Sortable="true" />
+        <PropertyColumn Property="@(p => p.EffortHours)" Sortable="true" />
         <PropertyColumn Property="@(p => p.IntervalDays)" Sortable="true" />
         <PropertyColumn Property="@(p => p.WorkDays)" Sortable="true" />
         <PropertyColumn Property="@(p => p.VacationDays)" Sortable="true" />
@@ -150,7 +150,7 @@
     </QuickGrid>
 </div>
 <div class="card-footer">
-    Total Estimated Effort Hours: @ganttTaskListOutput?.Sum(p => p.EstimatedEffortHours)
+    Total Estimated Effort Hours: @ganttTaskListOutput?.Sum(p => p.EffortHours)
 </div>
 <p></p>
 <div>Developer data</div>

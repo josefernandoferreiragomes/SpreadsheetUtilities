@@ -30,18 +30,18 @@ public abstract class TaskAssignmentStrategyBase(IDateCalculator _dateCalculator
 
             task.Start = taskStart.ToString("yyyy-MM-dd");
             task.End = taskEnd.ToString("yyyy-MM-dd");
-            //TaskEndWeek is equal to the first day of the week of the task end date
-            task.TaskEndWeek = $"Week of {taskEnd.AddDays(-(int)(taskEnd.DayOfWeek - 1)).ToString("yyyy-MM-dd")}";
+            //TaskEndWeekDescription is equal to the first day of the week of the task end date
+            task.TaskEndWeekDescription = $"Week of {taskEnd.AddDays(-(int)(taskEnd.DayOfWeek - 1)).ToString("yyyy-MM-dd")}";
             task.StartDate = taskStart;
             task.EndDate = taskEnd;
             task.AssignedDeveloper = assignedDeveloper.Name;
             task.AssignedDeveloperId = assignedDeveloper.DeveloperId;
             task.Name = $"{task.Name} ({assignedDeveloper.Name})";
-            task.DeveloperWorkHours = (int?)assignedDeveloper.DailyWorkHours;
-            task.IntervalDaysCount = _dateCalculator.CalculateIntervalDays(taskStart, taskEnd, assignedDeveloper.VacationPeriods);
-            task.WorkDaysCount = _dateCalculator.CalculateWorkDays(taskStart, taskEnd, assignedDeveloper.VacationPeriods);
-            task.VacationDaysCount = _dateCalculator.CalculateVacationDays(taskStart, taskEnd, assignedDeveloper.VacationPeriods);
-            task.NonWorkingDaysCount = _dateCalculator.CalculateNonWorkingDays(taskStart, taskEnd, assignedDeveloper.VacationPeriods);
+            task.DailyWorkHours = (int?)assignedDeveloper.DailyWorkHours;
+            task.IntervalDays = _dateCalculator.CalculateIntervalDays(taskStart, taskEnd, assignedDeveloper.VacationPeriods);
+            task.WorkDays = _dateCalculator.CalculateWorkDays(taskStart, taskEnd, assignedDeveloper.VacationPeriods);
+            task.VacationDays = _dateCalculator.CalculateVacationDays(taskStart, taskEnd, assignedDeveloper.VacationPeriods);
+            task.NonWorkingDays = _dateCalculator.CalculateNonWorkingDays(taskStart, taskEnd, assignedDeveloper.VacationPeriods);
             assignedDeveloper.Tasks.Add(task);
 
             assignedDeveloper.SetNextAvailableDate(_dateCalculator.GetNextWorkingDay(taskEnd.AddDays(1)));

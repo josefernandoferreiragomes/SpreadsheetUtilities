@@ -4,10 +4,10 @@ using SpreadsheetUtility.Library.Processors;
 
 namespace SpreadsheetUtility.Library.Services;
 
-public class GanttService : IGanttService
+public class GanttChartDataManager : IGanttChartDataManager
 {
     IGanttChartProcessor _ganttChartProcessor;
-    public GanttService(IGanttChartProcessor ganttChartProcessor)
+    public GanttChartDataManager(IGanttChartProcessor ganttChartProcessor)
     {
         _ganttChartProcessor = ganttChartProcessor;
     }

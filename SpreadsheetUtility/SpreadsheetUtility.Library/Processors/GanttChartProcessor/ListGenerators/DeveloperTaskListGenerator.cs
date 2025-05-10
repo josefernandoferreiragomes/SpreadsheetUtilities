@@ -4,9 +4,7 @@ namespace SpreadsheetUtility.Library.ListGenerators;
 public class DeveloperTaskListGenerator : ListGenerator<Developer, List<GanttTask>>
 {
     protected override string GetGroupKey(Developer item)
-    {
-        return item.Name; // or item.ID if more appropriate
-    }
+        => item.Name; // or item.ID if more appropriate    
 
     protected override List<GanttTask> GenerateItem(string groupKey, IEnumerable<Developer> items)
     {

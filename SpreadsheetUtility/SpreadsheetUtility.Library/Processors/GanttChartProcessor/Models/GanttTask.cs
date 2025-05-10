@@ -39,11 +39,24 @@ public class GanttTask
     public string? ProjectDependency { get; set; }
     public string? AssignedDeveloper { get; set; }
     public string? AssignedDeveloperId { get; set; }
+    /// <summary>
+    /// To be defined... The task is updated by the user
+    /// </summary>
     internal bool DependencyUpdated { get; set; } = false;
     public string? TaskEndWeek { get; set; }
 
     public string? ActualStart { get; set; }
     public string? ActualEnd { get; set; }
+
+    /// <summary>
+    /// To be defined... The actual progress of the task, represented as a consumed time, in hour
+    /// </summary>
     public int ActualProgress { get; set; }   // 0-100%
+
+    public int? IntervalDaysCount { get; set; }
+    public int? WorkDaysCount { get; set; }
+    public int? VacationDaysCount { get; set; }
+    public int? NonWorkingDaysCount { get; set; }
+    public int? DeveloperWorkHours { get; set; }
 }
 

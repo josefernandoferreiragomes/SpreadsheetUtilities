@@ -37,6 +37,11 @@ public abstract class TaskAssignmentStrategyBase(IDateCalculator _dateCalculator
             task.AssignedDeveloper = assignedDeveloper.Name;
             task.AssignedDeveloperId = assignedDeveloper.DeveloperId;
             task.Name = $"{task.Name} ({assignedDeveloper.Name})";
+            task.DeveloperWorkHours = (int?)assignedDeveloper.DailyWorkHours;
+            task.IntervalDaysCount = _dateCalculator.CalculateIntervalDays(taskStart, taskEnd, assignedDeveloper.VacationPeriods);
+            task.WorkDaysCount = _dateCalculator.CalculateWorkDays(taskStart, taskEnd, assignedDeveloper.VacationPeriods);
+            task.VacationDaysCount = _dateCalculator.CalculateVacationDays(taskStart, taskEnd, assignedDeveloper.VacationPeriods);
+            task.NonWorkingDaysCount = _dateCalculator.CalculateNonWorkingDays(taskStart, taskEnd, assignedDeveloper.VacationPeriods);
             assignedDeveloper.Tasks.Add(task);
 
             assignedDeveloper.SetNextAvailableDate(_dateCalculator.GetNextWorkingDay(taskEnd.AddDays(1)));

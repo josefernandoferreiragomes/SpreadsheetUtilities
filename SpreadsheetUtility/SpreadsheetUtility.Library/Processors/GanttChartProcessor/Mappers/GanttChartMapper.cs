@@ -58,6 +58,7 @@ namespace SpreadsheetUtility.Library.Mappers
                 VacationPeriods = d.VacationPeriods,
                 Tasks = d.Tasks,
                 AllocatedHours = d.AllocatedHours,
+                AllocatedDays = d.AllocatedDays,
                 SlackHours = d.SlackHours,
                 TotalHours = d.TotalHours,
                 VacationPeriodsSerialized = d.VacationPeriodsSerialized,

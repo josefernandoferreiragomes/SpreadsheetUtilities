@@ -11,6 +11,7 @@ public class DeveloperAvailability
     public DateTime NextAvailableDateForTasks { get; set; }
     public List<GanttTask>? Tasks { get; set; }
     public double AllocatedHours { get; set; }
+    public double AllocatedDays { get; set; }
     public double SlackHours { get; set; }
     public double TotalHours { get; set; }
     public string? VacationPeriodsSerialized { get; set; }

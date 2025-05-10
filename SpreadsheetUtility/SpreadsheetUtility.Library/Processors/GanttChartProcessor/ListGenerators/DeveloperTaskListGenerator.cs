@@ -42,7 +42,7 @@ public class DeveloperTaskListGenerator : ListGenerator<Developer, List<GanttTas
         int vacationId = 1;
         foreach (var vacation in developer.VacationPeriods ?? Enumerable.Empty<(DateTime Start, DateTime End)?>())
         {
-            if (!vacation.HasValue || vacation.Value.Start < _projectStartDate) continue;
+            if (!vacation.HasValue || vacation.Value.End < _projectStartDate) continue;
 
             ganttTasks.Add(new GanttTask
             {

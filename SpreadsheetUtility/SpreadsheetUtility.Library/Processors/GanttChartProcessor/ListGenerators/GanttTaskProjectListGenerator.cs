@@ -15,7 +15,7 @@ public class GanttTaskProjectListGenerator : ListGenerator<GanttTask, Project>
             EndDate = items.Max(t => t.EndDate),
             //TODO: verify if it is necessary to include tasks in the project object
             //Tasks = items.ToList(),
-            TotalEstimatedEffortHours = items.Sum(t => t.EstimatedEffortHours),
+            TotalEstimatedEffortHours = items.Sum(t => t.EffortHours),
             ProjectGroup = _projectInputList.Find(p => p.ProjectName == groupKey)?.ProjectGroup
         };
     }

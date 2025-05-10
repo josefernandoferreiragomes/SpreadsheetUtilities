@@ -25,7 +25,7 @@ public abstract class TaskAssignmentStrategyBase(IDateCalculator _dateCalculator
 
             taskStart = taskStart > taskStartFromDependency ? taskStart : _dateCalculator.GetNextWorkingDay(taskStartFromDependency.AddDays(1));
 
-            double requiredDays = Math.Ceiling(task.EstimatedEffortHours / assignedDeveloper.DailyWorkHours);
+            double requiredDays = Math.Ceiling(task.EffortHours / assignedDeveloper.DailyWorkHours);
             DateTime taskEnd = _dateCalculator.CalculateEndDate(taskStart, requiredDays, assignedDeveloper.VacationPeriods);
 
             task.Start = taskStart.ToString("yyyy-MM-dd");

@@ -11,7 +11,7 @@ namespace SpreadsheetUtility.Library.Mappers
             {
                 Id = dto.Id ?? "",
                 Name = $"{dto.ProjectName} : {dto.TaskName}",
-                EstimatedEffortHours = dto.EstimatedEffortHours,
+                EffortHours = dto.EstimatedEffortHours,
                 Dependencies = dto.Dependencies ?? "",
                 Progress = int.TryParse(dto.Progress, out var p) ? p : 0,
                 ProjectID = dto.ProjectID ?? "",

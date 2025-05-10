@@ -274,7 +274,7 @@ namespace SpreadsheetUtility.Test
             var ganttTask = result.GanttTasks.First();
             Assert.Equal("1", ganttTask.Id);
             Assert.Equal("Project 1 : Task 1 (Team 1 : Dev 1)", ganttTask.Name);
-            Assert.Equal(10, ganttTask.EstimatedEffortHours);
+            Assert.Equal(10, ganttTask.EffortHours);
 
             var developerAvailability = result.DeveloperAvailability.First();
             Assert.Equal("Team 1 : Dev 1", developerAvailability.Name);

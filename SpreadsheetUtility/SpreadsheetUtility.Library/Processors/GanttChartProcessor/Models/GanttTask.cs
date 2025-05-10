@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System.ComponentModel.DataAnnotations;
 
 namespace SpreadsheetUtility.Library.Models;
 
@@ -7,7 +8,7 @@ public class GanttTask
     [JsonProperty("id")]
     public required string Id { get; set; }
 
-    [JsonProperty("name")]
+    [JsonProperty("name")]    
     public required string Name { get; set; }
 
     [JsonProperty("start")]
@@ -43,7 +44,7 @@ public class GanttTask
     /// To be defined... The task is updated by the user
     /// </summary>
     internal bool DependencyUpdated { get; set; } = false;
-    public string? TaskEndWeek { get; set; }
+    public string? TaskEndWeekDescription { get; set; }
 
     public string? ActualStart { get; set; }
     public string? ActualEnd { get; set; }
@@ -53,10 +54,10 @@ public class GanttTask
     /// </summary>
     public int ActualProgress { get; set; }   // 0-100%
 
-    public int? IntervalDaysCount { get; set; }
-    public int? WorkDaysCount { get; set; }
-    public int? VacationDaysCount { get; set; }
-    public int? NonWorkingDaysCount { get; set; }
-    public int? DeveloperWorkHours { get; set; }
+    public int? IntervalDays { get; set; }
+    public int? WorkDays { get; set; }
+    public int? VacationDays { get; set; }
+    public int? NonWorkingDays { get; set; }
+    public int? DailyWorkHours { get; set; }
 }
 

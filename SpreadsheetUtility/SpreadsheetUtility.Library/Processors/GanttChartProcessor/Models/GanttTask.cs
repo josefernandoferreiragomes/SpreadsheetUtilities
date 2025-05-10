@@ -35,7 +35,7 @@ public class GanttTask
 
     public double EffortHours { get; set; }
     public string? ProjectName { get; set; }
-    public string? TaskName { get; set; }
+    public string? TaskExtendedDescription { get; set; }
     public string? ProjectID { get; set; }
     public string? ProjectDependency { get; set; }
     public string? AssignedDeveloper { get; set; }

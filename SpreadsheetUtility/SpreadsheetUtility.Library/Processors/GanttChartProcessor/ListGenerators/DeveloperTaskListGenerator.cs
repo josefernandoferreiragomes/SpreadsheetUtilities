@@ -33,7 +33,7 @@ public class DeveloperTaskListGenerator : ListGenerator<Developer, List<GanttTas
                 EndDate = task.EndDate,
                 ProjectName = task.ProjectName,
                 ProjectID = task.ProjectID,
-                TaskName = task.TaskName,
+                TaskExtendedDescription = task.TaskExtendedDescription,
                 InternalID = task.InternalID
             });
         }
@@ -56,7 +56,7 @@ public class DeveloperTaskListGenerator : ListGenerator<Developer, List<GanttTas
                 EndDate = vacation.Value.End,
                 ProjectName = "Vacation",
                 ProjectID = "VacationID",
-                TaskName = "Vacation"
+                TaskExtendedDescription = "Vacation"
             });
 
             vacationId++;

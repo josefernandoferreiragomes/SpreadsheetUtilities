@@ -135,7 +135,7 @@
 <div>
     <QuickGrid Items="@ganttTaskListOutput">
         <PropertyColumn Property="@(p => p.Id)" Sortable="true" />
-        <PropertyColumn Property="@(p => p.TaskName)" Sortable="true" />
+        <PropertyColumn Property="@(p => p.TaskExtendedDescription)" Sortable="true" />
         <PropertyColumn Property="@(p => p.ProjectName)" Sortable="true" />
         <PropertyColumn Property="@(p => p.AssignedDeveloper)" Sortable="true" />
         <PropertyColumn Property="@(p => p.StartDate.ToString("dd-MM-yyyy"))" Title="StartDate" Sortable="true" />
@@ -152,7 +152,8 @@
     </QuickGrid>
 </div>
 <div class="card-footer">
-    Total Estimated Effort Hours: @ganttTaskListOutput?.Sum(p => p.EffortHours)
+    <div>Total Estimated Effort Hours: @ganttTaskListOutput?.Sum(p => p.EffortHours)</div>
+    <div>Total Work Days: @ganttTaskListOutput?.Sum(p => p.WorkDays)</div>
 </div>
 <p></p>
 <div>Developer data</div>
@@ -172,6 +173,7 @@
     <div>Total Allocated Hours: @developerListOutput?.Sum(p => p.AllocatedHours)</div>
     <div>Total Slack Hours: @developerListOutput?.Sum(p => p.SlackHours)</div>    
     <div>Total Hours Within projects: @developerListOutput?.Sum(p => p.TotalHours)</div>        
+    <div>Total Days Within projects: @developerListOutput?.Sum(p => p.AllocatedDays)</div>        
 </div>
 <p></p>
 <div>Holidays in projects</div>

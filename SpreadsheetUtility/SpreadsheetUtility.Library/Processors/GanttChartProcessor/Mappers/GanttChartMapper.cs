@@ -16,7 +16,7 @@ namespace SpreadsheetUtility.Library.Mappers
                 Progress = int.TryParse(dto.Progress, out var p) ? p : 0,
                 ProjectID = dto.ProjectID ?? "",
                 ProjectName = dto.ProjectName ?? "",
-                TaskName = dto.TaskName ?? "",
+                TaskExtendedDescription = dto.TaskName ?? "",
                 InternalID = dto.InternalID ?? "",
                 ActualStart = dto.ActualStart ?? "",
                 ActualEnd = dto.ActualEnd ?? "",

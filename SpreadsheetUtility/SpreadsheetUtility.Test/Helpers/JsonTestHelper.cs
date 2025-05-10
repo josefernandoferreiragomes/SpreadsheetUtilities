@@ -7,7 +7,7 @@ namespace SpreadsheetUtility.Test.Helpers
         public static T ProcessMethodJson<T>(string method, string parameterType)
         {
             var holidayList = Activator.CreateInstance<T>();
-            var filePath = Path.Combine(AppContext.BaseDirectory, @"TestData\GanttService", $"{method}_{parameterType}.json");
+            var filePath = Path.Combine(AppContext.BaseDirectory, @"TestData\GanttChartDataManager", $"{method}_{parameterType}.json");
 
             try
             {

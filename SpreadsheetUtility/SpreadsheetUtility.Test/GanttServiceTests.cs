@@ -23,7 +23,7 @@ namespace SpreadsheetUtility.Test
         private const string ParameterTypeOutput = "Output";
         private readonly Mock<ILogger<List<GanttTask>>> _mockLogger;
         private readonly Mock<ILogger<List<Holiday>>> _mockHolidayProviderLogger;
-        private readonly GanttService _ganttService;
+        private readonly GanttChartDataManager _ganttService;
         private readonly Mock<IDateTimeProvider>? _mockDateTimeProvider;
 
         public GanttServiceTests()
@@ -55,7 +55,7 @@ namespace SpreadsheetUtility.Test
 
             //add GanttChartProcessor to middleware services:
             services.AddScoped<IGanttChartProcessor, GanttChartProcessor>();
-            services.AddScoped<IGanttService, GanttService>();
+            services.AddScoped<IGanttChartDataManager, GanttChartDataManager>();
             
             services.AddScoped<IGanttChartMapper, GanttChartMapper>();
             services.AddScoped<IDateCalculator, DateCalculator>();
@@ -85,7 +85,7 @@ namespace SpreadsheetUtility.Test
                 var servicesToValidate = new Type[]
                 {
                     typeof(IGanttChartProcessor),
-                    typeof(IGanttService),
+                    typeof(IGanttChartDataManager),
                     typeof(IDateTimeProvider),
                     typeof(IGanttChartMapper),
                     typeof(IDateCalculator),
@@ -111,9 +111,9 @@ namespace SpreadsheetUtility.Test
                 }
             }
 
-            // Resolve GanttChartProcessor and GanttService
+            // Resolve GanttChartProcessor and GanttChartDataManager
             var ganttProcessor = serviceProvider.GetRequiredService<IGanttChartProcessor>();
-            _ganttService = new GanttService(ganttProcessor);
+            _ganttService = new GanttChartDataManager(ganttProcessor);
         }
         [Fact]
         public void CalculateGanttChartAllocationSort()

@@ -26,7 +26,7 @@ builder.Services.AddLogging(logging =>
 
 //add GanttChartProcessor to middleware services:
 builder.Services.AddScoped<IGanttChartProcessor, GanttChartProcessor>();
-builder.Services.AddScoped<IGanttService, GanttService>();
+builder.Services.AddScoped<IGanttChartDataManager, GanttChartDataManager>();
 builder.Services.AddScoped<IDateTimeProvider, DateTimeProvider>();
 builder.Services.AddScoped<IGanttChartMapper, GanttChartMapper>();
 builder.Services.AddScoped<IHolidayProvider, HolidayProvider>();
@@ -56,7 +56,7 @@ using (var scope = app.Services.CreateScope())
     var servicesToValidate = new Type[]
     {
         typeof(IGanttChartProcessor),
-        typeof(IGanttService),
+        typeof(IGanttChartDataManager),
         typeof(IDateTimeProvider),
         typeof(IGanttChartMapper),
         typeof(IDateCalculator),

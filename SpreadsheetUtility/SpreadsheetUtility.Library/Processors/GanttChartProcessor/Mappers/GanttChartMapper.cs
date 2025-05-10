@@ -1,10 +1,11 @@
-﻿using SpreadsheetUtility.Library.Models;
+﻿using SpreadsheetUtility.Library.Calculators;
+using SpreadsheetUtility.Library.Models;
 using SpreadsheetUtility.Library.Providers;
 using System.Globalization;
 
 namespace SpreadsheetUtility.Library.Mappers
 {    
-    public class GanttChartMapper(IDateTimeProvider _dateTimeProvider) : IGanttChartMapper
+    public class GanttChartMapper(IDateCalculator _dateCalculator) : IGanttChartMapper
     {
         public List<GanttTask> MapGanttTasksFromTaskDtos(List<TaskDto> taskDtos)
             => taskDtos.Select(dto => new GanttTask
@@ -33,7 +34,7 @@ namespace SpreadsheetUtility.Library.Mappers
 
 
         public List<Developer> MapDevelopersFromDeveloperDtos(List<DeveloperDto> developerDtos)
-            => developerDtos.Select(dto => new Developer(_dateTimeProvider)
+            => developerDtos.Select(dto => new Developer(_dateCalculator)
             {
                 TeamId = dto.TeamId,
                 Team = dto.Team,

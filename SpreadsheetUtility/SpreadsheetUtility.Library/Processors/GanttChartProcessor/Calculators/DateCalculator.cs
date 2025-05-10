@@ -125,17 +125,13 @@ namespace SpreadsheetUtility.Library.Calculators
         }        
 
         private bool IsVacationDay(DateTime date, List<(DateTime Start, DateTime End)?>? vacations)
-        {
-            return vacations?.Any(v => v.HasValue && date >= v.Value.Start && date <= v.Value.End) ?? false;
-        }
+            => vacations?.Any(v => v.HasValue && date >= v.Value.Start && date <= v.Value.End) ?? false;
 
         private bool IsWeekendOrHoliday(DateTime date)
-        {
-            return IsWeekend(date) || IsHoliday(date);
-        }
+            => IsWeekend(date) || IsHoliday(date);
+        
         private bool IsWeekend(DateTime date)
-        {
-            return date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday;
-        }
+            => date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday;
+        
     }
 }

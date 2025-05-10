@@ -14,10 +14,10 @@ public class DeveloperHoursCalculator : IDeveloperHoursCalculator
         {
             if (developer != null)
             {
-                var calculatedIntervalDays = dateCalculator.CalculateWorkDays(minDate, maxDate, developer?.VacationPeriods);
+                var calculatedWorkDays = dateCalculator.CalculateWorkDays(minDate, maxDate, developer?.VacationPeriods);
                 developer!.AllocatedHours = developer.Tasks?.Sum(t => t.EffortHours) ?? 0;
                 developer.AllocatedDays = developer.Tasks?.Sum(t => t.WorkDays) ?? 0;
-                developer!.TotalHours = calculatedIntervalDays * developer.DailyWorkHours;
+                developer!.TotalHours = calculatedWorkDays * developer.DailyWorkHours;
                 var slackHours = developer.TotalHours - developer.AllocatedHours;
                 developer.SlackHours = slackHours >= 0 ? slackHours : 0;
             }

@@ -77,22 +77,22 @@
         <PropertyColumn Property="@(p => p.ProjectName)" Sortable="true" />      
         <PropertyColumn Property="@(p => p.StartDate.ToString("dd-MM-yyyy"))" Title="StartDate" Sortable="true" />
         <PropertyColumn Property="@(p => p.EndDate.ToString("dd-MM-yyyy"))" Title="EndDate" Sortable="true" />
-        <PropertyColumn Property="@(p => p.TotalEstimatedEffortHours)" Sortable="true" />                      
+        <PropertyColumn Property="@(p => p.TotalEffortHours)" Sortable="true" />                      
         <PropertyColumn Property="@(p => p.ProjectGroup)" Sortable="true" />
     </QuickGrid>
 </div>
 <div class="card-footer">
-    Total Estimated Effort Hours: @projectListOutput?.Sum(p => p.TotalEstimatedEffortHours)
+    Total Estimated Effort Hours: @projectListOutput?.Sum(p => p.TotalEffortHours)
 </div>
 <p></p>
 <div>Task data</div>
 <div>
     <QuickGrid Items="@ganttTaskListOutput">
         <PropertyColumn Property="@(p => p.Id)" Sortable="true" />
-        <PropertyColumn Property="@(p => p.Name)" Sortable="true" />
+        <PropertyColumn Property="@(p => p.TaskName)" Sortable="true" />
         <PropertyColumn Property="@(p => p.StartDate.ToString("dd-MM-yyyy"))" Title="StartDate" Sortable="true" />
         <PropertyColumn Property="@(p => p.EndDate.ToString("dd-MM-yyyy"))" Title="EndDate" Sortable="true" />
-        <PropertyColumn Property="@(p => p.TaskEndWeekDescription)" Sortable="true" />
+        <PropertyColumn Property="@(p => p.TaskEndWeekDescriptionDescription)" Sortable="true" />
         <PropertyColumn Property="@(p => p.EffortHours)" Sortable="true" />
         <PropertyColumn Property="@(p => p.Dependencies)" Sortable="true" />
         <PropertyColumn Property="@(p => p.InternalID)" Sortable="true" />

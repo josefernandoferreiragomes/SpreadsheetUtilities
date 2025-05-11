@@ -45,7 +45,7 @@ namespace SpreadsheetUtility.UI.Web.Helpers
                         ProjectID = columns[1].Trim(),
                         ProjectName = columns[2].Trim(),
                         TaskName = columns[3].Trim(),
-                        EstimatedEffortHours = double.TryParse(columns[4].Trim(), out var effort) ? effort : 0,
+                        EffortHours = double.TryParse(columns[4].Trim(), out var effort) ? effort : 0,
                         Dependencies = columns[5].Trim(),
                         Progress = columns[6].Trim(),
                         InternalID = columns[7].Trim(),
@@ -74,7 +74,7 @@ namespace SpreadsheetUtility.UI.Web.Helpers
                         ProjectID = columns[1].Trim(),
                         ProjectName = columns[2].Trim(),
                         TaskName = columns[3].Trim(),
-                        EstimatedEffortHours = double.TryParse(columns[4].Trim(), out var effort) ? effort : 0,
+                        EffortHours = double.TryParse(columns[4].Trim(), out var effort) ? effort : 0,
                         Dependencies = columns[5].Trim(),
                         Progress = columns[6].Trim(),
                         InternalID = columns[7].Trim()

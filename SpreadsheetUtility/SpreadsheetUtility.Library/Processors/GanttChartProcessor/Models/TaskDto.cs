@@ -6,7 +6,7 @@ public class TaskDto
     public string? ProjectID { get; set; }
     public string? ProjectName { get; set; }
     public required string TaskName { get; set; }
-    public required double EstimatedEffortHours { get; set; }
+    public required double EffortHours { get; set; }
     public string? Dependencies { get; set; }        
     public string? Progress { get; set; }
     public string? InternalID { get; set; }

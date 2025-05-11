@@ -9,7 +9,7 @@ public class GanttTask
     public required string Id { get; set; }
 
     [JsonProperty("name")]    
-    public required string Name { get; set; }
+    public required string TaskName { get; set; }
 
     [JsonProperty("start")]
     public string? Start { get; set; } // Format: "YYYY-MM-DD"
@@ -44,7 +44,7 @@ public class GanttTask
     /// To be defined... The task is updated by the user
     /// </summary>
     internal bool DependencyUpdated { get; set; } = false;
-    public string? TaskEndWeekDescription { get; set; }
+    public string? TaskEndWeekDescriptionDescription { get; set; }
 
     public string? ActualStart { get; set; }
     public string? ActualEnd { get; set; }

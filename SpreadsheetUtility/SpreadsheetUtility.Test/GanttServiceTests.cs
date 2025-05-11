@@ -132,7 +132,7 @@ namespace SpreadsheetUtility.Test
             var expected = JsonTestHelper.ProcessMethodJson<CalculateGanttChartAllocationOutput>(methodName, ParameterTypeOutput);
             Assert.Equal(expected.GanttTasks.Count, result.GanttTasks.Count);
             Assert.Equal(expected.DeveloperAvailability.Count, result.DeveloperAvailability.Count);
-            Assert.Equal(expected.GanttTasks[0].Name, result.GanttTasks[0].Name);
+            Assert.Equal(expected.GanttTasks[0].TaskName, result.GanttTasks[0].TaskName);
             Assert.Equal(expected.DeveloperAvailability[0].Name, result.DeveloperAvailability[0].Name);
             Assert.Equal(expected.DeveloperAvailability[0].DailyWorkHours, result.DeveloperAvailability[0].DailyWorkHours);
             Assert.Equal(JsonConvert.SerializeObject(expected.GanttTasks, Formatting.Indented), JsonConvert.SerializeObject(result.GanttTasks, Formatting.Indented));
@@ -155,7 +155,7 @@ namespace SpreadsheetUtility.Test
             var expected = JsonTestHelper.ProcessMethodJson<CalculateGanttChartAllocationOutput>(methodName, ParameterTypeOutput);
             Assert.Equal(expected.GanttTasks.Count, result.GanttTasks.Count);
             Assert.Equal(expected.DeveloperAvailability.Count, result.DeveloperAvailability.Count);
-            Assert.Equal(expected.GanttTasks[0].Name, result.GanttTasks[0].Name);
+            Assert.Equal(expected.GanttTasks[0].TaskName, result.GanttTasks[0].TaskName);
             Assert.Equal(expected.DeveloperAvailability[0].Name, result.DeveloperAvailability[0].Name);
             Assert.Equal(expected.DeveloperAvailability[0].DailyWorkHours, result.DeveloperAvailability[0].DailyWorkHours);
             Assert.Equal(JsonConvert.SerializeObject(expected.GanttTasks, Formatting.Indented), JsonConvert.SerializeObject(result.GanttTasks, Formatting.Indented));
@@ -179,7 +179,7 @@ namespace SpreadsheetUtility.Test
             var expected = JsonTestHelper.ProcessMethodJson<CalculateGanttChartAllocationOutput>(methodName, ParameterTypeOutput);
             Assert.Equal(expected.GanttTasks.Count, result.GanttTasks.Count);
             Assert.Equal(expected.DeveloperAvailability.Count, result.DeveloperAvailability.Count);
-            Assert.Equal(expected.GanttTasks[0].Name, result.GanttTasks[0].Name);
+            Assert.Equal(expected.GanttTasks[0].TaskName, result.GanttTasks[0].TaskName);
             Assert.Equal(expected.DeveloperAvailability[0].Name, result.DeveloperAvailability[0].Name);
             Assert.Equal(expected.DeveloperAvailability[0].DailyWorkHours, result.DeveloperAvailability[0].DailyWorkHours);
             Assert.Equal(JsonConvert.SerializeObject(expected.DeveloperAvailability, Formatting.Indented), JsonConvert.SerializeObject(result.DeveloperAvailability, Formatting.Indented));
@@ -202,7 +202,7 @@ namespace SpreadsheetUtility.Test
             var expected = JsonTestHelper.ProcessMethodJson<CalculateGanttChartAllocationOutput>(methodName, ParameterTypeOutput);
             Assert.Equal(expected.GanttTasks.Count, result.GanttTasks.Count);
             Assert.Equal(expected.DeveloperAvailability.Count, result.DeveloperAvailability.Count);
-            Assert.Equal(expected.GanttTasks[0].Name, result.GanttTasks[0].Name);
+            Assert.Equal(expected.GanttTasks[0].TaskName, result.GanttTasks[0].TaskName);
             Assert.Equal(expected.DeveloperAvailability[0].Name, result.DeveloperAvailability[0].Name);
             Assert.Equal(expected.DeveloperAvailability[0].DailyWorkHours, result.DeveloperAvailability[0].DailyWorkHours);
             Assert.Equal(JsonConvert.SerializeObject(expected.DeveloperAvailability, Formatting.Indented), JsonConvert.SerializeObject(result.DeveloperAvailability, Formatting.Indented));
@@ -220,7 +220,7 @@ namespace SpreadsheetUtility.Test
                     ProjectID = "P1",
                     ProjectName = "Project 1",
                     TaskName = "Task 1",
-                    EstimatedEffortHours = 10,
+                    EffortHours = 10,
                     Dependencies = "",                    
                     Progress = "0"
                 }
@@ -273,7 +273,7 @@ namespace SpreadsheetUtility.Test
 
             var ganttTask = result.GanttTasks.First();
             Assert.Equal("1", ganttTask.Id);
-            Assert.Equal("Project 1 : Task 1 (Team 1 : Dev 1)", ganttTask.Name);
+            Assert.Equal("Project 1 : Task 1 (Team 1 : Dev 1)", ganttTask.TaskName);
             Assert.Equal(10, ganttTask.EffortHours);
 
             var developerAvailability = result.DeveloperAvailability.First();
@@ -343,7 +343,7 @@ namespace SpreadsheetUtility.Test
                     ProjectID = "P1",
                     ProjectName = "Project 1",
                     TaskName = "Task 1",
-                    EstimatedEffortHours = 10,
+                    EffortHours = 10,
                     Dependencies = "",                    
                     Progress = "0"
                 }

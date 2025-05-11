@@ -64,12 +64,12 @@ public abstract class TaskAssignmentStrategyBase(IDateCalculator _dateCalculator
     {
         task.Start = taskStart.ToString("yyyy-MM-dd");
         task.End = taskEnd.ToString("yyyy-MM-dd");
-        task.TaskEndWeekDescription = $"Week of {taskEnd.AddDays(-(int)(taskEnd.DayOfWeek - 1)).ToString("yyyy-MM-dd")}";
+        task.TaskEndWeekDescriptionDescription = $"Week of {taskEnd.AddDays(-(int)(taskEnd.DayOfWeek - 1)).ToString("yyyy-MM-dd")}";
         task.StartDate = taskStart;
         task.EndDate = taskEnd;
         task.AssignedDeveloper = developer.Name;
         task.AssignedDeveloperId = developer.DeveloperId;
-        task.Name = $"{task.Name} ({developer.Name})";
+        task.TaskName = $"{task.TaskName} ({developer.Name})";
         task.DailyWorkHours = (int?)developer.DailyWorkHours;
         task.IntervalDays = dateCalculator.CalculateIntervalDays(taskStart, taskEnd, developer.VacationPeriods);
         task.WorkDays = dateCalculator.CalculateWorkDays(taskStart, taskEnd, developer.VacationPeriods);

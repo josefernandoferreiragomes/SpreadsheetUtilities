@@ -7,7 +7,7 @@ public class Project
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
     public List<GanttTask>? Tasks { get; set; }
-    public double TotalEstimatedEffortHours { get; set; }
+    public double TotalEffortHours { get; set; }
     public string? ProjectGroup { get; set; }
     public string? TeamId { get; set; }
     public string? Color { get; set; }

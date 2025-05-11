@@ -1,5 +1,5 @@
-using SpreadsheetUtility.Library;
 using SpreadsheetUtility.Library.Calculators;
+using SpreadsheetUtility.Library.Domain;
 using SpreadsheetUtility.Library.Grouppers;
 using SpreadsheetUtility.Library.ListGenerators;
 using SpreadsheetUtility.Library.Mappers;

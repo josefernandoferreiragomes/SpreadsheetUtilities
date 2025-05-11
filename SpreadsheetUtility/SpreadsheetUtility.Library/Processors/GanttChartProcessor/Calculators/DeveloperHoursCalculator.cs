@@ -1,4 +1,5 @@
 using SpreadsheetUtility.Library.Models;
+using SpreadsheetUtility.Library.Domain;
 
 namespace SpreadsheetUtility.Library.Calculators;
 public class DeveloperHoursCalculator : IDeveloperHoursCalculator

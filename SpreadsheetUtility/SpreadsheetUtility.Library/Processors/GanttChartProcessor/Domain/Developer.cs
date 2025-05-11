@@ -1,7 +1,11 @@
 ﻿using SpreadsheetUtility.Library.Calculators;
+using SpreadsheetUtility.Library.Models;
 
-namespace SpreadsheetUtility.Library.Models;
+namespace SpreadsheetUtility.Library.Domain;
 
+/// <summary>
+/// To be refactored in a way that Developer class becomes a dto, and the methods are moved to other/new classes
+/// </summary>
 public class Developer
 {
     public required string TeamId { get; set; }

@@ -58,9 +58,9 @@ namespace SpreadsheetUtility.Library.Calculators
 
         public int CalculateIntervalDays(DateTime start, DateTime end, List<(DateTime Start, DateTime End)?>? vacations)
         {
-            int days = 1;
+            int days = 0;
             var startDate = start;
-            while (startDate < end)
+            while (startDate <= end)
             {                
                 days++;               
                 startDate = startDate.AddDays(1);
@@ -70,9 +70,9 @@ namespace SpreadsheetUtility.Library.Calculators
 
         public int CalculateWorkDays(DateTime start, DateTime end, List<(DateTime Start, DateTime End)?>? vacations)
         {
-            int days = 1;
+            int days = 0;
             var startDate = start;
-            while (startDate < end)
+            while (startDate <= end)
             {
                 if (!IsVacationDay(startDate, vacations) && !IsWeekendOrHoliday(startDate))
                 {
@@ -85,9 +85,9 @@ namespace SpreadsheetUtility.Library.Calculators
 
         public int CalculateVacationDays(DateTime start, DateTime end, List<(DateTime Start, DateTime End)?>? vacations)
         {
-            int days = 1;
+            int days = 0;
             var startDate = start;
-            while (startDate < end)
+            while (startDate <= end)
             {
                 if (IsVacationDay(startDate, vacations))
                 {
@@ -100,9 +100,9 @@ namespace SpreadsheetUtility.Library.Calculators
 
         public int CalculateNonWorkingDays(DateTime start, DateTime end, List<(DateTime Start, DateTime End)?>? vacations)
         {
-            int days = 1;
+            int days = 0;
             var startDate = start;
-            while (startDate < end)
+            while (startDate <= end)
             {
                 if (IsVacationDay(startDate, vacations) || IsWeekendOrHoliday(startDate))
                 {

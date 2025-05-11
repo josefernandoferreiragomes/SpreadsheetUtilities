@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using DocumentFormat.OpenXml.Drawing;
+using Microsoft.Extensions.Logging;
 using SpreadsheetUtility.Library.Builders;
 using SpreadsheetUtility.Library.Calculators;
 using SpreadsheetUtility.Library.Grouppers;
@@ -73,7 +74,9 @@ public class GanttChartProcessor : IGanttChartProcessor, IObserver<Holiday>
 
     public CalculateGanttChartAllocationOutput CalculateGanttChartAllocation(CalculateGanttChartAllocationInput input)
     {
+        PerformStartLogging(input);
         _dateCalculator.AddObserver(this);
+
         _projectInputList = _ganttChartMapper.MapProjectsFromProjectDtos(input.ProjectDtos);
         _ganttTaskList = _ganttChartMapper.MapGanttTasksFromTaskDtos(input.TaskDtos);
         _developerList = _ganttChartMapper.MapDevelopersFromDeveloperDtos(input.DeveloperDtos);
@@ -104,7 +107,6 @@ public class GanttChartProcessor : IGanttChartProcessor, IObserver<Holiday>
         var developerGanttTasks = GenerateGanttTaskListFromDevelopers();
         var developerAvailability = _ganttChartMapper.MapDeveloperAvailabilitiesFromDevelopers(_developerList);
 
-        PerformLogging(ganttProjectList);
 
         var output = new CalculateGanttChartAllocationOutputBuilder()
            .WithProjects(projectOutputList)
@@ -114,6 +116,9 @@ public class GanttChartProcessor : IGanttChartProcessor, IObserver<Holiday>
            .WithDeveloperAvailability(developerAvailability)
            .WithHolidayList(_projectHolidayList)
            .Build();
+        
+        PerformEndLogging(output);
+        _dateCalculator.RemoveObserver(this);
 
         return output;
     }
@@ -184,16 +189,25 @@ public class GanttChartProcessor : IGanttChartProcessor, IObserver<Holiday>
             }
         ).SelectMany(x => x).ToList();
 
-    private void PerformLogging(List<GanttTask> ganttProjectList)
+    private void PerformStartLogging(CalculateGanttChartAllocationInput calculateGanttChartAllocationInput)
     {
         // Create and add logging commands
-        _loggingInvoker.AddCommand(new ProjectInputLogCommand(_logger, _projectInputList));
-        _loggingInvoker.AddCommand(new GanttTaskLogCommand(_logger, ganttProjectList));
+        _loggingInvoker.AddCommand(new ProcessorMessageLogCommand(_logger, $"{this.GetType()} : Started Processing : {_dateTimeProvider.Now}"));
+        _loggingInvoker.AddCommand(new CalculateGanttChartAllocationInputLogCommand(_logger, calculateGanttChartAllocationInput));
 
         // Execute all logging commands
         _loggingInvoker.ExecuteCommands();
     }
-   
+    private void PerformEndLogging(CalculateGanttChartAllocationOutput calculateGanttChartAllocationOutput)
+    {
+        // Create and add logging commands
+        _loggingInvoker.AddCommand(new CalculateGanttChartAllocationOutputLogCommand(_logger, calculateGanttChartAllocationOutput));
+        _loggingInvoker.AddCommand(new ProcessorMessageLogCommand(_logger, $"{this.GetType()} : Completed Processing : {_dateTimeProvider.Now}"));
+
+        // Execute all logging commands
+        _loggingInvoker.ExecuteCommands();
+    }
+
     private void CalculateDeveloperHours()
         => _calculatorFacade.DeveloperHoursCalculator.CalculateDeveloperHours(_ganttTaskList, _developerList, _calculatorFacade.DateCalculator);         
 

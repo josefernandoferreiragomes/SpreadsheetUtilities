@@ -1,0 +1,223 @@
+{
+  "taskDtos": [
+    {
+      "id": "1",
+      "projectID": "1",
+      "projectName": "Project A",
+      "taskName": "Design UI",
+      "effortHours": 100.0,
+      "dependencies": "",
+      "progress": "50",
+      "internalID": "1234",
+      "actualStart": null,
+      "actualEnd": null,
+      "actualProgress": 0
+    },
+    {
+      "id": "2",
+      "projectID": "1",
+      "projectName": "Project A",
+      "taskName": "Implement Backend",
+      "effortHours": 55.0,
+      "dependencies": "",
+      "progress": "",
+      "internalID": "1235",
+      "actualStart": null,
+      "actualEnd": null,
+      "actualProgress": 0
+    },
+    {
+      "id": "3",
+      "projectID": "1",
+      "projectName": "Project A",
+      "taskName": "Testing",
+      "effortHours": 15.0,
+      "dependencies": "",
+      "progress": "",
+      "internalID": "123",
+      "actualStart": null,
+      "actualEnd": null,
+      "actualProgress": 0
+    },
+    {
+      "id": "4",
+      "projectID": "2",
+      "projectName": "Project B",
+      "taskName": "Database Setup",
+      "effortHours": 60.0,
+      "dependencies": "",
+      "progress": "",
+      "internalID": "1327",
+      "actualStart": null,
+      "actualEnd": null,
+      "actualProgress": 0
+    },
+    {
+      "id": "5",
+      "projectID": "2",
+      "projectName": "Project B",
+      "taskName": "API Development",
+      "effortHours": 50.0,
+      "dependencies": "",
+      "progress": "",
+      "internalID": "1236",
+      "actualStart": null,
+      "actualEnd": null,
+      "actualProgress": 0
+    },
+    {
+      "id": "6",
+      "projectID": "3",
+      "projectName": "Project C",
+      "taskName": "Database Setup",
+      "effortHours": 30.0,
+      "dependencies": "",
+      "progress": "",
+      "internalID": "35413",
+      "actualStart": null,
+      "actualEnd": null,
+      "actualProgress": 0
+    },
+    {
+      "id": "7",
+      "projectID": "3",
+      "projectName": "Project C",
+      "taskName": "UI Development",
+      "effortHours": 56.0,
+      "dependencies": "",
+      "progress": "",
+      "internalID": "4654",
+      "actualStart": null,
+      "actualEnd": null,
+      "actualProgress": 0
+    },
+    {
+      "id": "8",
+      "projectID": "4",
+      "projectName": "Project D",
+      "taskName": "Backend Analysis",
+      "effortHours": 47.0,
+      "dependencies": "",
+      "progress": "",
+      "internalID": "3135",
+      "actualStart": null,
+      "actualEnd": null,
+      "actualProgress": 0
+    },
+    {
+      "id": "9",
+      "projectID": "4",
+      "projectName": "Project D",
+      "taskName": "Database Setup",
+      "effortHours": 75.0,
+      "dependencies": "",
+      "progress": "",
+      "internalID": "1314",
+      "actualStart": null,
+      "actualEnd": null,
+      "actualProgress": 0
+    },
+    {
+      "id": "10",
+      "projectID": "4",
+      "projectName": "Project D",
+      "taskName": "Implement Backend",
+      "effortHours": 45.0,
+      "dependencies": "",
+      "progress": "",
+      "internalID": "13486",
+      "actualStart": null,
+      "actualEnd": null,
+      "actualProgress": 0
+    },
+    {
+      "id": "11",
+      "projectID": "4",
+      "projectName": "Project D",
+      "taskName": "UI Development",
+      "effortHours": 46.0,
+      "dependencies": "",
+      "progress": "",
+      "internalID": "1314",
+      "actualStart": null,
+      "actualEnd": null,
+      "actualProgress": 0
+    },
+    {
+      "id": "12",
+      "projectID": "4",
+      "projectName": "Project D",
+      "taskName": "Testing",
+      "effortHours": 47.0,
+      "dependencies": "",
+      "progress": "",
+      "internalID": "13486",
+      "actualStart": null,
+      "actualEnd": null,
+      "actualProgress": 0
+    }
+  ],
+  "developerDtos": [
+    {
+      "teamId": "1",
+      "team": "Team Alpha",
+      "developerId": "1",
+      "name": "Alice",
+      "dailyWorkHours": 6.0,
+      "vacationPeriods": "2025-03-10;2025-03-15|2025-05-10;2025-05-15"
+    },
+    {
+      "teamId": "1",
+      "team": "Team Alpha",
+      "developerId": "2",
+      "name": "Bob",
+      "dailyWorkHours": 7.0,
+      "vacationPeriods": ""
+    },
+    {
+      "teamId": "1",
+      "team": "Team Alpha",
+      "developerId": "3",
+      "name": "Charlie",
+      "dailyWorkHours": 7.0,
+      "vacationPeriods": "2025-04-05;2025-04-10|"
+    },
+    {
+      "teamId": "1",
+      "team": "Team Alpha",
+      "developerId": "4",
+      "name": "Dave",
+      "dailyWorkHours": 6.0,
+      "vacationPeriods": "2025-02-25;2025-02-28|"
+    }
+  ],
+  "projectDtos": [
+    {
+      "projectID": "1",
+      "projectName": "Project A",
+      "projectGroup": "1",
+      "teamId": "1"
+    },
+    {
+      "projectID": "2",
+      "projectName": "Project B",
+      "projectGroup": "1",
+      "teamId": "1"
+    },
+    {
+      "projectID": "3",
+      "projectName": "Project C",
+      "projectGroup": "2",
+      "teamId": "1"
+    },
+    {
+      "projectID": "4",
+      "projectName": "Project D",
+      "projectGroup": "2",
+      "teamId": "1"
+    }
+  ],
+  "preSortTasks": false,
+  "projectStartDate": "2025-05-11T00:00:00+01:00",
+  "setTeamsToProjectGroups": false
+}

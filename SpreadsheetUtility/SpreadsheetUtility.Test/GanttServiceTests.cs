@@ -118,6 +118,7 @@ namespace SpreadsheetUtility.Test
         [Fact]
         public void CalculateGanttChartAllocationSort()
         {
+            // With task dependencies, With sorting, One Project group, No fixed Team for project
             // Arrange
             var methodName = System.Reflection.MethodBase.GetCurrentMethod()?.Name ?? "";
             var input = JsonTestHelper.ProcessMethodJson<CalculateGanttChartAllocationInput>(methodName, ParameterTypeInput);
@@ -139,8 +140,9 @@ namespace SpreadsheetUtility.Test
             Assert.Equal(JsonConvert.SerializeObject(expected.DeveloperAvailability, Formatting.Indented), JsonConvert.SerializeObject(result.DeveloperAvailability, Formatting.Indented));
         }
         [Fact]
-        public void CalculateGanttChartAllocation()
+        public void CalculateGanttChartAllocationProjectGroupFixedTeam()
         {
+            // No task dependencies, no sorting, Two Project groups, fixed Team for project groups
             // Arrange
             var methodName = System.Reflection.MethodBase.GetCurrentMethod()?.Name ?? "";
             var input = JsonTestHelper.ProcessMethodJson<CalculateGanttChartAllocationInput>(methodName, ParameterTypeInput);
@@ -163,12 +165,13 @@ namespace SpreadsheetUtility.Test
             //Assert.Equal(JsonConvert.SerializeObject(expected.GanttProjects, Formatting.Indented), JsonConvert.SerializeObject(result.GanttProjects, Formatting.Indented));
         }
         [Fact]
-        public void CalculateGanttChartAllocationNoDependenciesSort()
+        public void CalculateGanttChartAllocationNoDependenciesProjectGroup()
         {
+            // No task dependencies, No sorting, Two Project groups, No fixed Team for project
             // Arrange
             var methodName = System.Reflection.MethodBase.GetCurrentMethod()?.Name ?? "";
             var input = JsonTestHelper.ProcessMethodJson<CalculateGanttChartAllocationInput>(methodName, ParameterTypeInput);
-            var fixedDateTime = new DateTime(2025, 03, 20);
+            var fixedDateTime = new DateTime(2025, 05, 11);
             _mockDateTimeProvider!.Setup(m => m.Today).Returns(fixedDateTime);
             Assert.NotNull(input);
             // Act
@@ -188,6 +191,7 @@ namespace SpreadsheetUtility.Test
         [Fact]
         public void CalculateGanttChartAllocationNoDependencies()
         {
+            // No task dependencies, No sorting, One Project group, No fixed Team for project
             // Arrange
             var methodName = System.Reflection.MethodBase.GetCurrentMethod()?.Name ?? "";
             var input = JsonTestHelper.ProcessMethodJson<CalculateGanttChartAllocationInput>(methodName, ParameterTypeInput);

@@ -33,16 +33,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="TestData\GanttChartDataManager\CalculateGanttChartAllocationNoDependenciesSort_Input.json">
+    <None Update="TestData\GanttChartDataManager\CalculateGanttChartAllocationNoDependenciesProjectGroup_Input.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="TestData\GanttChartDataManager\CalculateGanttChartAllocationNoDependenciesSort_Output.json">
+    <None Update="TestData\GanttChartDataManager\CalculateGanttChartAllocationNoDependenciesProjectGroup_Output.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="TestData\GanttChartDataManager\CalculateGanttChartAllocationSort_Input.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="TestData\GanttChartDataManager\CalculateGanttChartAllocation_Input.json">
+    <None Update="TestData\GanttChartDataManager\CalculateGanttChartAllocationProjectGroupFixedTeam_Input.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="TestData\GanttChartDataManager\CalculateGanttChartAllocationNoDependencies_Input.json">
@@ -54,7 +54,7 @@
     <None Update="TestData\GanttChartDataManager\CalculateGanttChartAllocationSort_Output.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="TestData\GanttChartDataManager\CalculateGanttChartAllocation_Output.json">
+    <None Update="TestData\GanttChartDataManager\CalculateGanttChartAllocationProjectGroupFixedTeam_Output.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

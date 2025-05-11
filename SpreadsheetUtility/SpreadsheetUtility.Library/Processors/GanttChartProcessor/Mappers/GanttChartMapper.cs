@@ -11,8 +11,8 @@ namespace SpreadsheetUtility.Library.Mappers
             => taskDtos.Select(dto => new GanttTask
             {
                 Id = dto.Id ?? "",
-                Name = $"{dto.ProjectName} : {dto.TaskName}",
-                EffortHours = dto.EstimatedEffortHours,
+                TaskName = $"{dto.ProjectName} : {dto.TaskName}",
+                EffortHours = dto.EffortHours,
                 Dependencies = dto.Dependencies ?? "",
                 Progress = int.TryParse(dto.Progress, out var p) ? p : 0,
                 ProjectID = dto.ProjectID ?? "",

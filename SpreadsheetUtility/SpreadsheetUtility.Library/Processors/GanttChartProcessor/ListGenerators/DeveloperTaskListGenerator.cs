@@ -18,7 +18,7 @@ public class DeveloperTaskListGenerator : ListGenerator<Developer, List<GanttTas
             ganttTasks.Add(new GanttTask
             {
                 Id = task.Id,
-                Name = task.Name,
+                TaskName = task.TaskName,
                 Start = task.Start,
                 End = task.End,
                 Progress = task.Progress,
@@ -45,7 +45,7 @@ public class DeveloperTaskListGenerator : ListGenerator<Developer, List<GanttTas
             ganttTasks.Add(new GanttTask
             {
                 Id = $"vacation-{developer.Name}-{vacationId}",
-                Name = $"{developer.Name} - Vacation {vacationId}",
+                TaskName = $"{developer.Name} - Vacation {vacationId}",
                 Start = vacation.Value.Start.ToString("yyyy-MM-dd"),
                 End = vacation.Value.End.ToString("yyyy-MM-dd"),
                 CustomClass = "task",

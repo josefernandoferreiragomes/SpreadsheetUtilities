@@ -160,9 +160,7 @@ namespace SpreadsheetUtility.Test
             Assert.Equal(expected.GanttTasks[0].TaskName, result.GanttTasks[0].TaskName);
             Assert.Equal(expected.DeveloperAvailability[0].Name, result.DeveloperAvailability[0].Name);
             Assert.Equal(expected.DeveloperAvailability[0].DailyWorkHours, result.DeveloperAvailability[0].DailyWorkHours);
-            Assert.Equal(JsonConvert.SerializeObject(expected.GanttTasks, Formatting.Indented), JsonConvert.SerializeObject(result.GanttTasks, Formatting.Indented));
-            Assert.Equal(JsonConvert.SerializeObject(expected.DeveloperAvailability, Formatting.Indented), JsonConvert.SerializeObject(result.DeveloperAvailability, Formatting.Indented));
-            //Assert.Equal(JsonConvert.SerializeObject(expected.GanttProjects, Formatting.Indented), JsonConvert.SerializeObject(result.GanttProjects, Formatting.Indented));
+            Assert.Equal(JsonConvert.SerializeObject(expected, Formatting.Indented), JsonConvert.SerializeObject(result, Formatting.Indented));
         }
         [Fact]
         public void CalculateGanttChartAllocationNoDependenciesProjectGroup()
@@ -185,8 +183,7 @@ namespace SpreadsheetUtility.Test
             Assert.Equal(expected.GanttTasks[0].TaskName, result.GanttTasks[0].TaskName);
             Assert.Equal(expected.DeveloperAvailability[0].Name, result.DeveloperAvailability[0].Name);
             Assert.Equal(expected.DeveloperAvailability[0].DailyWorkHours, result.DeveloperAvailability[0].DailyWorkHours);
-            Assert.Equal(JsonConvert.SerializeObject(expected.DeveloperAvailability, Formatting.Indented), JsonConvert.SerializeObject(result.DeveloperAvailability, Formatting.Indented));
-            Assert.Equal(JsonConvert.SerializeObject(expected.GanttTasks, Formatting.Indented), JsonConvert.SerializeObject(result.GanttTasks, Formatting.Indented));
+            Assert.Equal(JsonConvert.SerializeObject(expected, Formatting.Indented), JsonConvert.SerializeObject(result, Formatting.Indented));
         }
         [Fact]
         public void CalculateGanttChartAllocationNoDependencies()
@@ -209,8 +206,8 @@ namespace SpreadsheetUtility.Test
             Assert.Equal(expected.GanttTasks[0].TaskName, result.GanttTasks[0].TaskName);
             Assert.Equal(expected.DeveloperAvailability[0].Name, result.DeveloperAvailability[0].Name);
             Assert.Equal(expected.DeveloperAvailability[0].DailyWorkHours, result.DeveloperAvailability[0].DailyWorkHours);
-            Assert.Equal(JsonConvert.SerializeObject(expected.DeveloperAvailability, Formatting.Indented), JsonConvert.SerializeObject(result.DeveloperAvailability, Formatting.Indented));
-            Assert.Equal(JsonConvert.SerializeObject(expected.GanttTasks, Formatting.Indented), JsonConvert.SerializeObject(result.GanttTasks, Formatting.Indented));
+            Assert.Equal(JsonConvert.SerializeObject(expected, Formatting.Indented), JsonConvert.SerializeObject(result, Formatting.Indented));
+
         }
         [Fact]
         public void CalculateGanttChartAllocationFromDtos_ShouldReturnCorrectAllocation_WhenValidDataProvided()

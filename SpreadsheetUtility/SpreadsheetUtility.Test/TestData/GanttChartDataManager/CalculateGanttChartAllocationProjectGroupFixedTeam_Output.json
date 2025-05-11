@@ -71,8 +71,8 @@
       "actualProgress": 0,
       "intervalDays": 17,
       "workDays": 13,
-      "vacationDays": 1,
-      "nonWorkingDays": 5,
+      "vacationDays": 0,
+      "nonWorkingDays": 4,
       "dailyWorkHours": 8
     },
     {
@@ -100,8 +100,8 @@
       "actualProgress": 0,
       "intervalDays": 14,
       "workDays": 10,
-      "vacationDays": 1,
-      "nonWorkingDays": 5,
+      "vacationDays": 0,
+      "nonWorkingDays": 4,
       "dailyWorkHours": 6
     },
     {
@@ -129,8 +129,8 @@
       "actualProgress": 0,
       "intervalDays": 2,
       "workDays": 2,
-      "vacationDays": 1,
-      "nonWorkingDays": 1,
+      "vacationDays": 0,
+      "nonWorkingDays": 0,
       "dailyWorkHours": 8
     },
     {
@@ -158,8 +158,8 @@
       "actualProgress": 0,
       "intervalDays": 18,
       "workDays": 10,
-      "vacationDays": 1,
-      "nonWorkingDays": 9,
+      "vacationDays": 0,
+      "nonWorkingDays": 8,
       "dailyWorkHours": 6
     },
     {
@@ -187,8 +187,8 @@
       "actualProgress": 0,
       "intervalDays": 10,
       "workDays": 7,
-      "vacationDays": 1,
-      "nonWorkingDays": 4,
+      "vacationDays": 0,
+      "nonWorkingDays": 3,
       "dailyWorkHours": 8
     },
     {
@@ -216,8 +216,8 @@
       "actualProgress": 0,
       "intervalDays": 5,
       "workDays": 5,
-      "vacationDays": 1,
-      "nonWorkingDays": 1,
+      "vacationDays": 0,
+      "nonWorkingDays": 0,
       "dailyWorkHours": 7
     },
     {
@@ -245,8 +245,8 @@
       "actualProgress": 0,
       "intervalDays": 12,
       "workDays": 10,
-      "vacationDays": 1,
-      "nonWorkingDays": 3,
+      "vacationDays": 0,
+      "nonWorkingDays": 2,
       "dailyWorkHours": 6
     },
     {
@@ -274,8 +274,8 @@
       "actualProgress": 0,
       "intervalDays": 9,
       "workDays": 7,
-      "vacationDays": 1,
-      "nonWorkingDays": 3,
+      "vacationDays": 0,
+      "nonWorkingDays": 2,
       "dailyWorkHours": 7
     },
     {
@@ -303,8 +303,8 @@
       "actualProgress": 0,
       "intervalDays": 18,
       "workDays": 13,
-      "vacationDays": 1,
-      "nonWorkingDays": 6,
+      "vacationDays": 0,
+      "nonWorkingDays": 5,
       "dailyWorkHours": 6
     },
     {
@@ -332,8 +332,8 @@
       "actualProgress": 0,
       "intervalDays": 9,
       "workDays": 7,
-      "vacationDays": 1,
-      "nonWorkingDays": 3,
+      "vacationDays": 0,
+      "nonWorkingDays": 2,
       "dailyWorkHours": 7
     },
     {
@@ -361,8 +361,8 @@
       "actualProgress": 0,
       "intervalDays": 13,
       "workDays": 7,
-      "vacationDays": 1,
-      "nonWorkingDays": 7,
+      "vacationDays": 0,
+      "nonWorkingDays": 6,
       "dailyWorkHours": 7
     },
     {
@@ -390,8 +390,8 @@
       "actualProgress": 0,
       "intervalDays": 11,
       "workDays": 8,
-      "vacationDays": 1,
-      "nonWorkingDays": 4,
+      "vacationDays": 0,
+      "nonWorkingDays": 3,
       "dailyWorkHours": 6
     }
   ],
@@ -936,8 +936,8 @@
           "actualProgress": 0,
           "intervalDays": 14,
           "workDays": 10,
-          "vacationDays": 1,
-          "nonWorkingDays": 5,
+          "vacationDays": 0,
+          "nonWorkingDays": 4,
           "dailyWorkHours": 6
         },
         {
@@ -965,8 +965,8 @@
           "actualProgress": 0,
           "intervalDays": 18,
           "workDays": 10,
-          "vacationDays": 1,
-          "nonWorkingDays": 9,
+          "vacationDays": 0,
+          "nonWorkingDays": 8,
           "dailyWorkHours": 6
         }
       ],
@@ -1011,8 +1011,8 @@
           "actualProgress": 0,
           "intervalDays": 17,
           "workDays": 13,
-          "vacationDays": 1,
-          "nonWorkingDays": 5,
+          "vacationDays": 0,
+          "nonWorkingDays": 4,
           "dailyWorkHours": 8
         },
         {
@@ -1040,8 +1040,8 @@
           "actualProgress": 0,
           "intervalDays": 2,
           "workDays": 2,
-          "vacationDays": 1,
-          "nonWorkingDays": 1,
+          "vacationDays": 0,
+          "nonWorkingDays": 0,
           "dailyWorkHours": 8
         },
         {
@@ -1069,8 +1069,8 @@
           "actualProgress": 0,
           "intervalDays": 10,
           "workDays": 7,
-          "vacationDays": 1,
-          "nonWorkingDays": 4,
+          "vacationDays": 0,
+          "nonWorkingDays": 3,
           "dailyWorkHours": 8
         }
       ],
@@ -1120,8 +1120,8 @@
           "actualProgress": 0,
           "intervalDays": 5,
           "workDays": 5,
-          "vacationDays": 1,
-          "nonWorkingDays": 1,
+          "vacationDays": 0,
+          "nonWorkingDays": 0,
           "dailyWorkHours": 7
         },
         {
@@ -1149,8 +1149,8 @@
           "actualProgress": 0,
           "intervalDays": 9,
           "workDays": 7,
-          "vacationDays": 1,
-          "nonWorkingDays": 3,
+          "vacationDays": 0,
+          "nonWorkingDays": 2,
           "dailyWorkHours": 7
         },
         {
@@ -1178,8 +1178,8 @@
           "actualProgress": 0,
           "intervalDays": 9,
           "workDays": 7,
-          "vacationDays": 1,
-          "nonWorkingDays": 3,
+          "vacationDays": 0,
+          "nonWorkingDays": 2,
           "dailyWorkHours": 7
         },
         {
@@ -1207,8 +1207,8 @@
           "actualProgress": 0,
           "intervalDays": 13,
           "workDays": 7,
-          "vacationDays": 1,
-          "nonWorkingDays": 7,
+          "vacationDays": 0,
+          "nonWorkingDays": 6,
           "dailyWorkHours": 7
         }
       ],
@@ -1258,8 +1258,8 @@
           "actualProgress": 0,
           "intervalDays": 12,
           "workDays": 10,
-          "vacationDays": 1,
-          "nonWorkingDays": 3,
+          "vacationDays": 0,
+          "nonWorkingDays": 2,
           "dailyWorkHours": 6
         },
         {
@@ -1287,8 +1287,8 @@
           "actualProgress": 0,
           "intervalDays": 18,
           "workDays": 13,
-          "vacationDays": 1,
-          "nonWorkingDays": 6,
+          "vacationDays": 0,
+          "nonWorkingDays": 5,
           "dailyWorkHours": 6
         },
         {
@@ -1316,8 +1316,8 @@
           "actualProgress": 0,
           "intervalDays": 11,
           "workDays": 8,
-          "vacationDays": 1,
-          "nonWorkingDays": 4,
+          "vacationDays": 0,
+          "nonWorkingDays": 3,
           "dailyWorkHours": 6
         }
       ],

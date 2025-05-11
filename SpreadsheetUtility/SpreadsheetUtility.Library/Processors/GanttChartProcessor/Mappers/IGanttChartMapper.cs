@@ -1,4 +1,5 @@
 ﻿using SpreadsheetUtility.Library.Models;
+using SpreadsheetUtility.Library.Domain;
 
 namespace SpreadsheetUtility.Library.Mappers;
 public interface IGanttChartMapper

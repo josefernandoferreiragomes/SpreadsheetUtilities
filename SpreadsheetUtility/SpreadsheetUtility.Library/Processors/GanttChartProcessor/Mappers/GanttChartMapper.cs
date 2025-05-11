@@ -1,10 +1,10 @@
 ﻿using SpreadsheetUtility.Library.Calculators;
 using SpreadsheetUtility.Library.Models;
-using SpreadsheetUtility.Library.Providers;
+using SpreadsheetUtility.Library.Domain;
 using System.Globalization;
 
 namespace SpreadsheetUtility.Library.Mappers
-{    
+{
     public class GanttChartMapper(IDateCalculator _dateCalculator) : IGanttChartMapper
     {
         public List<GanttTask> MapGanttTasksFromTaskDtos(List<TaskDto> taskDtos)

@@ -1,4 +1,5 @@
 using SpreadsheetUtility.Library.Models;
+using SpreadsheetUtility.Library.Domain;
 
 namespace SpreadsheetUtility.Library.ListGenerators;
 public class DeveloperTaskListGenerator : ListGenerator<Developer, List<GanttTask>>

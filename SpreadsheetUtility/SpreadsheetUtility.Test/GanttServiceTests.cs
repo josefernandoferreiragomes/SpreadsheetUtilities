@@ -191,7 +191,7 @@ namespace SpreadsheetUtility.Test
             // Arrange
             var methodName = System.Reflection.MethodBase.GetCurrentMethod()?.Name ?? "";
             var input = JsonTestHelper.ProcessMethodJson<CalculateGanttChartAllocationInput>(methodName, ParameterTypeInput);
-            var fixedDateTime = new DateTime(2025, 03, 20);
+            var fixedDateTime = new DateTime(2025, 05, 11);
             _mockDateTimeProvider!.Setup(m => m.Today).Returns(fixedDateTime);
             Assert.NotNull(input);
             // Act

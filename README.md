@@ -1,429 +1,667 @@
-﻿# Double Entry Spreadsheet Generator
+﻿# SpreadsheetUtilities
 
-This console application generates double entry spreadsheets from single entry spreadsheets with multi line cells.
+> Comprehensive Excel-based project management and data transformation suite with Gantt chart visualization
 
-For example, if You have a spreadsheet with the following data:
+![.NET](https://img.shields.io/badge/.NET-8%2B%209-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
+![Status](https://img.shields.io/badge/status-Active-brightgreen)
 
-|Id|CarModel|LicensePlate|ManufacturingYear|Features|
-|---|---|---|---|---|
-|1|CarModelA|LicensePlate1|1985|AirConditioning<br>PowerSteering|
-|2|CarModelB|LicensePlate2|1995|PowerSteering<br>BucketSeats|
-|3|CarModelC|LicensePlate3|1992|AirConditioning<br>BucketSeats|
+## 📋 Table of Contents
 
-You can convert it to a double entry spreadsheet with the following data:
+- [Overview](#overview)
+- [Features](#features)
+- [Projects in This Solution](#projects-in-this-solution)
+- [Installation & Setup](#installation--setup)
+- [Usage](#usage)
+  - [Double Entry Spreadsheet Generator](#double-entry-spreadsheet-generator)
+  - [Gantt Chart Generator](#gantt-chart-generator)
+- [Architecture & Design Patterns](#architecture--design-patterns)
+- [Development](#development)
+- [Contributing](#contributing)
+- [License](#license)
 
-|Id|CarModel|AirConditioning|PowerSteering|BucketSeats|
-|---|---|---|---|---|
-|1|CarModelA|X|X|
-|1|CarModelB||X|X|
-|1|CarModelC|X||X|
+---
 
+## 🎯 Overview
 
-## Prerequisites
+**SpreadsheetUtilities** is a comprehensive solution for Excel-based data transformation and project visualization. It provides:
 
-- .NET 8 SDK
-- A single entry spreadsheet file (e.g., `input.xlsx`)
+1. **Double Entry Spreadsheet Generator** - Transform single-entry spreadsheets with multi-line cells into clean double-entry format
+2. **Gantt Chart Generator** - Visualize project schedules with automatic task assignment to team members considering vacation periods and dependencies
+3. **Reusable Library** - Battle-tested, design-pattern-driven library for spreadsheet processing and project management
 
-## Usage
+The solution combines console applications, a Blazor web interface, and a robust core library following SOLID principles and multiple industry-standard design patterns.
 
-### From visual studio Developer Powershell / Terminal
+---
 
-1. Clone the repository or download the source code.
-2. Open a terminal and navigate to the project directory.
-3. Run the application using the following command:
+## ✨ Features
 
+### Double Entry Spreadsheet Generator
+- ✅ Converts single-entry spreadsheets with multi-line cells into double-entry format
+- ✅ Customizable key and value columns
+- ✅ Optional header row specification
+- ✅ Multi-worksheet support
+- ✅ Batch processing capability
+- ✅ Available as console app or portable executable
+
+### Gantt Chart Generator
+- ✅ **Interactive Web UI** (Blazor Server)
+- ✅ **Paste-based Data Entry** - Copy/paste data directly from Excel
+- ✅ **Automatic Task Assignment** - Intelligent task scheduling to team members
+- ✅ **Vacation & Holiday Handling** - Respects developer vacation periods and company holidays
+- ✅ **Task Dependencies** - Support for inter-task dependencies within projects
+- ✅ **Multiple Views**:
+  - Task assignments Gantt chart
+  - Project-level Gantt chart
+  - Developer workload Gantt chart
+- ✅ **Advanced Options**:
+  - Pre-sort tasks by effort (useful for dependency resolution)
+  - Fix teams to project groups for better resource allocation
+  - Configurable project start date
+  - Week or Day view modes
+- ✅ **Data Analytics**:
+  - Project effort totals
+  - Developer allocation tracking
+  - Slack time calculation
+  - Vacation day accounting
+  - Non-working day tracking
+- ✅ **Visual Features**:
+  - Color-coded projects and developers
+  - Real-time data tables with sorting
+  - Holiday tracking across projects
+
+---
+
+## 📦 Projects in This Solution
+
+### 1. **SpreadsheetUtility.Library** (.NET 8)
+Core business logic and reusable components for both console and web applications.
+
+**Key Components:**
+- `GanttChartProcessor` - Main orchestrator for task allocation and scheduling
+- `DateCalculator` - Advanced date calculations with holiday support
+- `GanttChartMapper` - DTO to domain model transformations
+- `TaskAssignment & Sorting Strategies` - Pluggable algorithm implementations
+- `Holiday & DateTime Providers` - External dependency abstraction
+
+### 2. **SpreadsheetUtility.UI.Web** (.NET 9 - Blazor Server)
+Interactive web application for Gantt chart generation with real-time data visualization.
+
+**Features:**
+- Paste-based Excel data import
+- QuickGrid-based data tables with sorting/filtering
+- Frappe Gantt chart visualization
+- Multiple chart modes (Week/Day view)
+- Advanced configuration options
+- Real-time developer workload analysis
+
+**Routes:**
+- `/` - Home page
+- `/ganttGeneratorFromPaste` - Interactive Gantt generator
+- `/jsonGeneratorFromPaste` - JSON data generator (experimental)
+
+### 3. **SpreadsheetUtility.UI.Console** (.NET 8)
+Console-based double entry spreadsheet generator.
+
+**Usage:**
 ```bash
 dotnet run <input.xlsx> <key column> <values column> [output.xlsx] [headers row] [worksheet index]
 ```
 
-   - `<input.xlsx>`   : The path to the input single entry spreadsheet file.
-   - `<key column>`   : The column index (1-based) which contains the keys.
-   - `<values column>`: The column index (1-based) which contains the values.
-   - `[output.xlsx]` (optional): The path to the output double entry spreadsheet file. If not provided, the output will be saved in the same directory as the input file with a default name.
-   - `[headers row]` (optional): The row which contains the table headers.
-   - `[worksheet index]` (optional): The row which contains the table headers.
+### 4. **SimplifiedUtilityConsole** (.NET 8)
+Lightweight console application for basic spreadsheet transformations.
 
-### Executing the application as portable
+### 5. **SpreadsheetUtility.Test** (.NET 8)
+Comprehensive unit test suite for library components using xUnit and Moq.
 
-You may also publish the console application and use it as portable, 
+---
 
-In the following example, it is run from CMD from the exe file folder, considering the input file is in the same directory:
+## 🚀 Installation & Setup
+
+### Prerequisites
+
+- **.NET 8 SDK** (for console apps and library)
+- **.NET 9 SDK** (for Blazor web application)
+- **Visual Studio 2022** or VS Code with C# extension (recommended)
+- **Git** for cloning the repository
+
+### Clone Repository
+
 ```bash
+git clone https://github.com/josefernandoferreiragomes/SpreadsheetUtilities.git
+cd SpreadsheetUtilities
+```
+
+### Install Dependencies
+
+```bash
+# Restore all NuGet packages
+dotnet restore
+
+# Build entire solution
+dotnet build
+```
+
+### Required NuGet Packages (already included in projects)
+
+```bash
+# Excel processing
+dotnet add package ClosedXML
+
+# Gantt chart visualization
+dotnet add package Newtonsoft.Json
+
+# Data grid components (Blazor)
+dotnet add package Microsoft.AspNetCore.Components.QuickGrid
+
+# Testing
+dotnet add package xunit
+dotnet add package Moq
+
+# Dependency injection
+dotnet add package Microsoft.Extensions.Hosting
+dotnet add package Microsoft.Extensions.Hosting.Abstractions
+```
+
+---
+
+## 💻 Usage
+
+### Double Entry Spreadsheet Generator
+
+#### Console Application
+
+**From Visual Studio Developer PowerShell:**
+
+```bash
+# Navigate to console project
+cd .\SpreadsheetUtility\SpreadsheetUtility.UI.Console
+
+# Run with parameters
+dotnet run input.xlsx 2 5 output.xlsx
+```
+
+**Parameters:**
+- `<input.xlsx>` - Path to input spreadsheet file
+- `<key column>` - Column index (1-based) containing keys
+- `<values column>` - Column index (1-based) containing multi-line values
+- `[output.xlsx]` (optional) - Output file path (default: auto-generated in same directory)
+- `[headers row]` (optional) - Header row index (default: 1)
+- `[worksheet index]` (optional) - Worksheet index (default: 1)
+
+**Example:**
+
+```bash
+dotnet run .\ExampleFiles\input.xlsx 2 5 output.xlsx 1 1
+```
+
+**Input Format Example:**
+
+| Id | CarModel | Features |
+|---|---|---|
+| 1 | CarModelA | AirConditioning<br>PowerSteering |
+| 2 | CarModelB | PowerSteering<br>BucketSeats |
+
+**Output Format:**
+
+| Id | CarModel | AirConditioning | PowerSteering | BucketSeats |
+|---|---|---|---|---|
+| 1 | CarModelA | X | X | |
+| 2 | CarModelB | | X | X |
+
+#### As Portable Executable
+
+```bash
+# Publish console app
+dotnet publish -c Release --self-contained
+
+# Navigate to output directory
+cd .\bin\Release\net8.0\win-x64\publish
+
+# Execute
 .\SpreadsheetUtilityConsole.exe input.xlsx 2 5 output.xlsx
 ```
 
-## Example
-
-Developer PowerShell, from the project folder:
-```bash
-dotnet run .\input.xlsx 2 5 output.xlsx
-```
-
-This command will generate a double entry spreadsheet from `input.xlsx` and save it as `output.xlsx`.
-
-## Notes
-
-- If the output file path is not specified, the application will generate the output file in the same directory as the input file with a default name.
-- Ensure that the input file exists and is accessible.
-- The application assumes that the input file is a valid Excel file with the `.xlsx` extension.
-- If the output file already exists, it will be overwritten.
-- If the headers row is not provided, the application will use the first row as the headers.
-- If the worksheet index is not provided, the application will use the first worksheet.
-
-## License
-
-This project is licensed under the MIT License. See the [LICENSE](LICENSE.txt) file for details.
-
-## Walkthrough
-
-Created the code for the console app, 
-
-Then moved the logic to read the excel file and generate the double entry spreadsheet to a new library project.
-
-Refactored the previous code.
-
-Adapted the projects to use the same solution and added the tests for the logic.
-
-Created the code for the tests.
-
-In Package Manager Console:
-
-Added the moq library to the test project to mock the excel file reading:
-```bash
-Install-Package moq
-```
-
-Updated the xunit package:
-```bash
-Update-Package xunit
-```
-
-Added the Microsoft.Extensions.Hosting and Microsoft.Extensions.Hosting.Abstractions to the library project:
-```bash
-Install-Package Microsoft.Extensions.Hosting
-Install-Package Microsoft.Extensions.Hosting.Abstractions
-```
-
-## Next features
-Blazor Gantt Generator
-Multi line cells to multi rows
-One entry tables with single line cells to Double entry
-
-# Blazor Gantt Chart Application
-
-## Overview
-This application is a **Blazor WebAssembly** project that generates a **Gantt Chart** based on task assignments from an Excel file. It uses **BlazorGantt** for visualization and **ClosedXML** for reading Excel spreadsheets.
-
-## Features
-- Reads task and team data from two Excel files:
-  - **Tasks.xlsx**: Contains project tasks with estimated effort hours.
-  - **Team.xlsx**: Contains developers, their daily work hours, and vacation periods.
-- Assigns tasks to developers while considering vacation periods.
-- Generates a Gantt Chart to visualize task assignments.
-
-## Required Packages
-Install the following NuGet packages:
-```sh
-# ClosedXML for Excel processing
-dotnet add package ClosedXML
-````
-# Gantt chart rendering, in the Blazor app
-Frappe Gantt:
-https://github.com/frappe/gantt
-https://frappe.io/gantt
-
-```bash
-dotnet add package frappe-gantt
-dotnet add package Microsoft.JSInterop 
-```
-# To allow for Gantt chart rendering, in the Library
-```bash
-dotnet add package newtonsoft.json
-```
-
-
-## File Structure
-- **GanttChartService.cs**: Processes Excel data, assigns tasks, and handles scheduling logic.
-- **Gantt.razor**: Blazor page that renders the Gantt Chart using BlazorGantt.
-- **wwwroot/**: Place your **Tasks.xlsx** and **Team.xlsx** files here.
-
-## License
-This project uses the following licenses:
-- **ClosedXML**: MIT License (Free for personal and commercial use)
-- **BlazorGantt**: MIT License (Free and open-source)
-
-## How to Run
-1. Place `Tasks.xlsx` and `Team.xlsx` in the `wwwroot/` folder.
-2. Run the Blazor app:
-   ```sh
-   dotnet run
-   ```
-3. Open your browser and navigate to `/gantt` to see the Gantt Chart.
-
 ---
-For any questions or improvements, feel free to contribute!
 
+### Gantt Chart Generator
 
-## Requirements for paste from excel:
-- Paste areas in a page
-- Generate button
+#### Web Application (Recommended)
 
-- Add Quick Grid to the project
+**Start the Application:**
+
 ```bash
-dotnet add package Microsoft.AspNetCore.Components.QuickGrid
+# Navigate to web project
+cd .\SpreadsheetUtility.UI.Web
+
+# Run development server
+dotnet run
+
+# Open browser
+# Navigate to: https://localhost:5001/ganttGeneratorFromPaste
 ```
 
-- Add project pre sorting
-- Add task end week
+**Step-by-Step Usage:**
 
-- Add project groupping, by projects allowed to be assigned togehter, in batches
+1. **Prepare Your Data**
+   - Export or copy your project data from Excel
+   - Export task/effort data with columns: ProjectID, TaskName, EffortHours, etc.
+   - Export team data with columns: TeamId, Name, DailyWorkHours, VacationPeriods
+
+2. **Enter Project Data**
+   - Paste project spreadsheet data in the "Projects" textarea
+   - Specify project groups for batch assignment
+   - Set team IDs to link developers to project groups (optional)
+
+3. **Enter Task Data**
+   - Paste task spreadsheet data in the "Tasks" textarea
+   - Include: InternalID, TaskName, ProjectName, EffortHours, Dependencies
+   - Dependencies reference InternalID of dependent tasks (experimental)
+   - Progress is specified as percentage (0-100)
+
+4. **Enter Team Data**
+   - Paste developer/team spreadsheet data in the "Team" textarea
+   - Format: TeamId, Team, Name, DailyWorkHours, VacationPeriods
+   - Vacation periods: comma-separated date pairs (yyyy-MM-dd;yyyy-MM-dd), pipe-separated intervals
+   - Example: `2025-12-15;2025-12-20|2026-01-05;2026-01-10`
+
+5. **Configure Options**
+   - **Project Start Date** - When project allocation begins
+   - **Chart Mode** - Week or Day view
+   - **Pre-Sort Tasks** - Enable if tasks have dependencies (experimental)
+   - **Team to Project Group** - Fix developers to specific project groups (experimental)
+
+6. **Generate Charts**
+   - Click "Load Tasks Gantt Chart" to generate visualization
+   - Three Gantt charts will be rendered:
+     - **Tasks Chart** - Individual task assignments
+     - **Projects Chart** - Project-level overview
+     - **Developer Tasks Chart** - Developer workload visualization
+
+7. **Review Data**
+   - **Project Data Table** - Summary of all projects with dates and effort
+   - **Task Data Table** - Detailed task assignments with working day calculations
+   - **Developer Data Table** - Resource allocation and slack time analysis
+   - **Holidays Table** - All holidays occurring during project timeline
+
+#### Data Input Format
+
+**Projects Data (Tab-Separated):**
+```
+ProjectID   ProjectName   ProjectGroup   TeamId
+P001        Website Redesign   1   TEAM-A
+P002        Mobile App   2   TEAM-B
+```
+
+**Tasks Data (Tab-Separated):**
+```
+InternalID   ProjectName   TaskName   EffortHours   Dependencies   Progress
+1   Website Redesign   Design   40   0   50
+2   Website Redesign   Development   80   1   30
+3   Mobile App   Design   30   0   100
+```
+
+**Team Data (Tab-Separated):**
+```
+TeamId   Team   Name   DailyWorkHours   VacationPeriods
+TEAM-A   Team A   John Doe   8   2025-12-24;2025-12-26
+TEAM-A   Team A   Jane Smith   8   
+TEAM-B   Team B   Bob Johnson   8   2025-01-01;2025-01-03
+```
 
 ---
 
-# Architecture & Design Patterns
+## 🏗️ Architecture & Design Patterns
 
-The **SpreadsheetUtility.Library** project implements several industry-standard design patterns to promote maintainability, testability, and extensibility. This section documents each pattern and its benefits.
+The **SpreadsheetUtility.Library** project implements 11 industry-standard design patterns for maintainability and testability.
 
-## 1. Observer Pattern
+### 1. Observer Pattern
 
 **Location:** `DateCalculator.cs`, `GanttChartProcessor.cs`
 
 Implements notification mechanism for holiday detection events.
 
 **Key Components:**
-- `IObserver<Holiday>` interface (from System namespace)
-- `AddObserver()` and `RemoveObserver()` methods in `DateCalculator`
-- `NotifyObservers()` for publishing holiday events
-- `GanttChartProcessor` implements `IObserver<Holiday>` to handle notifications
+- `IObserver<Holiday>` interface for holiday notifications
+- `AddObserver()` / `RemoveObserver()` in `DateCalculator`
+- `GanttChartProcessor` implements `IObserver<Holiday>`
 
 **Advantages:**
-- Decouples holiday detection logic from holiday handling
-- Multiple observers can react to holidays independently
-- Enables reactive programming without tight coupling
-- Easy to add new observers without modifying existing code
+- Decouples holiday detection from handling
+- Multiple independent observers
+- Reactive programming support
+- Easy observer addition without code changes
 
 ---
 
-## 2. Strategy Pattern
+### 2. Strategy Pattern
 
-**Location:** Task assignment and task sorting strategies
+**Location:** Task assignment and sorting strategies
 
-Enables runtime switching between different task assignment and sorting algorithms.
+Enables runtime switching between different algorithms.
 
 **Key Components:**
 - `ITaskAssignmentStrategy` with `DefaultTaskAssignmentStrategy`
 - `ITaskSortingStrategy` with `DefaultTaskSortingStrategy` and `TaskSortingStrategyEffortBased`
-- Strategy base classes provide common functionality
+- Base classes provide common functionality
 
 **Advantages:**
-- Algorithms can be swapped at runtime without changing client code
-- New strategies can be added without modifying existing implementations
-- Each strategy is independently testable
-- Follows Open/Closed Principle (open for extension, closed for modification)
+- Runtime algorithm switching
+- New strategies without modifying existing code
+- Independently testable
+- Open/Closed Principle compliance
 
 ---
 
-## 3. Factory Pattern
+### 3. Factory Pattern
 
 **Location:** Strategy factories
 
-Centralizes strategy instantiation and integrates with dependency injection.
+Centralizes strategy instantiation with dependency injection.
 
 **Key Components:**
 - `ITaskAssignmentStrategyFactory` / `TaskAssignmentStrategyFactory`
 - `ITaskSortingStrategyFactory` / `TaskSortingStrategyFactory`
-- Both factories use `IServiceProvider` for strategy resolution
 
 **Advantages:**
-- Decouples strategy instantiation from usage
-- Centralizes creation logic for easier maintenance
-- Leverages dependency injection for lifecycle management
-- Simplifies testing by allowing factory substitution
+- Decouples instantiation from usage
+- Centralized creation logic
+- DI integration
+- Testability improvement
 
 ---
 
-## 4. Template Method Pattern
+### 4. Template Method Pattern
 
 **Location:** `TaskAssignmentStrategyBase.cs`, `ListGenerator<TInput, TOutput>`
 
-Defines skeleton algorithms in base classes while letting subclasses implement specific steps.
-
-**Key Components:**
-- Base classes define common algorithm structure
-- Protected abstract methods define customization points
-- Subclasses implement specific behavior while reusing common logic
+Base classes define skeleton algorithms, subclasses implement specific steps.
 
 **Advantages:**
-- Promotes code reuse across implementations
-- Provides consistent structure for similar operations
-- Reduces code duplication
-- Makes the algorithm structure explicit and maintainable
+- Code reuse across implementations
+- Consistent operation structure
+- Reduced duplication
+- Explicit algorithm structure
 
 ---
 
-## 5. Builder Pattern
+### 5. Builder Pattern
 
 **Location:** `CalculateGanttChartAllocationOutputBuilder.cs`
 
-Simplifies construction of complex objects with many parameters.
+Simplifies construction of complex objects.
 
 **Key Components:**
 - Fluent API with method chaining
-- Methods like `WithProjects()`, `WithGanttTasks()`, etc.
-- `Build()` method returns the final constructed object
+- `WithProjects()`, `WithGanttTasks()`, etc.
+- `Build()` method finalizer
 
 **Advantages:**
-- Improves code readability with descriptive method names
-- Handles complex object initialization elegantly
-- Immutable result object ensures consistency
-- Optional parameters are clearly expressed
+- Improved readability
+- Elegant complex initialization
+- Immutable result objects
+- Clear optional parameters
 
 ---
 
-## 6. Facade Pattern
+### 6. Facade Pattern
 
 **Location:** `CalculatorFacade.cs`, `ICalculatorFacade.cs`
 
 Provides unified interface to multiple calculator services.
 
-**Key Components:**
-- `ICalculatorFacade` interface with properties for different calculators
-- `DateCalculator` and `DeveloperHoursCalculator` exposed through facade
-- Simplifies client interaction with multiple services
-
 **Advantages:**
-- Reduces complexity of working with multiple services
-- Single entry point for calculator operations
-- Easy to extend with new calculator services
-- Decouples clients from implementation details
+- Reduced complexity
+- Single service entry point
+- Easy extension
+- Client decoupling
 
 ---
 
-## 7. Mapper/Adapter Pattern
+### 7. Mapper/Adapter Pattern
 
 **Location:** `GanttChartMapper.cs`, `IGanttChartMapper.cs`
 
-Transforms between different data representations (DTOs and domain models).
+Transforms between DTOs and domain models.
 
-**Key Components:**
-- `MapGanttTasksFromTaskDtos()` - TaskDto → GanttTask
-- `MapProjectsFromProjectDtos()` - ProjectDto → Project
-- `MapDevelopersFromDeveloperDtos()` - DeveloperDto → Developer
-- `MapDeveloperAvailabilitiesFromDevelopers()` - Developer → DeveloperAvailability
+**Key Transformations:**
+- TaskDto → GanttTask
+- ProjectDto → Project
+- DeveloperDto → Developer
+- Developer → DeveloperAvailability
 
 **Advantages:**
-- Decouples DTOs from domain models
-- Enables clean transformation between data representations
-- Centralizes mapping logic for easier maintenance
-- Facilitates testing by separating transformation concerns
+- DTO/Domain model decoupling
+- Clean transformations
+- Centralized mapping logic
+- Easier testing
 
 ---
 
-## 8. Generic List Generator Pattern
+### 8. Generic List Generator Pattern
 
-**Location:** `IListGenerator<TInput, TOutput>` and implementations
+**Location:** `IListGenerator<TInput, TOutput>`
 
-Provides type-safe, reusable grouping and aggregation logic for different data types.
+Type-safe, reusable grouping and aggregation.
 
 **Key Components:**
-- `IListGenerator<TInput, TOutput>` generic interface
-- `GanttTaskProjectListGenerator` - Groups GanttTask → Project
-- `GanttTaskListGenerator` - Groups GanttTask → GanttTask
-- `DeveloperTaskListGenerator` - Groups Developer → List<GanttTask>
+- `GanttTaskProjectListGenerator` - GanttTask → Project
+- `GanttTaskListGenerator` - GanttTask → GanttTask
+- `DeveloperTaskListGenerator` - Developer → List<GanttTask>
 
 **Advantages:**
-- Type safety with generic constraints
-- Reduces code duplication across similar aggregation scenarios
-- Each generator is independently testable
-- Easy to add new generators for new data types
+- Type safety with generics
+- Code reuse
+- Independent testability
+- Easy extension
 
 ---
 
-## 9. Command Pattern
+### 9. Command Pattern
 
-**Location:** `ILogCommand.cs`, logging command implementations
+**Location:** `ILogCommand.cs`, logging implementations
 
-Encapsulates logging requests as objects for deferred execution.
+Encapsulates logging requests for deferred execution.
 
 **Key Components:**
-- `ILogCommand` interface with `Execute()` method
-- `ProcessorMessageLogCommand` - Logs processor messages
-- `CalculateGanttChartAllocationInputLogCommand` - Logs allocation input
-- `CalculateGanttChartAllocationOutputLogCommand` - Logs allocation output
-- `LoggingInvoker` manages command queue and execution
+- `ILogCommand` interface
+- `ProcessorMessageLogCommand`
+- `CalculateGanttChartAllocationInputLogCommand`
+- `CalculateGanttChartAllocationOutputLogCommand`
+- `LoggingInvoker` for queue management
 
 **Advantages:**
-- Encapsulates logging requests as first-class objects
-- Enables batching multiple logging operations
-- Supports deferred execution of logging commands
-- Separates logging request creation from execution
-- Easy to add new logging commands without modifying invoker
+- Request encapsulation
+- Batch logging operations
+- Deferred execution
+- Easy new command addition
 
 ---
 
-## 10. Dependency Injection Pattern
+### 10. Dependency Injection Pattern
 
-**Location:** Throughout the library and Program.cs
+**Location:** Throughout library and Program.cs
 
-Promotes loose coupling and testability through constructor injection.
+Constructor injection for loose coupling.
 
 **Key Components:**
 - Service registration in `Program.cs`
-- Constructor injection in all service classes
-- IServiceProvider for runtime service resolution
+- Constructor injection in all services
+- `IServiceProvider` for runtime resolution
 
 **Advantages:**
-- Improves testability by enabling dependency mocking
-- Reduces tight coupling between components
-- Centralizes dependency configuration
-- Enables easy service substitution for different scenarios
-- Supports lifecycle management (Scoped, Transient, Singleton)
+- Improved testability
+- Reduced coupling
+- Centralized configuration
+- Easy service substitution
 
 ---
 
-## 11. Provider Pattern
+### 11. Provider Pattern
 
-**Location:** `IHolidayProvider.cs`, `IDateTimeProvider.cs`, and implementations
+**Location:** `IHolidayProvider.cs`, `IDateTimeProvider.cs`
 
-Abstracts external dependencies for better testability and flexibility.
+Abstracts external dependencies.
 
 **Key Components:**
-- `IHolidayProvider` - Provides holiday data from configuration
-- `IDateTimeProvider` - Abstracts date/time access
-- Implementations handle actual data retrieval
+- `IHolidayProvider` - Holiday data provisioning
+- `IDateTimeProvider` - Date/time abstraction
+- Mock-friendly implementations
 
 **Advantages:**
-- Abstracts external system dependencies
-- Enables easy substitution for testing with mock providers
-- Isolates business logic from infrastructure concerns
-- Supports multiple provider implementations
-
----
-
-## Pattern Summary Table
-
-| Pattern | Location | Primary Benefit |
-|---------|----------|-----------------|
-| **Observer** | DateCalculator, GanttChartProcessor | Event notification decoupling |
-| **Strategy** | Task assigners/sorters | Runtime algorithm switching |
-| **Factory** | Strategy factories | Centralized creation with DI |
-| **Template Method** | Base strategy/generator classes | Code reuse, consistent structure |
-| **Builder** | CalculateGanttChartAllocationOutputBuilder | Complex object construction |
-| **Facade** | CalculatorFacade | Unified multi-service interface |
-| **Mapper** | GanttChartMapper | DTO ↔ Domain model transformation |
-| **Generic Generators** | ListGenerator<TInput, TOutput> | Type-safe reusable grouping |
-| **Command** | LoggingInvoker + ILogCommand | Encapsulated, deferred logging |
-| **Dependency Injection** | Throughout library | Testability, loose coupling |
-| **Provider** | Holiday/DateTime providers | External dependency abstraction |
+- External dependency abstraction
+- Easy testing with mocks
+- Business logic isolation
+- Multiple implementation support
 
 ---
 
 ## Design Principles Applied
 
-The codebase follows these SOLID principles:
+The codebase follows **SOLID principles**:
 
-- **S**ingle Responsibility - Each class has one reason to change
-- **O**pen/Closed - Open for extension (new strategies), closed for modification
-- **L**iskov Substitution - Strategies are interchangeable implementations
-- **I**nterface Segregation - Focused, purpose-specific interfaces
-- **D**ependency Inversion - Depends on abstractions, not concrete implementations
+| Principle | Application |
+|-----------|-------------|
+| **S**ingle Responsibility | Each class has one reason to change |
+| **O**pen/Closed | Open for extension (new strategies), closed for modification |
+| **L**iskov Substitution | Strategies are interchangeable implementations |
+| **I**nterface Segregation | Focused, purpose-specific interfaces |
+| **D**ependency Inversion | Depends on abstractions, not concrete implementations |
+
+---
+
+## 🛠️ Development
+
+### Running Tests
+
+```bash
+# Run all tests
+dotnet test
+
+# Run specific test project
+dotnet test .\SpreadsheetUtility\SpreadsheetUtility.Test\SpreadsheetUtility.Test.csproj
+
+# Run with verbose output
+dotnet test --logger "console;verbosity=detailed"
+
+# Run specific test class
+dotnet test --filter "DateCalculatorTests"
+```
+
+### Building and Publishing
+
+```bash
+# Build solution
+dotnet build
+
+# Build release configuration
+dotnet build -c Release
+
+# Publish console app
+dotnet publish -c Release --self-contained -r win-x64
+```
+
+### Project Structure
+
+```
+SpreadsheetUtilities/
+├── SpreadsheetUtility/
+│   ├── SpreadsheetUtility.Library/          # Core business logic
+│   │   ├── Calculators/                     # Date, hours calculations
+│   │   ├── Mappers/                         # DTO transformations
+│   │   ├── Providers/                       # Holiday, DateTime abstractions
+│   │   ├── Processors/                      # GanttChartProcessor
+│   │   ├── TaskAssigners/                   # Task assignment strategies
+│   │   ├── TaskSorters/                     # Task sorting strategies
+│   │   ├── ListGenerators/                  # Generic list generation
+│   │   └── Models/                          # DTOs and domain models
+│   ├── SpreadsheetUtility.UI.Console/       # Console app
+│   └── SpreadsheetUtility.Test/             # Unit tests
+├── SpreadsheetUtility.UI.Web/               # Blazor web app
+│   ├── Components/
+│   │   ├── Pages/                           # Razor pages
+│   │   └── Layout/                          # Layout components
+│   ├── Helpers/                             # Utility helpers
+│   └── wwwroot/                             # Static assets
+└── SimplifiedUtilityConsole/                # Legacy console app
+```
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please follow these guidelines:
+
+1. **Fork the repository**
+2. **Create a feature branch**
+   ```bash
+   git checkout -b feature/amazing-feature
+   ```
+3. **Commit your changes**
+   ```bash
+   git commit -m 'Add amazing feature'
+   ```
+4. **Push to the branch**
+   ```bash
+   git push origin feature/amazing-feature
+   ```
+5. **Open a Pull Request**
+
+### Code Style
+
+- Follow C# coding conventions
+- Use meaningful variable/method names
+- Add unit tests for new features
+- Document complex logic with comments
+- Follow existing pattern implementations
+
+### Reporting Issues
+
+Please use the GitHub Issues tab to report bugs or request features with:
+- Clear description
+- Steps to reproduce
+- Expected vs. actual behavior
+- Screenshots if applicable
+
+---
+
+## 📝 License
+
+This project is licensed under the **MIT License** - see the [LICENSE](LICENSE.txt) file for details.
+
+All dependencies maintain their respective licenses:
+- **ClosedXML**: MIT License
+- **Frappe Gantt**: MIT License
+- **xUnit**: Apache 2.0 License
+- **Moq**: BSD License
+
+---
+
+## 📞 Support
+
+For questions, issues, or suggestions:
+- Open an issue on [GitHub Issues](https://github.com/josefernandoferreiragomes/SpreadsheetUtilities/issues)
+- Check existing documentation in this README
+- Review unit tests for usage examples
+
+---
+
+## 🙏 Acknowledgments
+
+- **Frappe Gantt** - Open-source Gantt chart visualization library
+- **ClosedXML** - Modern Excel manipulation library
+- **xUnit** - .NET testing framework
+- **.NET Community** - For excellent frameworks and tools
+
+---
+
+## 📚 Additional Resources
+
+- [Frappe Gantt Documentation](https://github.com/frappe/gantt)
+- [ClosedXML Documentation](https://github.com/ClosedXML/ClosedXML)
+- [Blazor Documentation](https://learn.microsoft.com/en-us/aspnet/core/blazor/)
+- [Design Patterns in C#](https://refactoring.guru/design-patterns)
+
+---
+
+**Built with ❤️ for the community**

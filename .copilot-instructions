@@ -1,0 +1,273 @@
+# Copilot Instructions for SpreadsheetUtilities
+
+## Project Overview
+- **Purpose**: Design pattern learning project + production-ready utility for single organization deployment
+- **Targets**: .NET 8 & 9 (Blazor Server on .NET 9)
+- **Deployment**: Azure Web App + Local development machines
+- **Architecture**: Modular library-based design with multiple UI frontends
+
+## Key Principles
+
+### 1. Library Architecture
+- **SpreadsheetUtility.Library** remains pure calculator/processor - NO UI concerns
+- Constructor injection for all dependencies
+- No static methods except Providers
+- SOLID principles enforced
+- No breaking changes to existing public interfaces without major version bump
+
+### 2. Design Patterns
+The codebase intentionally implements 11+ design patterns for learning:
+- Observer, Strategy, Factory, Template Method, Builder, Facade
+- Mapper/Adapter, Generic List Generator, Command, Dependency Injection, Provider
+- **Do NOT remove patterns** - they are core to project's educational value
+- Add new patterns when solving problems, not arbitrarily
+
+### 3. Blazor Web Application (SpreadsheetUtility.UI.Web)
+- **Framework**: Blazor Server (.NET 9)
+- **Approach**: Interactive Server Components (not static SSR)
+- Keep components simple and testable
+- Separate concerns: UI Components ≠ Business Logic
+- Use services for cross-component state
+
+### 4. Backward Compatibility
+- **Generate-from-paste behavior MUST remain** - core feature for power users
+- Add file upload as ADDITIONAL option, not replacement
+- Local folder reading is NEW enhancement
+- Console apps continue working unchanged
+
+## Development Workflow
+
+### Code Standards
+```csharp
+// ✅ Good: Constructor injection, clear responsibility
+public class GanttChartProcessor
+{
+    private readonly IGanttChartDataManager _dataManager;
+    private readonly ILogger<GanttChartProcessor> _logger;
+
+    public GanttChartProcessor(IGanttChartDataManager dataManager, ILogger<GanttChartProcessor> logger)
+    {
+        _dataManager = dataManager;
+        _logger = logger;
+    }
+}
+
+// ❌ Bad: Service locator, mixed concerns
+public class BadProcessor
+{
+    public void Process() => ServiceLocator.Get<IService>().DoWork();
+}
+```
+
+### Interface Naming
+- **Services**: `I{ServiceName}` (e.g., `IGanttChartProcessor`)
+- **Repositories**: `I{Entity}Repository` (e.g., `IProjectRepository`)
+- **Strategies**: `I{Algorithm}Strategy` (e.g., `ITaskAssignmentStrategy`)
+- **Factories**: `I{Component}Factory` (e.g., `ITaskAssignmentStrategyFactory`)
+- **Managers**: `I{Domain}Manager` (e.g., `IGanttChartDataManager`)
+
+### Testing
+- Target library: **xUnit** (already in use)
+- Mocking: **Moq** (already in use)
+- Coverage goal: >80% for public APIs
+- No unit tests for UI components yet (future: Bunit)
+- Test naming: `[MethodName]_[Scenario]_[ExpectedOutcome]`
+
+```csharp
+[Fact]
+public void CalculateWorkingDays_WithWeekend_ExcludesWeekendDays()
+{
+    // Arrange
+    var calculator = new DateCalculator(...);
+
+    // Act
+    var result = calculator.CalculateWorkingDays(...);
+
+    // Assert
+    Assert.Equal(5, result);
+}
+```
+
+## New Features: Architecture Guidelines
+
+### Feature: User Authentication
+- **New Project**: Optional - if adding, create `SpreadsheetUtility.Library.Identity`
+- **Use**: Microsoft.AspNetCore.Identity + EF Core
+- **Scope**: Single organization (no multi-tenant complexity)
+- **UI**: Blazor pages only (no separate API initially)
+- Keep authentication logic out of library project
+
+### Feature: Data Persistence
+- **Database**: SQL Server (Azure) or SQLite (local development)
+- **ORM**: Entity Framework Core with migrations
+- **New Project**: `SpreadsheetUtility.Library.DataAccess`
+- **Patterns**: Repository + Unit of Work pattern
+- **Library separation**: Library doesn't reference DataAccess - only UI does
+
+### Feature: File Upload
+- **Existing**: Paste behavior - KEEP
+- **Add**: Excel/CSV file upload
+- **Add**: Local folder reading (for batch processing)
+- **Validation**: File type, size, format checking in UI layer
+- **Processing**: Async operations with progress tracking
+
+### New Extensions Method Organization
+Create extension classes for cleaner Program.cs:
+```csharp
+// In new Extensions folder:
+public static class ServiceCollectionExtensions
+{
+    public static IServiceCollection AddGanttServices(this IServiceCollection services) { ... }
+    public static IServiceCollection AddAuthenticationServices(this IServiceCollection services) { ... }
+    public static IServiceCollection AddDataAccessServices(this IServiceCollection services) { ... }
+}
+
+// In Program.cs:
+builder.Services
+    .AddGanttServices()
+    .AddAuthenticationServices()
+    .AddDataAccessServices();
+```
+
+## Git & Version Control
+
+### Branch Naming
+- Feature: `feature/description` (e.g., `feature/user-authentication`)
+- Bugfix: `fix/description`
+- Chore: `chore/description`
+
+### Commit Messages
+Follow conventional commits:
+```
+feat: add user authentication with OAuth2
+fix: correct date calculation for DST periods
+chore: update dependencies
+docs: add API documentation
+test: add integration tests for repository layer
+```
+
+### Pull Request Standards
+- One feature per PR
+- Update CHANGELOG.md
+- Include tests
+- Request review
+- Link related issues
+
+## Documentation
+
+### Files to Maintain
+- **README.md** - Project overview (already exists)
+- **CHANGELOG.md** - Version history (to create)
+- **ARCHITECTURE.md** - Deep dive into design patterns (to create)
+- **CONTRIBUTING.md** - Contribution guidelines (to create)
+- **/.copilot-instructions** - This file
+
+### Code Comments
+- Only document "why", not "what" (code should be clear)
+- Complex algorithms deserve detailed comments
+- Avoid redundant comments
+
+```csharp
+// ❌ Bad: States the obvious
+int count = list.Count(); // Get count
+
+// ✅ Good: Explains business logic
+// We process oldest entries first to ensure consistent scheduling
+// across multiple runs (idempotent task assignment)
+var orderedTasks = tasks.OrderBy(t => t.CreatedDate);
+```
+
+## Performance & Scalability
+
+### Current Deployment Model
+- Single organization, single Blazor Server app
+- Session-per-user state management
+- No distributed caching needed initially
+
+### Future Considerations (Don't implement now)
+- If scaling to multiple organizations: consider distributed sessions
+- Large file processing: implement background job queue (Hangfire)
+- Real-time updates: SignalR for multi-user scenarios
+
+## Security Checklist
+
+- [ ] No credentials in code (use Azure Key Vault / user-secrets)
+- [ ] Validate all user inputs (file uploads, paste data)
+- [ ] SQL injection prevention (EF Core parameterized queries)
+- [ ] HTTPS only in production
+- [ ] Secure session management
+- [ ] CORS configured properly
+- [ ] Authorization checks on all sensitive operations
+
+## Dependencies Management
+
+### Adding New NuGet Packages
+1. Add only if necessary (check existing dependencies first)
+2. Use LTS/stable versions
+3. Document in CHANGELOG
+4. Update minimum version requirements
+
+### Current Dependencies Summary
+- **Excel**: ClosedXML (MIT)
+- **Testing**: xUnit, Moq
+- **Logging**: Built-in Microsoft.Extensions.Logging
+- **Serialization**: Newtonsoft.Json
+- **Gantt Visualization**: Frappe Gantt (JavaScript)
+
+## Common Tasks
+
+### Running Tests
+```bash
+# All tests
+dotnet test
+
+# Specific project
+dotnet test SpreadsheetUtility\SpreadsheetUtility.Test\
+
+# With coverage
+dotnet test /p:CollectCoverage=true
+```
+
+### Building for Production
+```bash
+cd SpreadsheetUtility.UI.Web
+dotnet publish -c Release -o ./publish
+```
+
+### Local Development
+```bash
+# Restore + Build
+dotnet build
+
+# Run web app
+cd SpreadsheetUtility.UI.Web
+dotnet run
+
+# Access: https://localhost:5001
+```
+
+### Creating Database Migrations
+```bash
+# Add new migration
+dotnet ef migrations add MigrationName -p SpreadsheetUtility.Library.DataAccess
+
+# Update database
+dotnet ef database update -p SpreadsheetUtility.Library.DataAccess
+```
+
+## Frequently Updated Files
+- `CHANGELOG.md` - Updated with every feature/fix
+- `Program.cs` - Updated with new service registrations
+- `.copilot-instructions` - Update when adding new patterns or conventions
+
+## When to Ask for Help
+- Architectural decisions affecting multiple projects
+- Design pattern selection for new features
+- Breaking changes to public APIs
+- Performance concerns
+- Security considerations
+
+---
+**Last Updated**: [Current Session]
+**Maintained By**: Development Team
+**Review Frequency**: Per major feature release

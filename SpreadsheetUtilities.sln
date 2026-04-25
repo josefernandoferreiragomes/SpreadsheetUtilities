@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.12.35521.163
+# Visual Studio Version 18
+VisualStudioVersion = 18.5.11716.220 stable
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpreadsheetUtility.Library", "SpreadsheetUtility\SpreadsheetUtility.Library\SpreadsheetUtility.Library.csproj", "{EEA62EC1-327A-4454-813C-9311CA2B7D16}"
 EndProject
@@ -9,8 +9,19 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpreadsheetUtility.UI.Conso
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{18066C81-BC94-471E-B150-4BCC8CE900EB}"
 	ProjectSection(SolutionItems) = preProject
+		ARCHITECTURE.md = ARCHITECTURE.md
+		CHANGELOG.md = CHANGELOG.md
+		CONTRIBUTING.md = CONTRIBUTING.md
+		DOCS.md = DOCS.md
+		DOCUMENTATION_GUIDE.md = DOCUMENTATION_GUIDE.md
+		IMPLEMENTATION_ROADMAP.md = IMPLEMENTATION_ROADMAP.md
+		INDEX.md = INDEX.md
 		LICENSE.txt = LICENSE.txt
+		NEXT_SESSION_CHECKLIST.md = NEXT_SESSION_CHECKLIST.md
+		PROJECT_ENHANCEMENT_SUMMARY.md = PROJECT_ENHANCEMENT_SUMMARY.md
+		QUICK_REFERENCE.md = QUICK_REFERENCE.md
 		README.md = README.md
+		SESSION_COMPLETE.md = SESSION_COMPLETE.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{C7DD7E85-59DA-4437-9061-E61FCF5B83E7}"

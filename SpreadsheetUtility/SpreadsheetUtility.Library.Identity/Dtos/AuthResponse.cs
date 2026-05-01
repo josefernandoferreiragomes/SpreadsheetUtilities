@@ -33,7 +33,7 @@ public class AuthResponse
     /// <summary>
     /// Gets or sets the authentication token (JWT).
     /// </summary>
-    public string? Token { get; set; }
+    public string? AuthToken { get; set; }
 
     /// <summary>
     /// Gets or sets the expiration time of the token.

@@ -6,6 +6,7 @@
 @inject IAuthenticationService AuthenticationService
 @inject CustomAuthenticationStateProvider AuthStateProvider
 @inject NavigationManager Navigation
+@inject TokenService TokenService
 @rendermode InteractiveServer
 
 <div class="container d-flex justify-content-center align-items-center" style="min-height: 100vh;">
@@ -98,14 +99,19 @@
 
             if (response.IsSuccess)
             {
-                // Update authentication state
+                // Save token if provided
+                if (!string.IsNullOrEmpty(response.AuthToken))
+                {
+                    await TokenService.SaveTokenAsync(response.AuthToken);
+                }
+
                 AuthStateProvider.NotifyUserAuthentication(
                     response.Email ?? LoginModel.Email,
                     response.UserId ?? 0,
-                    response.FullName ?? string.Empty
+                    response.FullName ?? string.Empty,
+                    response.AuthToken
                 );
 
-                // Redirect to home page
                 Navigation.NavigateTo("/", forceLoad: true);
             }
             else

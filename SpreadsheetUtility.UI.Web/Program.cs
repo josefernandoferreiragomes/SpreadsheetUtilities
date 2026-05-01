@@ -61,6 +61,7 @@ builder.Services.AddScoped<IDeveloperHoursCalculator, DeveloperHoursCalculator>(
 builder.Services.AddScoped<ICalculatorFacade, CalculatorFacade>();
 builder.Services.AddScoped<LoggingInvoker>();
 builder.Services.AddScoped<GroupProjectsByProjectGroupQuery>();
+builder.Services.AddScoped<TokenService>();
 
 var app = builder.Build();
 

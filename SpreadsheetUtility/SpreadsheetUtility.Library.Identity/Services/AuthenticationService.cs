@@ -157,7 +157,7 @@ public class AuthenticationService : IAuthenticationService
         response.Email = user.Email;
         response.FullName = user.GetFullName();
         response.Message = "Login successful.";
-
+        response.AuthToken = Guid.NewGuid().ToString(); // Placeholder for actual token generation
         return response;
     }
 

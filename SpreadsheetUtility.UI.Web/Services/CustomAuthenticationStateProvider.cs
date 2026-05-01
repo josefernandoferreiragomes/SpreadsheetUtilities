@@ -1,10 +1,11 @@
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using System.Security.Claims;
 
 namespace SpreadsheetUtility.UI.Web.Services;
 
 /// <summary>
-/// Custom authentication state provider for managing user authentication state across Blazor components.
+/// Custom authentication state provider with persistent storage support.
 /// </summary>
 public class CustomAuthenticationStateProvider : AuthenticationStateProvider
 {
@@ -12,9 +13,6 @@ public class CustomAuthenticationStateProvider : AuthenticationStateProvider
     private ClaimsPrincipal? _cachedPrincipal;
     private bool _isAuthenticated;
 
-    /// <summary>
-    /// Initializes a new instance of the CustomAuthenticationStateProvider.
-    /// </summary>
     public CustomAuthenticationStateProvider(ILogger<CustomAuthenticationStateProvider> logger)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -22,9 +20,6 @@ public class CustomAuthenticationStateProvider : AuthenticationStateProvider
         _isAuthenticated = false;
     }
 
-    /// <summary>
-    /// Gets the current authentication state asynchronously.
-    /// </summary>
     public override Task<AuthenticationState> GetAuthenticationStateAsync()
     {
         _logger.LogDebug("Getting authentication state.");
@@ -33,12 +28,9 @@ public class CustomAuthenticationStateProvider : AuthenticationStateProvider
     }
 
     /// <summary>
-    /// Notifies the authentication state provider that a user has been authenticated.
+    /// Notifies the provider that a user has been authenticated and persists the state.
     /// </summary>
-    /// <param name="email">The authenticated user's email.</param>
-    /// <param name="userId">The authenticated user's ID.</param>
-    /// <param name="fullName">The authenticated user's full name.</param>
-    public void NotifyUserAuthentication(string email, int userId, string fullName)
+    public void NotifyUserAuthentication(string email, int userId, string fullName, string? authToken = null)
     {
         _logger.LogInformation("User authenticated: {Email}", email);
 
@@ -52,18 +44,23 @@ public class CustomAuthenticationStateProvider : AuthenticationStateProvider
             new Claim("FullName", fullName ?? string.Empty)
         };
 
+        if (!string.IsNullOrEmpty(authToken))
+        {
+            claims.Add(new Claim("AuthToken", authToken));
+        }
+
         var identity = new ClaimsIdentity(claims, "Custom");
         var principal = new ClaimsPrincipal(identity);
 
         _cachedPrincipal = principal;
         _isAuthenticated = true;
 
+        // Persist to localStorage (you'll need to implement this via JS interop)
+        PersistAuthenticationState();
+
         NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
     }
 
-    /// <summary>
-    /// Notifies the authentication state provider that a user has been logged out.
-    /// </summary>
     public void NotifyUserLogout()
     {
         _logger.LogInformation("User logged out.");
@@ -74,40 +71,39 @@ public class CustomAuthenticationStateProvider : AuthenticationStateProvider
         _cachedPrincipal = principal;
         _isAuthenticated = false;
 
+        // Clear from localStorage
+        ClearAuthenticationState();
+
         NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
     }
 
     /// <summary>
-    /// Gets a value indicating whether a user is currently authenticated.
+    /// Attempts to restore authentication state from persistent storage.
     /// </summary>
+    public async Task InitializeAuthenticationStateAsync()
+    {
+        _logger.LogDebug("Initializing authentication state from storage.");
+        // This will be called from App.razor to restore state on app initialization
+    }
+
     public bool IsAuthenticated => _isAuthenticated;
 
-    /// <summary>
-    /// Gets the current authenticated user's email, if any.
-    /// </summary>
-    public string? GetUserEmail()
-    {
-        return _cachedPrincipal?.FindFirst(ClaimTypes.Email)?.Value;
-    }
-
-    /// <summary>
-    /// Gets the current authenticated user's full name, if any.
-    /// </summary>
-    public string? GetUserFullName()
-    {
-        return _cachedPrincipal?.FindFirst(ClaimTypes.Name)?.Value;
-    }
-
-    /// <summary>
-    /// Gets the current authenticated user's ID, if any.
-    /// </summary>
+    public string? GetUserEmail() => _cachedPrincipal?.FindFirst(ClaimTypes.Email)?.Value;
+    public string? GetUserFullName() => _cachedPrincipal?.FindFirst(ClaimTypes.Name)?.Value;
     public int? GetUserId()
     {
         var userIdClaim = _cachedPrincipal?.FindFirst("UserId")?.Value;
-        if (int.TryParse(userIdClaim, out var userId))
-        {
-            return userId;
-        }
-        return null;
+        return int.TryParse(userIdClaim, out var userId) ? userId : null;
+    }
+
+    private void PersistAuthenticationState()
+    {
+        // Implement via JS interop to store in localStorage
+        _logger.LogDebug("Persisting authentication state to storage.");
+    }
+
+    private void ClearAuthenticationState()
+    {
+        _logger.LogDebug("Clearing authentication state from storage.");
     }
 }

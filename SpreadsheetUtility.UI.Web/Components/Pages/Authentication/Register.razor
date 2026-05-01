@@ -4,6 +4,7 @@
 @using System.ComponentModel.DataAnnotations
 @inject IAuthenticationService AuthenticationService
 @inject NavigationManager Navigation
+@rendermode InteractiveServer
 
 <div class="container d-flex justify-content-center align-items-center" style="min-height: 100vh;">
     <div class="card shadow" style="width: 100%; max-width: 500px;">
@@ -44,7 +45,7 @@
 
             @if (!ShowSuccessMessage)
             {
-                <EditForm Model="RegisterModel" OnSubmit="HandleRegister" FormName="RegisterForm">
+                <EditForm Model="RegisterModel" OnValidSubmit="HandleRegister" FormName="RegisterForm">
                     <DataAnnotationsValidator />
 
                     <div class="mb-3">

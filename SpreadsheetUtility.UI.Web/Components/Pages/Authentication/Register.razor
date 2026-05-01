@@ -1,0 +1,179 @@
+@page "/register"
+@using SpreadsheetUtility.Library.Identity.Dtos
+@using SpreadsheetUtility.Library.Identity.Services
+@using System.ComponentModel.DataAnnotations
+@inject IAuthenticationService AuthenticationService
+@inject NavigationManager Navigation
+
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 100vh;">
+    <div class="card shadow" style="width: 100%; max-width: 500px;">
+        <div class="card-body p-5">
+            <h3 class="card-title text-center mb-4">Register</h3>
+
+            @if (ShowSuccessMessage)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <strong>Registration Successful!</strong>
+                    <p>Your account has been created. Redirecting to login...</p>
+                    <button type="button" class="btn-close" disabled></button>
+                </div>
+            }
+
+            @if (!string.IsNullOrEmpty(ErrorMessage))
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <strong>Registration Failed!</strong>
+                    <p>@ErrorMessage</p>
+                    <button type="button" class="btn-close" @onclick="() => ErrorMessage = string.Empty"></button>
+                </div>
+            }
+
+            @if (ErrorList.Count > 0)
+            {
+                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                    <strong>Validation Errors:</strong>
+                    <ul class="mb-0">
+                        @foreach (var error in ErrorList)
+                        {
+                            <li>@error</li>
+                        }
+                    </ul>
+                    <button type="button" class="btn-close" @onclick="() => ErrorList.Clear()"></button>
+                </div>
+            }
+
+            @if (!ShowSuccessMessage)
+            {
+                <EditForm Model="RegisterModel" OnSubmit="HandleRegister" FormName="RegisterForm">
+                    <DataAnnotationsValidator />
+
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email Address <span class="text-danger">*</span></label>
+                        <InputText id="email" class="form-control" placeholder="Enter your email" @bind-Value="RegisterModel.Email" />
+                        <ValidationMessage For="() => RegisterModel.Email" />
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="firstName" class="form-label">First Name</label>
+                            <InputText id="firstName" class="form-control" placeholder="First name" @bind-Value="RegisterModel.FirstName" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="lastName" class="form-label">Last Name</label>
+                            <InputText id="lastName" class="form-control" placeholder="Last name" @bind-Value="RegisterModel.LastName" />
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
+                        <InputText id="password" type="password" class="form-control" placeholder="Minimum 8 characters, with uppercase, lowercase, digit, and special character" @bind-Value="RegisterModel.Password" />
+                        <ValidationMessage For="() => RegisterModel.Password" />
+                        <small class="text-muted d-block mt-2">
+                            Password requirements:
+                            <ul class="mb-0">
+                                <li>Minimum 8 characters</li>
+                                <li>At least one uppercase letter</li>
+                                <li>At least one lowercase letter</li>
+                                <li>At least one digit</li>
+                                <li>At least one special character (! $ % * ? etc.)</li>
+                            </ul>
+                        </small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="confirmPassword" class="form-label">Confirm Password <span class="text-danger">*</span></label>
+                        <InputText id="confirmPassword" type="password" class="form-control" placeholder="Re-enter your password" @bind-Value="RegisterModel.ConfirmPassword" />
+                        <ValidationMessage For="() => RegisterModel.ConfirmPassword" />
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 mb-3" disabled="@IsLoading">
+                        @if (IsLoading)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                            <span>Creating account...</span>
+                        }
+                        else
+                        {
+                            <span>Register</span>
+                        }
+                    </button>
+                </EditForm>
+
+                <hr />
+
+                <p class="text-center mb-0">
+                    Already have an account? <a href="/login" class="text-decoration-none">Login here</a>
+                </p>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    public class RegisterRequestValidated
+    {
+        [Required(ErrorMessage = "Email is required")]
+        [EmailAddress(ErrorMessage = "Invalid email address")]
+        public string Email { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Password is required")]
+        [StringLength(100, MinimumLength = 8, ErrorMessage = "Password must be at least 8 characters")]
+        public string Password { get; set; } = string.Empty;
+
+        [Compare("Password", ErrorMessage = "Passwords do not match")]
+        public string ConfirmPassword { get; set; } = string.Empty;
+
+        public string? FirstName { get; set; }
+        public string? LastName { get; set; }
+    }
+
+    private RegisterRequestValidated RegisterModel = new();
+    private bool IsLoading = false;
+    private bool ShowSuccessMessage = false;
+    private string ErrorMessage = string.Empty;
+    private List<string> ErrorList = [];
+
+    private async Task HandleRegister()
+    {
+        try
+        {
+            IsLoading = true;
+            ErrorMessage = string.Empty;
+            ErrorList.Clear();
+
+            // Create the registration request
+            var request = new RegisterRequest
+            {
+                Email = RegisterModel.Email,
+                Password = RegisterModel.Password,
+                ConfirmPassword = RegisterModel.ConfirmPassword,
+                FirstName = RegisterModel.FirstName,
+                LastName = RegisterModel.LastName
+            };
+
+            var response = await AuthenticationService.RegisterAsync(request);
+
+            if (response.IsSuccess)
+            {
+                ShowSuccessMessage = true;
+                // Redirect to login after 2 seconds
+                await Task.Delay(2000);
+                Navigation.NavigateTo("/login");
+            }
+            else
+            {
+                ErrorMessage = response.Message;
+                ErrorList = response.Errors;
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"An unexpected error occurred: {ex.Message}";
+            Console.Error.WriteLine($"Registration error: {ex}");
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+}

@@ -9,7 +9,10 @@ using SpreadsheetUtility.Library.Providers;
 using SpreadsheetUtility.Library.Services;
 using SpreadsheetUtility.Library.TaskAssigners;
 using SpreadsheetUtility.Library.TaskSorters;
+using SpreadsheetUtility.Library.Identity.Extensions;
 using SpreadsheetUtility.UI.Web.Components;
+using SpreadsheetUtility.UI.Web.Services;
+using Microsoft.AspNetCore.Components.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,13 +21,26 @@ builder.Services.AddRazorComponents(options =>
         options.DetailedErrors = builder.Environment.IsDevelopment()
     )
     .AddInteractiveServerComponents();
+
 builder.Services.AddLogging(logging =>
 {
     logging.SetMinimumLevel(LogLevel.Debug);
     logging.AddConsole();
 });
 
-//add GanttChartProcessor to middleware services:
+// Register authentication state provider
+builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
+builder.Services.AddScoped<CustomAuthenticationStateProvider>();
+
+// Register authentication and data access services
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
+    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+builder.Services.AddAuthenticationServices(connectionString);
+
+// Add authorization
+builder.Services.AddAuthorizationCore();
+
+// Register existing business logic services
 builder.Services.AddScoped<IGanttChartProcessor, GanttChartProcessor>();
 builder.Services.AddScoped<IGanttChartDataManager, GanttChartDataManager>();
 builder.Services.AddScoped<IDateTimeProvider, DateTimeProvider>();
@@ -45,8 +61,6 @@ builder.Services.AddScoped<IDeveloperHoursCalculator, DeveloperHoursCalculator>(
 builder.Services.AddScoped<ICalculatorFacade, CalculatorFacade>();
 builder.Services.AddScoped<LoggingInvoker>();
 builder.Services.AddScoped<GroupProjectsByProjectGroupQuery>();
-
-
 
 var app = builder.Build();
 
@@ -73,7 +87,6 @@ using (var scope = app.Services.CreateScope())
         typeof(ICalculatorFacade),
         typeof(LoggingInvoker),
         typeof(GroupProjectsByProjectGroupQuery),
-        
     };
 
     foreach (var serviceType in servicesToValidate)
@@ -91,9 +104,12 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseStaticFiles();
 app.UseAntiforgery();
+
+// Add authentication and authorization middleware
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();

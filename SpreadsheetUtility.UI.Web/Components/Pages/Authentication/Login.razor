@@ -1,0 +1,126 @@
+@page "/login"
+@using SpreadsheetUtility.Library.Identity.Dtos
+@using SpreadsheetUtility.Library.Identity.Services
+@using SpreadsheetUtility.UI.Web.Services
+@using Microsoft.AspNetCore.Components.Authorization
+@inject IAuthenticationService AuthenticationService
+@inject CustomAuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Navigation
+
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 100vh;">
+    <div class="card shadow" style="width: 100%; max-width: 400px;">
+        <div class="card-body p-5">
+            <h3 class="card-title text-center mb-4">Login</h3>
+
+            @if (!string.IsNullOrEmpty(ErrorMessage))
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <strong>Login Failed!</strong>
+                    <p>@ErrorMessage</p>
+                    <button type="button" class="btn-close" @onclick="() => ErrorMessage = string.Empty"></button>
+                </div>
+            }
+
+            @if (ErrorList.Count > 0)
+            {
+                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                    <strong>Validation Errors:</strong>
+                    <ul class="mb-0">
+                        @foreach (var error in ErrorList)
+                        {
+                            <li>@error</li>
+                        }
+                    </ul>
+                    <button type="button" class="btn-close" @onclick="() => ErrorList.Clear()"></button>
+                </div>
+            }
+
+            <EditForm Model="LoginModel" OnSubmit="HandleLogin" FormName="LoginForm">
+                <DataAnnotationsValidator />
+
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email Address</label>
+                    <InputText id="email" class="form-control" placeholder="Enter your email" @bind-Value="LoginModel.Email" />
+                    <ValidationMessage For="() => LoginModel.Email" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <InputText id="password" type="password" class="form-control" placeholder="Enter your password" @bind-Value="LoginModel.Password" />
+                    <ValidationMessage For="() => LoginModel.Password" />
+                </div>
+
+                <div class="form-check mb-3">
+                    <InputCheckbox id="rememberMe" class="form-check-input" @bind-Value="LoginModel.RememberMe" />
+                    <label class="form-check-label" for="rememberMe">
+                        Remember me
+                    </label>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 mb-3" disabled="@IsLoading">
+                    @if (IsLoading)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        <span>Logging in...</span>
+                    }
+                    else
+                    {
+                        <span>Login</span>
+                    }
+                </button>
+            </EditForm>
+
+            <hr />
+
+            <p class="text-center mb-0">
+                Don't have an account? <a href="/register" class="text-decoration-none">Register here</a>
+            </p>
+        </div>
+    </div>
+</div>
+
+@code {
+    private LoginRequest LoginModel = new();
+    private bool IsLoading = false;
+    private string ErrorMessage = string.Empty;
+    private List<string> ErrorList = [];
+
+    private async Task HandleLogin()
+    {
+        try
+        {
+            IsLoading = true;
+            ErrorMessage = string.Empty;
+            ErrorList.Clear();
+
+            var response = await AuthenticationService.LoginAsync(LoginModel);
+
+            if (response.IsSuccess)
+            {
+                // Update authentication state
+                AuthStateProvider.NotifyUserAuthentication(
+                    response.Email ?? LoginModel.Email,
+                    response.UserId ?? 0,
+                    response.FullName ?? string.Empty
+                );
+
+                // Redirect to home page
+                Navigation.NavigateTo("/", forceLoad: true);
+            }
+            else
+            {
+                ErrorMessage = response.Message;
+                ErrorList = response.Errors;
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"An unexpected error occurred: {ex.Message}";
+            Console.Error.WriteLine($"Login error: {ex}");
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+}

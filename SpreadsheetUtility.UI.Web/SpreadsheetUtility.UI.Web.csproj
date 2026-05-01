@@ -8,6 +8,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SpreadsheetUtility\SpreadsheetUtility.Library\SpreadsheetUtility.Library.csproj" />
+    <ProjectReference Include="..\SpreadsheetUtility\SpreadsheetUtility.Library.DataAccess\SpreadsheetUtility.Library.DataAccess.csproj" />
+    <ProjectReference Include="..\SpreadsheetUtility\SpreadsheetUtility.Library.Identity\SpreadsheetUtility.Library.Identity.csproj" />
   </ItemGroup>
 
   <ItemGroup>

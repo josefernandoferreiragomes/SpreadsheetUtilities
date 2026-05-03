@@ -5,6 +5,8 @@ using System.Security.Authentication;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.AddServiceDefaults();
+
 // Add OpenAPI services
 builder.Services.AddOpenApi();
 builder.Services.AddMemoryCache();
@@ -14,6 +16,8 @@ builder.Services.AddMemoryCache();
 
 // Build app
 var app = builder.Build();
+
+app.MapDefaultEndpoints();
 
 // Enable OpenAPI JSON endpoint
 app.MapOpenApi();
@@ -25,23 +29,97 @@ app.MapScalarApiReference(options =>
     options.Theme = ScalarTheme.Default; // Options: Light, Dark, Midnight, etc.
 });
 
-app.MapGet("/initiateSession", (IMemoryCache memoryCache) =>
+app.MapGet("/initiateSession", (IMemoryCache memoryCache, string eMail, Guid? guid = null) =>
 {
-    var guid = Guid.NewGuid();
-    memoryCache.Set(guid, "SomeValue");
-    return guid;
+    string cacheKey = string.Empty;
+    string? cacheValue = string.Empty;
+
+    if(guid is null)
+    {
+        guid = Guid.NewGuid();
+        cacheKey = eMail;
+        cacheValue = guid.ToString();
+        memoryCache.Set(cacheKey, cacheValue);
+        return cacheValue;
+    }
+    //TODO: We should validate the email and guid combination before returning the cache key. For now, we will just check if the cache key exists.
+    if (memoryCache.TryGetValue<string>(cacheKey, out cacheValue))
+    {        
+        if(cacheValue is not null)
+            return cacheValue;
+    }
+    throw new AuthenticationException("Invalid session.");
 })
 .WithName("InitiateSession");
 
-app.MapGet("/getSession", (IMemoryCache memoryCache, Guid guid) =>
+app.MapGet("/getSession", (IMemoryCache memoryCache, string eMail, Guid guid) =>
 {
-    if (memoryCache.TryGetValue(guid, out var value))
+    if (guid == Guid.Empty)
     {
-        return value;
+        var cacheKey = $"eMail:{eMail}"; // Use email as the cache key
+        if (memoryCache.TryGetValue<string>(cacheKey, out var cacheValue))
+        {
+            return cacheValue;
+        }
+    }
+    else
+    {
+        var cacheKey = $"eMail:{eMail}"; // Use email as the cache key
+        if (memoryCache.TryGetValue<string>(cacheKey, out var cacheValue))
+        {
+            if(cacheValue is not null && cacheValue == guid.ToString())
+            {
+                var guidCacheKey = guid.ToString(); 
+                if (memoryCache.TryGetValue<string>(guidCacheKey, out var guidCacheValue))
+                {
+                    return guidCacheValue;
+                }
+            }
+        }
     }
     throw new AuthenticationException("Invalid session.");
 })
 .WithName("GetSession");
+
+//TODO: We should validate the email and guid combination before updating the cache value. For now, we will just check if the cache key exists.
+app.MapGet("/updateSession", (IMemoryCache memoryCache, string eMail, Guid guid, string newValue) =>
+{
+    if (guid == Guid.Empty)
+    {
+        var cacheKey = $"eMail:{eMail}"; // Use email as the cache key
+        if (memoryCache.TryGetValue<string>(cacheKey, out var cacheValue))
+        {
+            return cacheValue;
+        }
+    }
+    else
+    {
+        var cacheKey = $"eMail:{eMail}"; // Use email as the cache key
+        if (memoryCache.TryGetValue<string>(cacheKey, out var cacheValue))
+        {
+            if (cacheValue is not null && cacheValue == guid.ToString())
+            {
+                var guidCacheKey = guid.ToString();
+                if (memoryCache.TryGetValue<string>(guidCacheKey, out var guidCacheValue))
+                {
+                    //TODO: validate if the email and guid match before updating the cache value. If not, return an error.
+                    var updatedCacheValue = $"{eMail}:{guid}:{newValue}";
+                    memoryCache.Set(cacheKey, updatedCacheValue);
+                    return updatedCacheValue;
+                }
+            }
+        }
+    }
+    //var cacheKey = $"{eMail}:{guid}"; // Use email and GUID as the cache key
+    //if (memoryCache.TryGetValue<string>(cacheKey, out var cacheValue))
+    //{
+    //    var updatedCacheValue = $"{eMail}:{guid}:{newValue}";
+    //    memoryCache.Set(cacheKey, updatedCacheValue);
+    //    return updatedCacheValue;
+    //}
+    throw new AuthenticationException("Invalid session.");
+})
+.WithName("UpdateSession");
 
 app.Run();
 
@@ -85,9 +163,9 @@ app.Run();
 
 //app.MapGet("/getSession", (IMemoryCache memoryCache, Guid guid) =>
 //{    
-//    if (memoryCache.TryGetValue(guid, out var value))
+//    if (memoryCache.TryGetValue(guid, out var cacheValue))
 //    {
-//        return value;
+//        return cacheValue;
 //    }
 //    throw new AuthenticationException("Invalid session.");
 //})

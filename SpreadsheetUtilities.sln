@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
-VisualStudioVersion = 18.5.11716.220 stable
+VisualStudioVersion = 18.5.11716.220
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpreadsheetUtility.Library", "SpreadsheetUtility\SpreadsheetUtility.Library\SpreadsheetUtility.Library.csproj", "{EEA62EC1-327A-4454-813C-9311CA2B7D16}"
 EndProject
@@ -30,13 +30,21 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ExampleFiles", "ExampleFile
 	ProjectSection(SolutionItems) = preProject
 		ExampleFiles\input.xlsx = ExampleFiles\input.xlsx
 		ExampleFiles\input_output.xlsx = ExampleFiles\input_output.xlsx
+		ExampleFiles\Gantt\projects.xlsx = ExampleFiles\Gantt\projects.xlsx
 		SpreadsheetUtility.UI.Web\tasks.xlsx = SpreadsheetUtility.UI.Web\tasks.xlsx
+		tasks.txt = tasks.txt
+		projects.txt = projects.txt
 		SpreadsheetUtility.UI.Web\team.xlsx = SpreadsheetUtility.UI.Web\team.xlsx
+		team.txt = team.txt
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpreadsheetUtility.UI.Web", "SpreadsheetUtility.UI.Web\SpreadsheetUtility.UI.Web.csproj", "{5F9B3108-25A8-46CF-B012-4C81DDC7A492}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpreadsheetUtilities.Auth.Api", "SpreadsheetUtilities.Auth.Api\SpreadsheetUtilities.Auth.Api.csproj", "{E01FBEB1-2406-428E-AD0E-1C6CEB1DB02B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpreadsheetUtilities.AppHost", "SpreadsheetUtilities.AppHost\SpreadsheetUtilities.AppHost.csproj", "{CDF9CC29-968E-4FD7-813B-7946ADAF169D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpreadsheetUtilities.ServiceDefaults", "SpreadsheetUtilities.ServiceDefaults\SpreadsheetUtilities.ServiceDefaults.csproj", "{38AFDCB9-9C7C-0028-1CCC-E590CFC54021}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -68,6 +76,14 @@ Global
 		{E01FBEB1-2406-428E-AD0E-1C6CEB1DB02B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E01FBEB1-2406-428E-AD0E-1C6CEB1DB02B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E01FBEB1-2406-428E-AD0E-1C6CEB1DB02B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CDF9CC29-968E-4FD7-813B-7946ADAF169D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CDF9CC29-968E-4FD7-813B-7946ADAF169D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CDF9CC29-968E-4FD7-813B-7946ADAF169D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CDF9CC29-968E-4FD7-813B-7946ADAF169D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{38AFDCB9-9C7C-0028-1CCC-E590CFC54021}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{38AFDCB9-9C7C-0028-1CCC-E590CFC54021}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{38AFDCB9-9C7C-0028-1CCC-E590CFC54021}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{38AFDCB9-9C7C-0028-1CCC-E590CFC54021}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

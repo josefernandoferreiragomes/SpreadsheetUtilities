@@ -1,5 +1,6 @@
 ﻿@page "/ganttGeneratorFromPaste"
 @inject IGanttChartDataManager GanttService
+@inject SpreadsheetUtility.UI.Web.Services.SessionService SessionService;
 @using Microsoft.JSInterop
 @using Newtonsoft.Json
 @using SpreadsheetUtility.Library
@@ -13,6 +14,20 @@
 @rendermode InteractiveServer                  
 <h3>Gantt Generator Paste</h3>
 <!--i need to create divs around these labels-->
+<p></p>
+<div class="row">
+    <div class="col-sm-3">    
+        <label>Email</label>
+        <InputText @bind-Value="eMail" />
+    </div>
+    <div class="col-sm-3">
+        <button @onclick="InitializeSession">Initialize Session</button>
+    </div>
+    <div class="col-sm-3">
+        <div>Session Guid: @guid</div>        
+    </div>
+</div>
+<p></p>
 <div>
     <label>Projects</label>
 </div>
@@ -28,8 +43,21 @@
 <div>
     <label>If there is only one project group, the task assignment efficiency will be maximized</label>
 </div>
-<div>
-    <textarea @bind="excelProjectData" placeholder="Paste your project Excel data here" rows="10" cols="100"></textarea>
+<div class="row">
+    <div class="col-sm-3">
+        <textarea @bind="excelProjectData" placeholder="Paste your project Excel data here" rows="10" cols="30"></textarea>
+        <div>
+            <button @onclick="ParseProjects">Parse Projects</button>
+        </div>
+    </div>
+    <div class="col-sm-3">
+        <QuickGrid Items="@projectDtoListOutput">
+            <PropertyColumn Property="@(p => p.ProjectID)" Sortable="true" />
+            <PropertyColumn Property="@(p => p.ProjectName)" Sortable="true" />       
+            <PropertyColumn Property="@(p => p.ProjectGroup)" Sortable="true" />
+            <PropertyColumn Property="@(p => p.TeamId)" Sortable="true" />
+        </QuickGrid>
+    </div>
 </div>
 <p></p>
 <div>
@@ -44,8 +72,28 @@
 <div>
     <label>Progress is a percentage</label>
 </div>
-<div>
-    <textarea @bind="excelTaskData" placeholder="Paste your task Excel data here" rows="10" cols="100"></textarea>
+<div class="row">
+    <div class="col-sm-3">
+        <textarea @bind="excelTaskData" placeholder="Paste your task Excel data here" rows="10" cols="60"></textarea>
+        <div>
+            <button @onclick="ParseTasks">Parse Tasks</button>
+        </div>
+    </div>
+    <div class="col-sm-3">
+        <QuickGrid Items="@taskDtoListOutput">
+            <PropertyColumn Property="@(p => p.Id)" Sortable="true" />
+            <PropertyColumn Property="@(p => p.ProjectID)" Sortable="true" />
+            <PropertyColumn Property="@(p => p.ProjectName)" Sortable="true" />
+            <PropertyColumn Property="@(p => p.TaskName)" Sortable="true" />
+            <PropertyColumn Property="@(p => p.EffortHours)" Sortable="true" />
+            <PropertyColumn Property="@(p => p.Dependencies)" Sortable="true" />
+            <PropertyColumn Property="@(p => p.Progress)" Sortable="true" />
+            <PropertyColumn Property="@(p => p.InternalID)" Sortable="true" />
+            <PropertyColumn Property="@(p => p.ActualStart)" Sortable="true" />
+            <PropertyColumn Property="@(p => p.ActualEnd)" Sortable="true" />
+            <PropertyColumn Property="@(p => p.ActualProgress)" Sortable="true" />
+        </QuickGrid>
+    </div>
 </div>
 <p></p>
 <div>
@@ -57,8 +105,23 @@
 <div>
     <label>Developer vacation date intervals are composed by two comma separated dates. Intervals are pipe separated</label>
 </div>
-<div>
-    <textarea @bind="excelTeamData" placeholder="Paste your team Excel data here" rows="10" cols="100"></textarea>
+<div class="row">
+    <div class="col-sm-3">
+        <textarea @bind="excelTeamData" placeholder="Paste your team Excel data here" rows="10" cols="30"></textarea>
+        <div>
+            <button @onclick="ParseTeam">Parse Team</button>
+        </div>
+    </div>
+    <div class="col-sm-3">
+        <QuickGrid Items="@teamDtoListOutput">
+            <PropertyColumn Property="@(p => p.TeamId)" Sortable="true" />
+            <PropertyColumn Property="@(p => p.Team)" Sortable="true" />
+            <PropertyColumn Property="@(p => p.DeveloperId)" Sortable="true" />
+            <PropertyColumn Property="@(p => p.Name)" Sortable="true" />
+            <PropertyColumn Property="@(p => p.DailyWorkHours)" Sortable="true" />
+            <PropertyColumn Property="@(p => p.VacationPeriods)" Sortable="true" />
+        </QuickGrid>
+    </div>
 </div>
 <p></p>
 <div>
@@ -205,22 +268,57 @@
     private IQueryable<GanttTask>? ganttTaskListOutput;    
     private IQueryable<GanttTask>? ganttProjectListOutput;    
     private IQueryable<GanttTask>? developerGanttTaskListOutput;
+    
+    private IQueryable<ProjectDto>? projectDtoListOutput;    
+    private IQueryable<TaskDto>? taskDtoListOutput;
+    private IQueryable<DeveloperDto>? teamDtoListOutput;    
 
+    private string eMail = "";
+    private Guid? guid = null;
     private string excelTeamData = "";    
     private IQueryable<DeveloperAvailability>? developerListOutput;    
     private bool preSortTasks = false;
     private bool setTeamsToProjectGroups = false;
+
+    private void ParseProjects()
+    {
+        var tempProjectDtoList = GanttMapperHelper.ConvertToGanttProjects(excelProjectData);
+        projectDtoListOutput = tempProjectDtoList.AsQueryable();
+    }
+
+    private void ParseTasks()
+    {
+        var tempTaskDtoList = GanttMapperHelper.ConvertToGanttTasks(excelTaskData);
+        taskDtoListOutput = tempTaskDtoList.AsQueryable();
+    }
+    private void ParseTeam()
+    {
+        var tempTeamDtoList = GanttMapperHelper.ConvertToTeamData(excelTeamData);
+        teamDtoListOutput = tempTeamDtoList.AsQueryable();
+    }
 
     private void SwapChartMode()
     {       
         LoadGanttChartTasks();        
     }        
 
+    private void InitializeSession()
+    {        
+        var messageLog = $"Email: {eMail}";
+        this.JS.InvokeVoidAsync("console.log", messageLog);
+        var session = SessionService.InitiateSession(eMail);
+        guid = Guid.Parse(session);
+        var messageLogAfterSessionInit = $"Session initiated with email: {eMail} and guid: {guid}";
+    }
+
     private void LoadGanttChartTasks()
     {
         projectDtoList = GanttMapperHelper.ConvertToGanttProjects(excelProjectData);
         taskDtoList = GanttMapperHelper.ConvertToGanttTasks(excelTaskData);
         developerDtoList = GanttMapperHelper.ConvertToTeamData(excelTeamData);
+
+        projectDtoListOutput = projectDtoList.AsQueryable();
+
 
         var input = new CalculateGanttChartAllocationInput
         {

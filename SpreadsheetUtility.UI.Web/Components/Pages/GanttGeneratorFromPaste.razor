@@ -16,14 +16,14 @@
 <!--i need to create divs around these labels-->
 <p></p>
 <div class="row">
-    <div class="col-sm-3">    
+    <div class="col-2">    
         <label>Email</label>
         <InputText @bind-Value="eMail" />
     </div>
-    <div class="col-sm-3">
+    <div class="col-1">
         <button @onclick="InitializeSession">Initialize Session</button>
     </div>
-    <div class="col-sm-3">
+    <div class="col-4">
         <div>Session Guid: @guid</div>        
     </div>
 </div>
@@ -45,12 +45,12 @@
 </div>
 <div class="row">
     <div class="col-sm-3">
-        <textarea @bind="excelProjectData" placeholder="Paste your project Excel data here" rows="10" cols="30"></textarea>
+        <textarea @bind="excelProjectData" placeholder="Paste your project Excel data here" rows="10" cols="60"></textarea>
         <div>
             <button @onclick="ParseProjects">Parse Projects</button>
         </div>
     </div>
-    <div class="col-sm-3">
+    <div class="col-sm-3 border border primary">
         <QuickGrid Items="@projectDtoListOutput">
             <PropertyColumn Property="@(p => p.ProjectID)" Sortable="true" />
             <PropertyColumn Property="@(p => p.ProjectName)" Sortable="true" />       
@@ -79,7 +79,7 @@
             <button @onclick="ParseTasks">Parse Tasks</button>
         </div>
     </div>
-    <div class="col-sm-3">
+    <div class="col-sm-3 border border primary">
         <QuickGrid Items="@taskDtoListOutput">
             <PropertyColumn Property="@(p => p.Id)" Sortable="true" />
             <PropertyColumn Property="@(p => p.ProjectID)" Sortable="true" />
@@ -112,7 +112,7 @@
             <button @onclick="ParseTeam">Parse Team</button>
         </div>
     </div>
-    <div class="col-sm-3">
+    <div class="col-sm-3 border border primary">
         <QuickGrid Items="@teamDtoListOutput">
             <PropertyColumn Property="@(p => p.TeamId)" Sortable="true" />
             <PropertyColumn Property="@(p => p.Team)" Sortable="true" />

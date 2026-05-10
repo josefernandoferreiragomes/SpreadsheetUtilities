@@ -1,4 +1,4 @@
-﻿@page "/ganttGeneratorFromPaste"
+@page "/ganttGeneratorFromPaste"
 @inject IGanttChartDataManager GanttService
 @inject SpreadsheetUtility.UI.Web.Services.SessionService SessionService;
 @using Microsoft.JSInterop
@@ -9,399 +9,549 @@
 @using SpreadsheetUtility.Library.Services
 @using SpreadsheetUtility.UI.Web.Components;
 @using SpreadsheetUtility.UI.Web.Helpers
+@using SpreadsheetUtility.UI.Web.Models
 @using static Microsoft.AspNetCore.Components.Web.RenderMode
 @inject IJSRuntime JS
-@rendermode InteractiveServer                  
+@rendermode InteractiveServer
+
 <h3>Gantt Generator Paste</h3>
-<!--i need to create divs around these labels-->
-<p></p>
+
+<!-- EMAIL LOGIN SECTION -->
 <div class="row">
-    <div class="col-2">    
-        <label>Email</label>
-        <InputText @bind-Value="eMail" />
-    </div>
-    <div class="col-1">
-        <button @onclick="InitializeSession">Initialize Session</button>
-    </div>
-    <div class="col-4">
-        <div>Session Guid: @sessionIdentifierGuid</div>        
-    </div>
-</div>
-<div class="row">    
-    <div class="col-1">
-        <button @onclick="GetSession">Get Session</button>
-    </div>
-    <div class="col-4">
-        <div>Session Content: @sessionContent</div>
-    </div>
-</div>
-<p></p>
-<div>
-    <label>Projects</label>
-</div>
-<div>
-    <label>Project groups will have their assigned tasks in order. The tasks for the next project will be assigned upon completion of the previous project group.</label>
-</div>
-<div>
-    <label>The properly ordered project groups will represent dependencies... first, project group 1, then, project group 2</label>
-</div>
-<div>
-    <label>Project groups are represented by the project group column in the project data</label>
-</div>
-<div>
-    <label>If there is only one project group, the task assignment efficiency will be maximized</label>
-</div>
-<div class="row">
-    <div class="col-sm-3">
-        <textarea @bind="excelProjectData" placeholder="Paste your project Excel data here" rows="10" cols="60"></textarea>
-        <div>
-            <button @onclick="ParseProjects">Parse Projects</button>
+    <div class="col-12">
+        <div class="card p-3">
+            <h5>User Authentication</h5>
+            <div class="row">
+                <div class="col-md-4">    
+                    <label>Email</label>
+                    <InputText @bind-Value="eMail" placeholder="Enter your email" disabled="@isSessionInitialized" class="form-control" />
+                </div>
+                <div class="col-md-2">
+                    <label>&nbsp;</label>
+                    <button @onclick="InitializeSession" disabled="@(isSessionInitialized || string.IsNullOrWhiteSpace(eMail))" class="btn btn-primary w-100">
+                        @(isSessionInitialized ? "Logged In" : "Initialize Session")
+                    </button>
+                </div>
+                <div class="col-md-6">
+                    <label>&nbsp;</label>
+                    <div class="alert alert-info mb-0">
+                        <strong>Session Status:</strong> 
+                        @if (isSessionInitialized)
+                        {
+                            <span>Logged in as <strong>@eMail</strong> | Session ID: @sessionIdentifierGuid</span>
+                        }
+                        else
+                        {
+                            <span>Please enter your email and initialize a session</span>
+                        }
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-    <div class="col-sm-3 border border primary">
-        <QuickGrid Items="@projectDtoListOutput">
-            <PropertyColumn Property="@(p => p.ProjectID)" Sortable="true" />
-            <PropertyColumn Property="@(p => p.ProjectName)" Sortable="true" />       
-            <PropertyColumn Property="@(p => p.ProjectGroup)" Sortable="true" />
-            <PropertyColumn Property="@(p => p.TeamId)" Sortable="true" />
-        </QuickGrid>
-    </div>
 </div>
+
 <p></p>
-<div>
-    <label>Tasks</label>
-</div>
-<div>
-    <label>Dependencies (experimental) can only exist within the same project. As the project dependencies are represented by ordered project groups above</label>
-</div>
-<div>
-    <label>Dependencies are represented by the internal ID of the task. As if there are dependencies, it is recommended to pre sort the tasks</label>
-</div>
-<div>
-    <label>Progress is a percentage</label>
-</div>
-<div class="row">
-    <div class="col-sm-3">
-        <textarea @bind="excelTaskData" placeholder="Paste your task Excel data here" rows="10" cols="60"></textarea>
-        <div>
-            <button @onclick="ParseTasks">Parse Tasks</button>
+
+<!-- MAIN CONTENT - ONLY VISIBLE AFTER LOGIN -->
+@if (isSessionInitialized)
+{
+    <!-- PROJECTS SECTION -->
+    <div class="row">
+        <div class="col-12">
+            <h5>Projects</h5>
+            <p class="text-muted">
+                Project groups will have their assigned tasks in order. The tasks for the next project will be assigned upon completion of the previous project group.
+            </p>
         </div>
     </div>
-    <div class="col-sm-3 border border primary">
-        <QuickGrid Items="@taskDtoListOutput">
-            <PropertyColumn Property="@(p => p.Id)" Sortable="true" />
-            <PropertyColumn Property="@(p => p.ProjectID)" Sortable="true" />
-            <PropertyColumn Property="@(p => p.ProjectName)" Sortable="true" />
-            <PropertyColumn Property="@(p => p.TaskName)" Sortable="true" />
-            <PropertyColumn Property="@(p => p.EffortHours)" Sortable="true" />
-            <PropertyColumn Property="@(p => p.Dependencies)" Sortable="true" />
-            <PropertyColumn Property="@(p => p.Progress)" Sortable="true" />
-            <PropertyColumn Property="@(p => p.InternalID)" Sortable="true" />
-            <PropertyColumn Property="@(p => p.ActualStart)" Sortable="true" />
-            <PropertyColumn Property="@(p => p.ActualEnd)" Sortable="true" />
-            <PropertyColumn Property="@(p => p.ActualProgress)" Sortable="true" />
-        </QuickGrid>
-    </div>
-</div>
-<p></p>
-<div>
-    <label>Team</label>
-</div>
-<div>
-    <label>Team members will be assigned tasks based on their availability and daily work hours</label>
-</div>
-<div>
-    <label>Developer vacation date intervals are composed by two comma separated dates. Intervals are pipe separated</label>
-</div>
-<div class="row">
-    <div class="col-sm-3">
-        <textarea @bind="excelTeamData" placeholder="Paste your team Excel data here" rows="10" cols="30"></textarea>
-        <div>
-            <button @onclick="ParseTeam">Parse Team</button>
+
+    <div class="row">
+        <div class="col-sm-3">
+            <textarea @bind="excelProjectData" placeholder="Paste your project Excel data here" rows="10" cols="60" class="form-control"></textarea>
+            <div class="mt-2">
+                <button @onclick="ParseProjects" class="btn btn-success w-100">Parse Projects</button>
+            </div>
+        </div>
+        <div class="col-sm-3 border border-primary">
+            @if (projectDtoListOutput?.Count() > 0)
+            {
+                <QuickGrid Items="@projectDtoListOutput">
+                    <PropertyColumn Property="@(p => p.ProjectID)" Sortable="true" />
+                    <PropertyColumn Property="@(p => p.ProjectName)" Sortable="true" />       
+                    <PropertyColumn Property="@(p => p.ProjectGroup)" Sortable="true" />
+                    <PropertyColumn Property="@(p => p.TeamId)" Sortable="true" />
+                </QuickGrid>
+            }
+            else
+            {
+                <p class="text-muted">No projects loaded yet</p>
+            }
         </div>
     </div>
-    <div class="col-sm-3 border border primary">
-        <QuickGrid Items="@teamDtoListOutput">
-            <PropertyColumn Property="@(p => p.TeamId)" Sortable="true" />
-            <PropertyColumn Property="@(p => p.Team)" Sortable="true" />
-            <PropertyColumn Property="@(p => p.DeveloperId)" Sortable="true" />
-            <PropertyColumn Property="@(p => p.Name)" Sortable="true" />
-            <PropertyColumn Property="@(p => p.DailyWorkHours)" Sortable="true" />
-            <PropertyColumn Property="@(p => p.VacationPeriods)" Sortable="true" />
-        </QuickGrid>
+
+    <p></p>
+
+    <!-- TASKS SECTION -->
+    <div class="row">
+        <div class="col-12">
+            <h5>Tasks</h5>
+            <p class="text-muted">
+                Dependencies can only exist within the same project.
+            </p>
+        </div>
     </div>
-</div>
-<p></p>
-<div>
-    <label>Projects start Date</label>
-    <InputDate @bind-Value="projectStartDate" />
-</div>
-<p></p>
-<div>
-    <button @onclick="LoadGanttChartTasks">Load Tasks Gantt Chart</button>
-</div>
-<div>
-    <h4>Chart Mode</h4>    
-    <InputRadioGroup @bind-Value="chartMode">
-        <div>
-            <InputRadio Value="ChartMode.Week" /> <label>Week</label>
+
+    <div class="row">
+        <div class="col-sm-3">
+            <textarea @bind="excelTaskData" placeholder="Paste your task Excel data here" rows="10" cols="60" class="form-control"></textarea>
+            <div class="mt-2">
+                <button @onclick="ParseTasks" class="btn btn-success w-100">Parse Tasks</button>
+            </div>
         </div>
-        <div>
-            <InputRadio Value="ChartMode.Day" /> <label>Day</label>
+        <div class="col-sm-3 border border-primary">
+            @if (taskDtoListOutput?.Count() > 0)
+            {
+                <QuickGrid Items="@taskDtoListOutput">
+                    <PropertyColumn Property="@(p => p.Id)" Sortable="true" />
+                    <PropertyColumn Property="@(p => p.ProjectID)" Sortable="true" />
+                    <PropertyColumn Property="@(p => p.ProjectName)" Sortable="true" />
+                    <PropertyColumn Property="@(p => p.TaskName)" Sortable="true" />
+                    <PropertyColumn Property="@(p => p.EffortHours)" Sortable="true" />
+                </QuickGrid>
+            }
+            else
+            {
+                <p class="text-muted">No tasks loaded yet</p>
+            }
         </div>
-    </InputRadioGroup>
-</div>
-<div>
-    <label>Pre Sort Tasks by project group (useful if there are dependencies, but it is experimental)</label>
-    <InputRadioGroup @bind-Value="preSortTasks">
-        <div>
-            <InputRadio Value="true" /> <label>Pre Sort Tasks</label>
+    </div>
+
+    <p></p>
+
+    <!-- TEAM SECTION -->
+    <div class="row">
+        <div class="col-12">
+            <h5>Team</h5>
+            <p class="text-muted">
+                Team members will be assigned tasks based on their availability and daily work hours
+            </p>
         </div>
-        <div>
-            <InputRadio Value="false" /> <label>Do not Pre Sort Tasks</label>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-3">
+            <textarea @bind="excelTeamData" placeholder="Paste your team Excel data here" rows="10" cols="30" class="form-control"></textarea>
+            <div class="mt-2">
+                <button @onclick="ParseTeam" class="btn btn-success w-100">Parse Team</button>
+            </div>
         </div>
-    </InputRadioGroup>
-</div>
-<div>
-    <label>Team to Project Group Task Assignment (experimental)</label>
-    <InputRadioGroup @bind-Value="setTeamsToProjectGroups">
-        <div>
-            <InputRadio Value="true" /> <label>Fix Team To Project Group</label>
+        <div class="col-sm-3 border border-primary">
+            @if (teamDtoListOutput?.Count() > 0)
+            {
+                <QuickGrid Items="@teamDtoListOutput">
+                    <PropertyColumn Property="@(p => p.TeamId)" Sortable="true" />
+                    <PropertyColumn Property="@(p => p.Team)" Sortable="true" />
+                    <PropertyColumn Property="@(p => p.DeveloperId)" Sortable="true" />
+                    <PropertyColumn Property="@(p => p.Name)" Sortable="true" />
+                    <PropertyColumn Property="@(p => p.DailyWorkHours)" Sortable="true" />
+                </QuickGrid>
+            }
+            else
+            {
+                <p class="text-muted">No team loaded yet</p>
+            }
         </div>
-        <div>
-            <InputRadio Value="false" /> <label>Do not Fix Team</label>
+    </div>
+
+    <p></p>
+
+    <!-- CHART CONFIGURATION & GENERATION -->
+    <div class="row">
+        <div class="col-12">
+            <h5>Chart Configuration</h5>
         </div>
-    </InputRadioGroup>
-</div>
-<div>
-    <button @onclick="SwapChartMode">Re Generate Charts</button>
-</div>
-<p></p>
-<p>Tasks Gantt Chart:</p>
-<div id="gantt-chart-tasks"></div>
-<p></p>
-<p>Projects Gantt Chart:</p>
-<div id="gantt-chart-projects"></div>
-<p></p>
-<p>Developer Tasks Gantt Chart:</p>
-<div id="developer-gantt-chart-tasks"></div>
-<p></p>
-<div>Project data</div>
-<div>
-    <QuickGrid Items="@projectListOutput">
-        <PropertyColumn Property="@(p => p.ProjectID)" Sortable="true" />
-        <PropertyColumn Property="@(p => p.ProjectName)" Sortable="true" />      
-        <PropertyColumn Property="@(p => p.StartDate.ToString("dd-MM-yyyy"))" Title="StartDate" Sortable="true" />
-        <PropertyColumn Property="@(p => p.EndDate.ToString("dd-MM-yyyy"))" Title="EndDate" Sortable="true" />
-        <PropertyColumn Property="@(p => p.TotalEffortHours)" Sortable="true" />                      
-        <PropertyColumn Property="@(p => p.ProjectGroup)" Sortable="true" />
-        <PropertyColumn Property="@(p => p.TeamId)" Sortable="true" />
-    </QuickGrid>
-</div>
-<div class="card-footer">
-    Total Estimated Effort Hours: @projectListOutput?.Sum(p => p.TotalEffortHours)
-</div>
-<p></p>
-<div>Task data</div>
-<div>
-    <QuickGrid Items="@ganttTaskListOutput">
-        <PropertyColumn Property="@(p => p.Id)" Sortable="true" />
-        <PropertyColumn Property="@(p => p.TaskExtendedDescription)" Sortable="true" />
-        <PropertyColumn Property="@(p => p.ProjectName)" Sortable="true" />
-        <PropertyColumn Property="@(p => p.AssignedDeveloper)" Sortable="true" />
-        <PropertyColumn Property="@(p => p.StartDate.ToString("dd-MM-yyyy"))" Title="StartDate" Sortable="true" />
-        <PropertyColumn Property="@(p => p.EndDate.ToString("dd-MM-yyyy"))" Title="EndDate" Sortable="true" />
-        <PropertyColumn Property="@(p => p.TaskEndWeekDescriptionDescription)" Sortable="true" />
-        <PropertyColumn Property="@(p => p.EffortHours)" Sortable="true" />
-        <PropertyColumn Property="@(p => p.IntervalDays)" Sortable="true" />
-        <PropertyColumn Property="@(p => p.WorkDays)" Sortable="true" />
-        <PropertyColumn Property="@(p => p.VacationDays)" Sortable="true" />
-        <PropertyColumn Property="@(p => p.NonWorkingDays)" Sortable="true" />
-        <PropertyColumn Property="@(p => p.DailyWorkHours)" Sortable="true" />
-        <PropertyColumn Property="@(p => p.Dependencies)" Sortable="true" />
-        <PropertyColumn Property="@(p => p.InternalID)" Sortable="true" />
-    </QuickGrid>
-</div>
-<div class="card-footer">
-    <div>Total Estimated Effort Hours: @ganttTaskListOutput?.Sum(p => p.EffortHours)</div>
-    <div>Total Work Days: @ganttTaskListOutput?.Sum(p => p.WorkDays)</div>
-</div>
-<p></p>
-<div>Developer data</div>
-<div>
-    <QuickGrid Items="@developerListOutput">
-        <PropertyColumn Property="@(p => p.Name)" Sortable="true" />
-        <PropertyColumn Property="@(p => p.DailyWorkHours)" Sortable="true" />
-        <PropertyColumn Property="@(p => p.AllocatedDays)" Sortable="true" />
-        <PropertyColumn Property="@(p => p.AllocatedHours)" Sortable="true" />
-        <PropertyColumn Property="@(p => p.SlackHours)" Sortable="true" />
-        <PropertyColumn Property="@(p => p.TotalHours)" Sortable="true" />
-        <PropertyColumn Property="@(p => p.NextAvailableDateForTasks.ToString("dd-MM-yyyy"))" Title="NextAvailableDateForTasks" Sortable="true" />
-        <PropertyColumn Property="@(p => p.VacationPeriodsSerialized)" Sortable="true" />
-    </QuickGrid>
-</div>
-<div class="card-footer">
-    <div>Total Allocated Hours: @developerListOutput?.Sum(p => p.AllocatedHours)</div>
-    <div>Total Slack Hours: @developerListOutput?.Sum(p => p.SlackHours)</div>    
-    <div>Total Hours Within projects: @developerListOutput?.Sum(p => p.TotalHours)</div>        
-    <div>Total Days Within projects: @developerListOutput?.Sum(p => p.AllocatedDays)</div>        
-</div>
-<p></p>
-<div>Holidays in projects</div>
-<div>
-    <QuickGrid Items="@projectHolidayList">
-        <PropertyColumn Property="@(p => p.Date.ToString("dd-MM-yyyy"))" Sortable="true" />
-        <PropertyColumn Property="@(p => p.HolidayDescription)" Sortable="true" />
-    </QuickGrid>
-</div>
-<div class="card-footer">  
-    <div>Total Holidays in Projects: @projectHolidayList?.Count()</div>
-</div>
-<p></p>
+    </div>
+
+    <div class="row">
+        <div class="col-md-3">
+            <label>Projects start Date</label>
+            <InputDate @bind-Value="projectStartDate" class="form-control" />
+        </div>
+        <div class="col-md-3">
+            <label>Chart Mode</label>
+            <InputRadioGroup @bind-Value="chartMode" class="d-block">
+                <div class="form-check">
+                    <InputRadio Value="ChartMode.Week" id="weekMode" class="form-check-input" />
+                    <label class="form-check-label" for="weekMode">Week</label>
+                </div>
+                <div class="form-check">
+                    <InputRadio Value="ChartMode.Day" id="dayMode" class="form-check-input" />
+                    <label class="form-check-label" for="dayMode">Day</label>
+                </div>
+            </InputRadioGroup>
+        </div>
+        <div class="col-md-3">
+            <label>Pre Sort Tasks</label>
+            <InputRadioGroup @bind-Value="preSortTasks" class="d-block">
+                <div class="form-check">
+                    <InputRadio Value="true" id="preSortYes" class="form-check-input" />
+                    <label class="form-check-label" for="preSortYes">Yes</label>
+                </div>
+                <div class="form-check">
+                    <InputRadio Value="false" id="preSortNo" class="form-check-input" />
+                    <label class="form-check-label" for="preSortNo">No</label>
+                </div>
+            </InputRadioGroup>
+        </div>
+        <div class="col-md-3">
+            <label>Fix Team To Project Group</label>
+            <InputRadioGroup @bind-Value="setTeamsToProjectGroups" class="d-block">
+                <div class="form-check">
+                    <InputRadio Value="true" id="teamFixYes" class="form-check-input" />
+                    <label class="form-check-label" for="teamFixYes">Yes</label>
+                </div>
+                <div class="form-check">
+                    <InputRadio Value="false" id="teamFixNo" class="form-check-input" />
+                    <label class="form-check-label" for="teamFixNo">No</label>
+                </div>
+            </InputRadioGroup>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-12">
+            <button @onclick="LoadGanttChartTasks" class="btn btn-primary btn-lg w-100">
+                Generate Gantt Charts
+            </button>
+        </div>
+    </div>
+
+    <p></p>
+
+    <!-- CHARTS AND DATA OUTPUT (only shown after generation) -->
+    @if (ganttTaskListOutput?.Count() > 0)
+    {
+        <div class="row mt-4">
+            <div class="col-12">
+                <h5>Generated Charts</h5>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <p>Tasks Gantt Chart:</p>
+                <div id="gantt-chart-tasks"></div>
+            </div>
+        </div>
+
+        <div class="row mt-3">
+            <div class="col-12">
+                <p>Projects Gantt Chart:</p>
+                <div id="gantt-chart-projects"></div>
+            </div>
+        </div>
+
+        <div class="row mt-3">
+            <div class="col-12">
+                <p>Developer Tasks Gantt Chart:</p>
+                <div id="developer-gantt-chart-tasks"></div>
+            </div>
+        </div>
+
+        <!-- DETAILED DATA GRIDS -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <h5>Detailed Data</h5>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <p>Project data</p>
+                <QuickGrid Items="@projectListOutput">
+                    <PropertyColumn Property="@(p => p.ProjectID)" Sortable="true" />
+                    <PropertyColumn Property="@(p => p.ProjectName)" Sortable="true" />      
+                    <PropertyColumn Property="@(p => p.StartDate.ToString("dd-MM-yyyy"))" Title="StartDate" Sortable="true" />
+                    <PropertyColumn Property="@(p => p.EndDate.ToString("dd-MM-yyyy"))" Title="EndDate" Sortable="true" />
+                    <PropertyColumn Property="@(p => p.TotalEffortHours)" Sortable="true" />                      
+                    <PropertyColumn Property="@(p => p.ProjectGroup)" Sortable="true" />
+                    <PropertyColumn Property="@(p => p.TeamId)" Sortable="true" />
+                </QuickGrid>
+            </div>
+        </div>
+
+        <div class="row mt-3">
+            <div class="col-12">
+                <p>Task data</p>
+                <QuickGrid Items="@ganttTaskListOutput">
+                    <PropertyColumn Property="@(p => p.Id)" Sortable="true" />
+                    <PropertyColumn Property="@(p => p.TaskExtendedDescription)" Sortable="true" />
+                    <PropertyColumn Property="@(p => p.ProjectName)" Sortable="true" />
+                    <PropertyColumn Property="@(p => p.AssignedDeveloper)" Sortable="true" />
+                    <PropertyColumn Property="@(p => p.StartDate.ToString("dd-MM-yyyy"))" Title="StartDate" Sortable="true" />
+                    <PropertyColumn Property="@(p => p.EndDate.ToString("dd-MM-yyyy"))" Title="EndDate" Sortable="true" />
+                    <PropertyColumn Property="@(p => p.EffortHours)" Sortable="true" />
+                </QuickGrid>
+            </div>
+        </div>
+
+        <div class="row mt-3">
+            <div class="col-12">
+                <p>Developer data</p>
+                <QuickGrid Items="@developerListOutput">
+                    <PropertyColumn Property="@(p => p.Name)" Sortable="true" />
+                    <PropertyColumn Property="@(p => p.DailyWorkHours)" Sortable="true" />
+                    <PropertyColumn Property="@(p => p.AllocatedDays)" Sortable="true" />
+                    <PropertyColumn Property="@(p => p.AllocatedHours)" Sortable="true" />
+                    <PropertyColumn Property="@(p => p.SlackHours)" Sortable="true" />
+                    <PropertyColumn Property="@(p => p.TotalHours)" Sortable="true" />
+                </QuickGrid>
+            </div>
+        </div>
+    }
+}
+
 @code {
     enum ChartMode
     {
         Week,
         Day
     }
+
+    // UI State
+    private bool isSessionInitialized = false;
+    private string eMail = "";
+    private Guid? sessionIdentifierGuid = null;
+
+    // Configuration
     private DateTime projectStartDate = DateTime.Today;
     private ChartMode chartMode = ChartMode.Week;
+    private bool preSortTasks = false;
+    private bool setTeamsToProjectGroups = false;
+
+    // Input Data
     private string excelProjectData = "";    
     private string excelTaskData = "";    
+    private string excelTeamData = "";
+    private string sessionContent = "";
+
+    // Model Lists
     private List<ProjectDto> projectDtoList = new List<ProjectDto>();
     private List<TaskDto> taskDtoList = new List<TaskDto>();
     private List<DeveloperDto> developerDtoList = new List<DeveloperDto>();
+
+    // Output Data
+    private IQueryable<ProjectDto>? projectDtoListOutput;    
+    private IQueryable<TaskDto>? taskDtoListOutput;
+    private IQueryable<DeveloperDto>? teamDtoListOutput;
+
     private IQueryable<Holiday>? projectHolidayList;
     private IQueryable<Project>? projectListOutput;    
     private IQueryable<GanttTask>? ganttTaskListOutput;    
     private IQueryable<GanttTask>? ganttProjectListOutput;    
     private IQueryable<GanttTask>? developerGanttTaskListOutput;
+    private IQueryable<DeveloperAvailability>? developerListOutput;
 
-    private IQueryable<ProjectDto>? projectDtoListOutput;    
-    private IQueryable<TaskDto>? taskDtoListOutput;
-    private IQueryable<DeveloperDto>? teamDtoListOutput;    
-
-    private string eMail = "";
-    private Guid? sessionIdentifierGuid = null;
-    private string excelTeamData = "";    
-    private IQueryable<DeveloperAvailability>? developerListOutput;    
-    private bool preSortTasks = false;
-    private bool setTeamsToProjectGroups = false;
-    private string sessionContent = "";
-
-    private void ParseProjects()
+    /// <summary>
+    /// Initializes the component on page load.
+    /// </summary>
+    protected override async Task OnInitializedAsync()
     {
-        var tempProjectDtoList = GanttMapperHelper.ConvertToGanttProjects(excelProjectData);
-        projectDtoListOutput = tempProjectDtoList.AsQueryable();
-        sessionContent = JsonConvert.SerializeObject(tempProjectDtoList, Formatting.Indented);
-        UpdateSession();
+        await base.OnInitializedAsync();
     }
 
-    private void ParseTasks()
-    {
-        var tempTaskDtoList = GanttMapperHelper.ConvertToGanttTasks(excelTaskData);
-        taskDtoListOutput = tempTaskDtoList.AsQueryable();
-        sessionContent = JsonConvert.SerializeObject(taskDtoListOutput, Formatting.Indented);
-        UpdateSession();
-    }
-    private void ParseTeam()
-    {
-        var tempTeamDtoList = GanttMapperHelper.ConvertToTeamData(excelTeamData);
-        teamDtoListOutput = tempTeamDtoList.AsQueryable();
-        sessionContent = JsonConvert.SerializeObject(teamDtoListOutput, Formatting.Indented);
-        UpdateSession();
-    }
-
-    private void SwapChartMode()
-    {       
-        LoadGanttChartTasks();        
-    }        
-
-    private void InitializeSession()
+    /// <summary>
+    /// Initializes a new session with the provided email.
+    /// </summary>
+    private async Task InitializeSession()
     {        
+        if (string.IsNullOrWhiteSpace(eMail))
+        {
+            await JS.InvokeVoidAsync("console.error", "Email is required to initialize a session");
+            return;
+        }
+
         var messageLog = $"Email: {eMail}: InitializeSession";
-        this.JS.InvokeVoidAsync("console.log", messageLog);
-        var session = SessionService.InitiateSession(eMail);
-        sessionIdentifierGuid = Guid.Parse(session);
-        var messageLogAfterSessionInit = $"Session initiated with email: {eMail} and guid: {sessionIdentifierGuid}";
-    }
-    private void GetSession()
-    {        
-        var messageLog = $"Email: {eMail}: GetSession";
-        this.JS.InvokeVoidAsync("console.log", messageLog);
+        await JS.InvokeVoidAsync("console.log", messageLog);
 
-        if(sessionIdentifierGuid is null)
+        try
         {
-            throw new InvalidDataException("SessionIdentifier is mandatory");
+            var sessionIdString = SessionService.InitiateSession(eMail);
+            sessionIdentifierGuid = Guid.Parse(sessionIdString);
+            isSessionInitialized = true;
+
+            var messageLogAfterSessionInit = $"Session initiated with email: {eMail} and guid: {sessionIdentifierGuid}";
+            await JS.InvokeVoidAsync("console.log", messageLogAfterSessionInit);
+
+            // Try to load cached session data
+            await LoadCachedSessionData();
+        }
+        catch (Exception ex)
+        {
+            await JS.InvokeVoidAsync("console.error", $"Error initializing session: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Loads any cached session data from the current session.
+    /// </summary>
+    private async Task LoadCachedSessionData()
+    {
+        try
+        {
+            var cachedState = SessionService.LoadCachedSessionData(eMail);
+
+            if (cachedState != null)
+            {
+                if (!string.IsNullOrEmpty(cachedState.ProjectData))
+                {
+                    excelProjectData = cachedState.ProjectData;
+                    var tempProjectDtoList = GanttMapperHelper.ConvertToGanttProjects(excelProjectData);
+                    projectDtoListOutput = tempProjectDtoList.AsQueryable();
+                }
+
+                if (!string.IsNullOrEmpty(cachedState.TaskData))
+                {
+                    excelTaskData = cachedState.TaskData;
+                    var tempTaskDtoList = GanttMapperHelper.ConvertToGanttTasks(excelTaskData);
+                    taskDtoListOutput = tempTaskDtoList.AsQueryable();
+                }
+
+                if (!string.IsNullOrEmpty(cachedState.TeamData))
+                {
+                    excelTeamData = cachedState.TeamData;
+                    var tempTeamDtoList = GanttMapperHelper.ConvertToTeamData(excelTeamData);
+                    teamDtoListOutput = tempTeamDtoList.AsQueryable();
+                }
+
+                var messageLog = $"Cached session data loaded for email: {eMail}";
+                await JS.InvokeVoidAsync("console.log", messageLog);
+            }
+        }
+        catch (Exception ex)
+        {
+            await JS.InvokeVoidAsync("console.error", $"Error loading cached session data: {ex.Message}");
+        }
+    }
+
+    private async Task ParseProjects()
+    {
+        try
+        {
+            var tempProjectDtoList = GanttMapperHelper.ConvertToGanttProjects(excelProjectData);
+            projectDtoListOutput = tempProjectDtoList.AsQueryable();
+            sessionContent = JsonConvert.SerializeObject(tempProjectDtoList, Formatting.Indented);
+
+            if (sessionIdentifierGuid.HasValue)
+            {
+                SessionService.SaveProjectData(eMail, sessionIdentifierGuid.Value, excelProjectData);
+            }
+        }
+        catch (Exception ex)
+        {
+            await JS.InvokeVoidAsync("console.error", $"Error parsing projects: {ex.Message}");
+        }
+    }
+
+    private async Task ParseTasks()
+    {
+        try
+        {
+            var tempTaskDtoList = GanttMapperHelper.ConvertToGanttTasks(excelTaskData);
+            taskDtoListOutput = tempTaskDtoList.AsQueryable();
+            sessionContent = JsonConvert.SerializeObject(taskDtoListOutput, Formatting.Indented);
+
+            if (sessionIdentifierGuid.HasValue)
+            {
+                SessionService.SaveTaskData(eMail, sessionIdentifierGuid.Value, excelTaskData);
+            }
+        }
+        catch (Exception ex)
+        {
+            await JS.InvokeVoidAsync("console.error", $"Error parsing tasks: {ex.Message}");
+        }
+    }
+
+    private async Task ParseTeam()
+    {
+        try
+        {
+            var tempTeamDtoList = GanttMapperHelper.ConvertToTeamData(excelTeamData);
+            teamDtoListOutput = tempTeamDtoList.AsQueryable();
+            sessionContent = JsonConvert.SerializeObject(teamDtoListOutput, Formatting.Indented);
+
+            if (sessionIdentifierGuid.HasValue)
+            {
+                SessionService.SaveTeamData(eMail, sessionIdentifierGuid.Value, excelTeamData);
+            }
+        }
+        catch (Exception ex)
+        {
+            await JS.InvokeVoidAsync("console.error", $"Error parsing team: {ex.Message}");
+        }
+    }
+
+    private async Task UpdateSession()
+    {        
+        if (sessionIdentifierGuid is null)
+        {
+            await JS.InvokeVoidAsync("console.error", "SessionIdentifier is mandatory");
+            return;
         }
 
-        var sessionIdentifier = (System.Guid)sessionIdentifierGuid;
-        var result = SessionService.GetSession(eMail, sessionIdentifier);        
-        var messageLogAfterSessionInit = $"Session Obtained initiated with email: {eMail} | guid: {sessionIdentifierGuid} | sessionContent: {result}";
-    }
-
-    private void UpdateSession()
-    {        
         var messageLog = $"Email: {eMail} | Guid:{sessionIdentifierGuid.ToString()} | UpdateSession";
-        this.JS.InvokeVoidAsync("console.log", messageLog);
-
-        if(sessionIdentifierGuid is null)
-        {
-            throw new InvalidDataException("SessionIdentifier is mandatory");
-        }
+        await JS.InvokeVoidAsync("console.log", messageLog);
 
         var sessionIdentifier = (System.Guid)sessionIdentifierGuid;
         var result = SessionService.UpdateSession(eMail, sessionIdentifier, sessionContent);
-
-        // Store session content securely in cookie
         var encryptedSessionContent = SessionService.StoreSessionContentInCookie(sessionContent);
 
         var messageLogAfterSessionInit = $"Session Updated initiated with email: {eMail} | guid: {sessionIdentifierGuid} | sessionContent: {result}";
     }
 
-    private void LoadGanttChartTasks()
+    private async Task LoadGanttChartTasks()
     {
-        projectDtoList = GanttMapperHelper.ConvertToGanttProjects(excelProjectData);
-        taskDtoList = GanttMapperHelper.ConvertToGanttTasks(excelTaskData);
-        developerDtoList = GanttMapperHelper.ConvertToTeamData(excelTeamData);
-        
-        projectDtoListOutput = projectDtoList.AsQueryable();
-
-
-        var input = new CalculateGanttChartAllocationInput
+        try
         {
-            DeveloperDtos = developerDtoList,
-            ProjectDtos = projectDtoList,
-            TaskDtos = taskDtoList,
-            PreSortTasks = preSortTasks,
-            ProjectStartDate = projectStartDate,
-            SetTeamsToProjectGroups = setTeamsToProjectGroups,
-        };
+            projectDtoList = GanttMapperHelper.ConvertToGanttProjects(excelProjectData);
+            taskDtoList = GanttMapperHelper.ConvertToGanttTasks(excelTaskData);
+            developerDtoList = GanttMapperHelper.ConvertToTeamData(excelTeamData);
 
-        sessionContent = JsonConvert.SerializeObject(input, Formatting.Indented);
-        UpdateSession();
+            projectDtoListOutput = projectDtoList.AsQueryable();
 
-        var inputMessageLog = $"input: {JsonConvert.SerializeObject(input, Formatting.Indented)}";
-        this.JS.InvokeVoidAsync("console.log", inputMessageLog);
+            var input = new CalculateGanttChartAllocationInput
+            {
+                DeveloperDtos = developerDtoList,
+                ProjectDtos = projectDtoList,
+                TaskDtos = taskDtoList,
+                PreSortTasks = preSortTasks,
+                ProjectStartDate = projectStartDate,
+                SetTeamsToProjectGroups = setTeamsToProjectGroups,
+            };
 
-        var ganttChartAllocation = GanttService.CalculateGanttChartAllocation(input);
-        
-        var outputMessageLog = $"output: {JsonConvert.SerializeObject(ganttChartAllocation, Formatting.Indented)}";
-        this.JS.InvokeVoidAsync("console.log", outputMessageLog);
+            sessionContent = JsonConvert.SerializeObject(input, Formatting.Indented);
+            await UpdateSession();
 
-        ganttTaskListOutput = ganttChartAllocation.GanttTasks.AsQueryable();
-        developerListOutput = ganttChartAllocation.DeveloperAvailability.AsQueryable();
-        projectListOutput = ganttChartAllocation.ProjectList.AsQueryable();       
-        projectHolidayList = ganttChartAllocation.HolidayList.AsQueryable();
-        ganttProjectListOutput = ganttChartAllocation.GanttProjects.AsQueryable();
-        developerGanttTaskListOutput = ganttChartAllocation.DeveloperGanttTaskList.AsQueryable();
+            var ganttChartAllocation = GanttService.CalculateGanttChartAllocation(input);
 
-        GanttColorHelper.SetupProjectColor(ganttProjectListOutput, ganttTaskListOutput);
-        GanttColorHelper.SetupDeveloperColor(developerListOutput, developerGanttTaskListOutput);
+            ganttTaskListOutput = ganttChartAllocation.GanttTasks.AsQueryable();
+            developerListOutput = ganttChartAllocation.DeveloperAvailability.AsQueryable();
+            projectListOutput = ganttChartAllocation.ProjectList.AsQueryable();       
+            projectHolidayList = ganttChartAllocation.HolidayList.AsQueryable();
+            ganttProjectListOutput = ganttChartAllocation.GanttProjects.AsQueryable();
+            developerGanttTaskListOutput = ganttChartAllocation.DeveloperGanttTaskList.AsQueryable();
 
-        JS.InvokeVoidAsync("renderGanttTasks", JsonConvert.SerializeObject(ganttTaskListOutput, Formatting.Indented), chartMode.ToString(), "true");
-        JS.InvokeVoidAsync("renderGanttProjects", JsonConvert.SerializeObject(ganttProjectListOutput, Formatting.Indented), chartMode.ToString(), "true");
-        JS.InvokeVoidAsync("renderDeveloperGanttTasks", JsonConvert.SerializeObject(developerGanttTaskListOutput, Formatting.Indented), chartMode.ToString(), "true");
-    }    
-    
+            GanttColorHelper.SetupProjectColor(ganttProjectListOutput, ganttTaskListOutput);
+            GanttColorHelper.SetupDeveloperColor(developerListOutput, developerGanttTaskListOutput);
+
+            await JS.InvokeVoidAsync("renderGanttTasks", JsonConvert.SerializeObject(ganttTaskListOutput, Formatting.Indented), chartMode.ToString(), "true");
+            await JS.InvokeVoidAsync("renderGanttProjects", JsonConvert.SerializeObject(ganttProjectListOutput, Formatting.Indented), chartMode.ToString(), "true");
+            await JS.InvokeVoidAsync("renderDeveloperGanttTasks", JsonConvert.SerializeObject(developerGanttTaskListOutput, Formatting.Indented), chartMode.ToString(), "true");
+        }
+        catch (Exception ex)
+        {
+            await JS.InvokeVoidAsync("console.error", $"Error loading Gantt chart tasks: {ex.Message}");
+        }
+    }
 }

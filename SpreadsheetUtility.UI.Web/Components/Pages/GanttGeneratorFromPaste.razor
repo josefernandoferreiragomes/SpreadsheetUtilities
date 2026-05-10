@@ -301,11 +301,15 @@
     {
         var tempTaskDtoList = GanttMapperHelper.ConvertToGanttTasks(excelTaskData);
         taskDtoListOutput = tempTaskDtoList.AsQueryable();
+        sessionContent = JsonConvert.SerializeObject(taskDtoListOutput, Formatting.Indented);
+        UpdateSession();
     }
     private void ParseTeam()
     {
         var tempTeamDtoList = GanttMapperHelper.ConvertToTeamData(excelTeamData);
         teamDtoListOutput = tempTeamDtoList.AsQueryable();
+        sessionContent = JsonConvert.SerializeObject(teamDtoListOutput, Formatting.Indented);
+        UpdateSession();
     }
 
     private void SwapChartMode()
@@ -356,7 +360,7 @@
         projectDtoList = GanttMapperHelper.ConvertToGanttProjects(excelProjectData);
         taskDtoList = GanttMapperHelper.ConvertToGanttTasks(excelTaskData);
         developerDtoList = GanttMapperHelper.ConvertToTeamData(excelTeamData);
-
+        
         projectDtoListOutput = projectDtoList.AsQueryable();
 
 
@@ -369,6 +373,9 @@
             ProjectStartDate = projectStartDate,
             SetTeamsToProjectGroups = setTeamsToProjectGroups,
         };
+
+        sessionContent = JsonConvert.SerializeObject(input, Formatting.Indented);
+        UpdateSession();
 
         var inputMessageLog = $"input: {JsonConvert.SerializeObject(input, Formatting.Indented)}";
         this.JS.InvokeVoidAsync("console.log", inputMessageLog);

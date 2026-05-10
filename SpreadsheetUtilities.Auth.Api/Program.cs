@@ -54,9 +54,9 @@ app.MapGet("/initiateSession", (IMemoryCache memoryCache, string eMail, Guid? gu
 
 app.MapGet("/getSession", (IMemoryCache memoryCache, string eMail, Guid guid) =>
 {
+    var cacheKey = eMail; // Use email as the cache key
     if (guid == Guid.Empty)
     {
-        var cacheKey = $"eMail:{eMail}"; // Use email as the cache key
         if (memoryCache.TryGetValue<string>(cacheKey, out var cacheValue))
         {
             return cacheValue;
@@ -64,7 +64,6 @@ app.MapGet("/getSession", (IMemoryCache memoryCache, string eMail, Guid guid) =>
     }
     else
     {
-        var cacheKey = $"eMail:{eMail}"; // Use email as the cache key
         if (memoryCache.TryGetValue<string>(cacheKey, out var cacheValue))
         {
             if(cacheValue is not null && cacheValue == guid.ToString())
@@ -86,7 +85,7 @@ app.MapGet("/updateSession", (IMemoryCache memoryCache, string eMail, Guid guid,
 {
     if (guid == Guid.Empty)
     {
-        var cacheKey = $"eMail:{eMail}"; // Use email as the cache key
+        var cacheKey = eMail; // Use email as the cache key
         if (memoryCache.TryGetValue<string>(cacheKey, out var cacheValue))
         {
             return cacheValue;
@@ -94,7 +93,7 @@ app.MapGet("/updateSession", (IMemoryCache memoryCache, string eMail, Guid guid,
     }
     else
     {
-        var cacheKey = $"eMail:{eMail}"; // Use email as the cache key
+        var cacheKey = eMail; // Use email as the cache key
         if (memoryCache.TryGetValue<string>(cacheKey, out var cacheValue))
         {
             if (cacheValue is not null && cacheValue == guid.ToString())

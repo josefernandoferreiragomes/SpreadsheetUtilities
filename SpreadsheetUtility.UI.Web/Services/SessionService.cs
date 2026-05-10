@@ -17,7 +17,7 @@ namespace SpreadsheetUtility.UI.Web.Services
             }
         }
 
-        public string GetSessionToken(string email, Guid sessionId)
+        public string GetSession(string email, Guid sessionId)
         {
             using (var http = new HttpClient())
             {

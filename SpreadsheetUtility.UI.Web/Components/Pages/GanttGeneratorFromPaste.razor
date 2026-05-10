@@ -24,7 +24,15 @@
         <button @onclick="InitializeSession">Initialize Session</button>
     </div>
     <div class="col-4">
-        <div>Session Guid: @guid</div>        
+        <div>Session Guid: @sessionIdentifierGuid</div>        
+    </div>
+</div>
+<div class="row">    
+    <div class="col-1">
+        <button @onclick="GetSession">Get Session</button>
+    </div>
+    <div class="col-4">
+        <div>Session Content: @sessionContent</div>
     </div>
 </div>
 <p></p>
@@ -268,22 +276,24 @@
     private IQueryable<GanttTask>? ganttTaskListOutput;    
     private IQueryable<GanttTask>? ganttProjectListOutput;    
     private IQueryable<GanttTask>? developerGanttTaskListOutput;
-    
+
     private IQueryable<ProjectDto>? projectDtoListOutput;    
     private IQueryable<TaskDto>? taskDtoListOutput;
     private IQueryable<DeveloperDto>? teamDtoListOutput;    
 
     private string eMail = "";
-    private Guid? guid = null;
+    private Guid? sessionIdentifierGuid = null;
     private string excelTeamData = "";    
     private IQueryable<DeveloperAvailability>? developerListOutput;    
     private bool preSortTasks = false;
     private bool setTeamsToProjectGroups = false;
+    private string sessionContent = "";
 
     private void ParseProjects()
     {
         var tempProjectDtoList = GanttMapperHelper.ConvertToGanttProjects(excelProjectData);
         projectDtoListOutput = tempProjectDtoList.AsQueryable();
+        sessionContent = JsonConvert.SerializeObject(tempProjectDtoList, Formatting.Indented);
     }
 
     private void ParseTasks()
@@ -304,11 +314,40 @@
 
     private void InitializeSession()
     {        
-        var messageLog = $"Email: {eMail}";
+        var messageLog = $"Email: {eMail}: InitializeSession";
         this.JS.InvokeVoidAsync("console.log", messageLog);
         var session = SessionService.InitiateSession(eMail);
-        guid = Guid.Parse(session);
-        var messageLogAfterSessionInit = $"Session initiated with email: {eMail} and guid: {guid}";
+        sessionIdentifierGuid = Guid.Parse(session);
+        var messageLogAfterSessionInit = $"Session initiated with email: {eMail} and guid: {sessionIdentifierGuid}";
+    }
+    private void GetSession()
+    {        
+        var messageLog = $"Email: {eMail}: GetSession";
+        this.JS.InvokeVoidAsync("console.log", messageLog);
+
+        if(sessionIdentifierGuid is null)
+        {
+            throw new InvalidDataException("SessionIdentifier is mandatory");
+        }
+
+        var sessionIdentifier = (System.Guid)sessionIdentifierGuid;
+        var result = SessionService.GetSession(eMail, sessionIdentifier);        
+        var messageLogAfterSessionInit = $"Session Obtained initiated with email: {eMail} | guid: {sessionIdentifierGuid} | sessionContent: {result}";
+    }
+
+    private void UpdateSession()
+    {        
+        var messageLog = $"Email: {eMail} | Guid:{sessionIdentifierGuid.ToString()} | UpdateSession";
+        this.JS.InvokeVoidAsync("console.log", messageLog);
+
+        if(sessionIdentifierGuid is null)
+        {
+            throw new InvalidDataException("SessionIdentifier is mandatory");
+        }
+
+        var sessionIdentifier = (System.Guid)sessionIdentifierGuid;
+        var result = SessionService.UpdateSession(eMail, sessionIdentifier, sessionContent);
+        var messageLogAfterSessionInit = $"Session Updated initiated with email: {eMail} | guid: {sessionIdentifierGuid} | sessionContent: {result}";
     }
 
     private void LoadGanttChartTasks()

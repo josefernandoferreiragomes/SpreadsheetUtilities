@@ -294,6 +294,7 @@
         var tempProjectDtoList = GanttMapperHelper.ConvertToGanttProjects(excelProjectData);
         projectDtoListOutput = tempProjectDtoList.AsQueryable();
         sessionContent = JsonConvert.SerializeObject(tempProjectDtoList, Formatting.Indented);
+        UpdateSession();
     }
 
     private void ParseTasks()

@@ -352,6 +352,10 @@
 
         var sessionIdentifier = (System.Guid)sessionIdentifierGuid;
         var result = SessionService.UpdateSession(eMail, sessionIdentifier, sessionContent);
+
+        // Store session content securely in cookie
+        var encryptedSessionContent = SessionService.StoreSessionContentInCookie(sessionContent);
+
         var messageLogAfterSessionInit = $"Session Updated initiated with email: {eMail} | guid: {sessionIdentifierGuid} | sessionContent: {result}";
     }
 

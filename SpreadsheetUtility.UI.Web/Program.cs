@@ -16,6 +16,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
+// Add Data Protection services for secure cookie storage
+builder.Services.AddDataProtection();
+
 // Add services to the container.
 builder.Services.AddRazorComponents(options =>
         options.DetailedErrors = builder.Environment.IsDevelopment()

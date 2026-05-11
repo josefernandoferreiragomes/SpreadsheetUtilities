@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.OpenApi;
 using Scalar.AspNetCore;
 using Microsoft.Extensions.Caching.Memory;
 using System.Security.Authentication;
+using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -79,7 +80,7 @@ app.MapGet("/getSession", (IMemoryCache memoryCache, string eMail, Guid guid) =>
 .WithName("GetSession");
 
 //TODO: We should validate the email and guid combination before updating the cache value. For now, we will just check if the cache key exists.
-app.MapGet("/updateSession", (IMemoryCache memoryCache, string eMail, Guid guid, string newValue) =>
+app.MapPost("/updateSession", (IMemoryCache memoryCache, string eMail, Guid guid, [FromBody] string newValue) =>
 {
     var emailCacheKey = eMail; // Use email as the cache key
     if (guid == Guid.Empty)
@@ -98,7 +99,7 @@ app.MapGet("/updateSession", (IMemoryCache memoryCache, string eMail, Guid guid,
                 var guidCacheKey = guid.ToString();
                 if (cacheValue == guid.ToString())
                 {
-                    var updatedCacheValue = $"{eMail}:{guid}:{newValue}";
+                    var updatedCacheValue = newValue;
                     memoryCache.Set(guidCacheKey, updatedCacheValue);
                     return updatedCacheValue;
                 }

@@ -1,4 +1,4 @@
-﻿using SpreadsheetUtility.Auth.Api;
+﻿using SpreadsheetUtility.UI.Web.Services.Generated;
 using SpreadsheetUtility.UI.Web.Models;
 using System.Text;
 using Microsoft.AspNetCore.DataProtection;
@@ -26,7 +26,7 @@ namespace SpreadsheetUtility.UI.Web.Services
         {
             using (var http = new HttpClient())
             {
-                var authApiClient = new AuthApi(http);  
+                var authApiClient = new SpreadsheetUtilitiesAuthApiClient(http);  
                 var result = authApiClient.InitiateSessionAsync(email, null);
                 var sessionId = result.Result;
 
@@ -67,7 +67,7 @@ namespace SpreadsheetUtility.UI.Web.Services
         {
             using (var http = new HttpClient())
             {
-                var authApiClient = new AuthApi(http);
+                var authApiClient = new SpreadsheetUtilitiesAuthApiClient(http);
                 var result = authApiClient.GetSessionAsync(email, sessionId);
                 return result.Result;
             }
@@ -80,7 +80,7 @@ namespace SpreadsheetUtility.UI.Web.Services
         {
             using (var http = new HttpClient())
             {
-                var authApiClient = new AuthApi(http);
+                var authApiClient = new SpreadsheetUtilitiesAuthApiClient(http);
                 var result = authApiClient.UpdateSessionAsync(email, sessionId, serializedObject);
 
                 // Update local cache

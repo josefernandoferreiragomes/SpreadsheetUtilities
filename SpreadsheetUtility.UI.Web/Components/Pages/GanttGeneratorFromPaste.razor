@@ -73,7 +73,7 @@
                 <button @onclick="ParseProjects" class="btn btn-success w-100">Parse Projects</button>
             </div>
         </div>
-        <div class="col-sm-3 border border-primary">
+        <div class="col-sm-9 border border-primary">
             @if (projectDtoListOutput?.Count() > 0)
             {
                 <QuickGrid Items="@projectDtoListOutput">
@@ -109,7 +109,7 @@
                 <button @onclick="ParseTasks" class="btn btn-success w-100">Parse Tasks</button>
             </div>
         </div>
-        <div class="col-sm-3 border border-primary">
+        <div class="col-sm-9 border border-primary">
             @if (taskDtoListOutput?.Count() > 0)
             {
                 <QuickGrid Items="@taskDtoListOutput">
@@ -146,7 +146,7 @@
                 <button @onclick="ParseTeam" class="btn btn-success w-100">Parse Team</button>
             </div>
         </div>
-        <div class="col-sm-3 border border-primary">
+        <div class="col-sm-9 border border-primary">
             @if (teamDtoListOutput?.Count() > 0)
             {
                 <QuickGrid Items="@teamDtoListOutput">
@@ -537,13 +537,19 @@
 
             ganttTaskListOutput = ganttChartAllocation.GanttTasks.AsQueryable();
             developerListOutput = ganttChartAllocation.DeveloperAvailability.AsQueryable();
-            projectListOutput = ganttChartAllocation.ProjectList.AsQueryable();       
+            projectListOutput = ganttChartAllocation.ProjectList.AsQueryable();
             projectHolidayList = ganttChartAllocation.HolidayList.AsQueryable();
             ganttProjectListOutput = ganttChartAllocation.GanttProjects.AsQueryable();
             developerGanttTaskListOutput = ganttChartAllocation.DeveloperGanttTaskList.AsQueryable();
 
             GanttColorHelper.SetupProjectColor(ganttProjectListOutput, ganttTaskListOutput);
             GanttColorHelper.SetupDeveloperColor(developerListOutput, developerGanttTaskListOutput);
+
+            // Force Blazor to render the component with the new data
+            StateHasChanged();
+        
+            // Wait for the DOM to be updated before calling JavaScript
+            await Task.Delay(100);
 
             await JS.InvokeVoidAsync("renderGanttTasks", JsonConvert.SerializeObject(ganttTaskListOutput, Formatting.Indented), chartMode.ToString(), "true");
             await JS.InvokeVoidAsync("renderGanttProjects", JsonConvert.SerializeObject(ganttProjectListOutput, Formatting.Indented), chartMode.ToString(), "true");

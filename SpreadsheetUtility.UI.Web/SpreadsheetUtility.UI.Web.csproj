@@ -7,10 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <OpenApiReference Include="..\..\..\..\Downloads\v1.json" Namespace="SpreadsheetUtility.Auth.Api" ClassName="AuthApi" Link="OpenAPIs\v1.json" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\SpreadsheetUtilities.ServiceDefaults\SpreadsheetUtilities.ServiceDefaults.csproj" />
     <ProjectReference Include="..\SpreadsheetUtility\SpreadsheetUtility.Library\SpreadsheetUtility.Library.csproj" />
   </ItemGroup>

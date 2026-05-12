@@ -118,6 +118,9 @@
                     <PropertyColumn Property="@(p => p.ProjectName)" Sortable="true" />
                     <PropertyColumn Property="@(p => p.TaskName)" Sortable="true" />
                     <PropertyColumn Property="@(p => p.EffortHours)" Sortable="true" />
+                    <PropertyColumn Property="@(p => p.Dependencies)" Sortable="true" />
+                    <PropertyColumn Property="@(p => p.Progress)" Sortable="true" />
+                    <PropertyColumn Property="@(p => p.InternalID)" Sortable="true" />
                 </QuickGrid>
             }
             else
@@ -154,6 +157,7 @@
                     <PropertyColumn Property="@(p => p.Team)" Sortable="true" />
                     <PropertyColumn Property="@(p => p.DeveloperId)" Sortable="true" />
                     <PropertyColumn Property="@(p => p.Name)" Sortable="true" />
+                    <PropertyColumn Property="@(p => p.VacationPeriods)" Sortable="true" />
                     <PropertyColumn Property="@(p => p.DailyWorkHours)" Sortable="true" />
                 </QuickGrid>
             }

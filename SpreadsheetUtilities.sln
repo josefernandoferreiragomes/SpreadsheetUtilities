@@ -30,12 +30,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ExampleFiles", "ExampleFile
 	ProjectSection(SolutionItems) = preProject
 		ExampleFiles\input.xlsx = ExampleFiles\input.xlsx
 		ExampleFiles\input_output.xlsx = ExampleFiles\input_output.xlsx
-		ExampleFiles\Gantt\projects.xlsx = ExampleFiles\Gantt\projects.xlsx
-		SpreadsheetUtility.UI.Web\tasks.xlsx = SpreadsheetUtility.UI.Web\tasks.xlsx
-		tasks.txt = tasks.txt
 		projects.txt = projects.txt
-		SpreadsheetUtility.UI.Web\team.xlsx = SpreadsheetUtility.UI.Web\team.xlsx
+		ExampleFiles\Gantt\projects.xlsx = ExampleFiles\Gantt\projects.xlsx
+		ExampleFiles\Gantt\SpreadSheetProjectGroup.xlsx = ExampleFiles\Gantt\SpreadSheetProjectGroup.xlsx
+		ExampleFiles\Gantt\SpreadSheetProjectSimple.xlsx = ExampleFiles\Gantt\SpreadSheetProjectSimple.xlsx
+		ExampleFiles\Gantt\SpreadSheetProjectTeam.xlsx = ExampleFiles\Gantt\SpreadSheetProjectTeam.xlsx
+		tasks.txt = tasks.txt
+		SpreadsheetUtility.UI.Web\tasks.xlsx = SpreadsheetUtility.UI.Web\tasks.xlsx
 		team.txt = team.txt
+		SpreadsheetUtility.UI.Web\team.xlsx = SpreadsheetUtility.UI.Web\team.xlsx
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpreadsheetUtility.UI.Web", "SpreadsheetUtility.UI.Web\SpreadsheetUtility.UI.Web.csproj", "{5F9B3108-25A8-46CF-B012-4C81DDC7A492}"

@@ -7,10 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <OpenApiReference Include="..\..\..\..\Downloads\v1.json" ClassName="SessionAapi" Link="OpenAPIs\v1.json" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.6" />
     <PackageReference Include="Microsoft.Extensions.ApiDescription.Client" Version="7.0.2">
       <PrivateAssets>all</PrivateAssets>

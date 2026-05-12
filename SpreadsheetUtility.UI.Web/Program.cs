@@ -53,6 +53,9 @@ builder.Services.AddScoped<LoggingInvoker>();
 builder.Services.AddScoped<GroupProjectsByProjectGroupQuery>();
 builder.Services.AddScoped<SessionService>();
 
+// Add example files service for downloading sample spreadsheets
+builder.Services.AddScoped<IExampleFileProvider, FolderExampleFileProvider>();
+
 
 
 var app = builder.Build();

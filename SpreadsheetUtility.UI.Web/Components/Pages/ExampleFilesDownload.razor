@@ -1,0 +1,174 @@
+@page "/example-files"
+@rendermode InteractiveServer
+@using SpreadsheetUtility.UI.Web.Services
+@using SpreadsheetUtility.UI.Web.Models
+@inject IExampleFileProvider FileProvider
+@inject ILogger<ExampleFilesDownload> Logger
+@inject IJSRuntime JS
+
+<div class="container-fluid my-5">
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <h1 class="display-5">📥 Example Files</h1>
+            <p class="lead text-muted">Download example spreadsheets to get started with Gantt chart generation.</p>
+        </div>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="d-flex justify-content-center">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    }
+    else if (errorMessage != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <strong>Error:</strong> @errorMessage
+            <button type="button" class="btn-close" @onclick="() => errorMessage = null"></button>
+        </div>
+    }
+    else if (files.Any())
+    {
+        <div class="card shadow-sm">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Available Files (@files.Count)</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 40%;">File Name</th>
+                                <th style="width: 20%;">Size</th>
+                                <th style="width: 20%;">Last Modified</th>
+                                <th style="width: 20%;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var file in files)
+                            {
+                                <tr>
+                                    <td>
+                                        <div>
+                                            <strong>📄 @file.DisplayName</strong>
+                                        </div>
+                                        <small class="text-muted d-block">@file.Description</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">@FormatSize(file.FileSizeBytes)</span>
+                                    </td>
+                                    <td>
+                                        <span title="@file.LastModified.ToString("yyyy-MM-dd HH:mm:ss")">
+                                            @file.LastModified.ToString("MMM d, yyyy")
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-primary" 
+                                                @onclick="() => DownloadFile(file.FileName)"
+                                                disabled="@(downloadingFile == file.FileName)">
+                                            @if (downloadingFile == file.FileName)
+                                            {
+                                                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                                <span>Downloading...</span>
+                                            }
+                                            else
+                                            {
+                                                <span>⬇️ Download</span>
+                                            }
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer bg-light text-muted">
+                <small>💡 Tip: Use these example files to test the Gantt chart generator before adding your own data.</small>
+            </div>
+        </div>
+
+        <div class="mt-4 p-3 bg-light rounded">
+            <h6 class="mb-3">📌 How to Use:</h6>
+            <ol class="mb-0">
+                <li>Download an example file using the button above</li>
+                <li>Review the file structure to understand the required format</li>
+                <li>Create your own file following the same structure</li>
+                <li>Use the <a href="/ganttGeneratorFromPaste">Gantt Generator</a> to create your charts</li>
+            </ol>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info">
+            <strong>ℹ️ No files available</strong>
+            <p class="mb-0">No example files have been added yet. Contact your administrator.</p>
+        </div>
+    }
+</div>
+
+@code {
+    private List<ExampleFileInfo> files = new();
+    private bool isLoading = true;
+    private string? errorMessage;
+    private string? downloadingFile;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Logger.LogInformation("Loading available example files");
+            files = (await FileProvider.GetAvailableFilesAsync()).ToList();
+            Logger.LogInformation("Loaded {FileCount} example files", files.Count);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error loading example files");
+            errorMessage = "Unable to load example files. Please try again later.";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task DownloadFile(string fileName)
+    {
+        try
+        {
+            downloadingFile = fileName;
+            Logger.LogInformation("Starting download of file: {FileName}", fileName);
+
+            var fileData = await FileProvider.GetFileAsync(fileName);
+
+            // Use JavaScript to trigger browser download
+            await JS.InvokeVoidAsync("downloadFileFromBytes", fileData.FileName, fileData.Content);
+
+            Logger.LogInformation("Successfully downloaded file: {FileName}", fileName);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error downloading file: {FileName}", fileName);
+            errorMessage = $"Error downloading file: {ex.Message}";
+        }
+        finally
+        {
+            downloadingFile = null;
+        }
+    }
+
+    private string FormatSize(long bytes)
+    {
+        string[] sizes = { "B", "KB", "MB", "GB" };
+        double len = bytes;
+        int order = 0;
+        while (len >= 1024 && order < sizes.Length - 1)
+        {
+            order++;
+            len = len / 1024;
+        }
+        return $"{len:0.##} {sizes[order]}";
+    }
+}

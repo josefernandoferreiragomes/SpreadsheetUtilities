@@ -10,8 +10,14 @@ using SpreadsheetUtility.Library.Services;
 using SpreadsheetUtility.Library.TaskAssigners;
 using SpreadsheetUtility.Library.TaskSorters;
 using SpreadsheetUtility.UI.Web.Components;
+using SpreadsheetUtility.UI.Web.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.AddServiceDefaults();
+
+// Add Data Protection services for secure cookie storage
+builder.Services.AddDataProtection();
 
 // Add services to the container.
 builder.Services.AddRazorComponents(options =>
@@ -45,10 +51,16 @@ builder.Services.AddScoped<IDeveloperHoursCalculator, DeveloperHoursCalculator>(
 builder.Services.AddScoped<ICalculatorFacade, CalculatorFacade>();
 builder.Services.AddScoped<LoggingInvoker>();
 builder.Services.AddScoped<GroupProjectsByProjectGroupQuery>();
+builder.Services.AddScoped<SessionService>();
+
+// Add example files service for downloading sample spreadsheets
+builder.Services.AddScoped<IExampleFileProvider, FolderExampleFileProvider>();
 
 
 
 var app = builder.Build();
+
+app.MapDefaultEndpoints();
 
 // Validate all scoped services (optional manual step)
 using (var scope = app.Services.CreateScope())

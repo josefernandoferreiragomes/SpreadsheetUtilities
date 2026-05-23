@@ -17,8 +17,8 @@ string outputFilePath = args.Length > 3 ? args[3] : string.Empty;
 string headersRow = args.Length > 4 ? args[4] : string.Empty;
 string worksheetIndex = args.Length > 5 ? args[5] : string.Empty;
 
-DoubleEntrySpreasheetGeneratorSimplified generator = new DoubleEntrySpreasheetGeneratorSimplified(inputFilePath, keyColumnID, valuesColumnID, outputFilePath, headersRow, worksheetIndex);
-List<string> result = await generator.GenerateDoubleEntrySpreasheet();
+DoubleEntrySpreadsheetGeneratorSimplified generator = new DoubleEntrySpreadsheetGeneratorSimplified(inputFilePath, keyColumnID, valuesColumnID, outputFilePath, headersRow, worksheetIndex);
+List<string> result = await generator.GenerateDoubleEntrySpreadsheet();
 
 foreach (var line in result)
 {

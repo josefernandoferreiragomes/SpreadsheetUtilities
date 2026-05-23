@@ -1,0 +1,5 @@
+Team ID	Team Name	Developer Id	Developer Name	Developer Vacation Date Intervals	Daily Work Hours
+1	Team Alpha	1	Alice	2026-08-10;2026-08-15|2026-05-10;2026-05-15|	6
+1	Team Alpha	2	Bob		7
+1	Team Alpha	3	Charlie	2026-06-05;2026-06-10|	7
+1	Team Alpha	4	Dave	2026-07-25;2026-07-28|	6

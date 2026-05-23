@@ -4,11 +4,11 @@ using System.IO;
 using System.Linq;
 using System.Net.WebSockets;
 using ClosedXML.Excel;
-using Utilities.Interfaces;
+using SpreadsheetUtility.Library.Infrastructure;
 
 namespace Utilities
 {
-    public abstract class SpreasheetGeneratorBase
+    public abstract class SpreadsheetGeneratorBase
     {
         internal const int WORKSHEET_INDEX_COUNT_DEFAULT = 1;
         internal const int HEADER_ROW_INDEX_DEFAULT = 2;
@@ -23,7 +23,7 @@ namespace Utilities
         internal int _headersRowInt;
         internal int _worksheetIndexInt;
 
-        public SpreasheetGeneratorBase(IExcelWorkbook workbook, string keyColumnID, string valuesColumnID, string outputFilePath, string? headersRow = null, string? worksheetIndex = null)
+        public SpreadsheetGeneratorBase(IExcelWorkbook workbook, string keyColumnID, string valuesColumnID, string outputFilePath, string? headersRow = null, string? worksheetIndex = null)
         {
             _workbook = workbook;
            

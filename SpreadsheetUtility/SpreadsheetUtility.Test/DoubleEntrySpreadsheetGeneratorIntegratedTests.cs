@@ -5,25 +5,24 @@ using System.Threading.Tasks;
 using ClosedXML.Excel;
 using Moq;
 using Utilities;
-using Utilities.Interfaces;
-using Utilities.Services;
+using SpreadsheetUtility.Library.Infrastructure;
 using Xunit;
 
 namespace DoubleEntrySpreadsheetGeneratorTests
 {
 
-    public class DoubleEntrySpreasheetGeneratorIntegratedTests
+    public class DoubleEntrySpreadsheetGeneratorIntegratedTests
     {
         //startup method
         
 
         [Fact]
-        public async Task GenerateDoubleEntrySpreasheet_InputFileNotFound_ReturnsError()
+        public async Task GenerateDoubleEntrySpreadsheet_InputFileNotFound_ReturnsError()
         {            
             // Arrange
             var inputFilePath = "nonexistent.xlsx";
             var service = new ExcelWorkbook(inputFilePath);
-            var generator = new SpreasheetGeneratorDoubleEntry(service, "5", "3", "output.xlsx");
+            var generator = new SpreadsheetGeneratorDoubleEntry(service, "5", "3", "output.xlsx");
 
             // Act
             var result = await generator.Generate();
@@ -33,7 +32,7 @@ namespace DoubleEntrySpreadsheetGeneratorTests
         }
 
         [Fact]
-        public async Task GenerateDoubleEntrySpreasheet_ValidInputFile_GeneratesOutputFile()
+        public async Task GenerateDoubleEntrySpreadsheet_ValidInputFile_GeneratesOutputFile()
         {
             // Arrange
             var inputFilePath = "test_input.xlsx";
@@ -41,7 +40,7 @@ namespace DoubleEntrySpreadsheetGeneratorTests
             CreateTestInputFile(inputFilePath);
             var service = new ExcelWorkbook(inputFilePath);
 
-            var generator = new SpreasheetGeneratorDoubleEntry(service, "2", "4", outputFilePath);
+            var generator = new SpreadsheetGeneratorDoubleEntry(service, "2", "4", outputFilePath);
 
             // Act
             var result = await generator.Generate();
@@ -56,14 +55,14 @@ namespace DoubleEntrySpreadsheetGeneratorTests
         }        
 
         [Fact]
-        public async Task GenerateDoubleEntrySpreasheet_InputFileWithNoData_ReturnsError()
+        public async Task GenerateDoubleEntrySpreadsheet_InputFileWithNoData_ReturnsError()
         {
             // Arrange
             var inputFilePath = "empty_input.xlsx";
             CreateEmptyTestInputFile(inputFilePath);
             var service = new ExcelWorkbook(inputFilePath);
 
-            var generator = new SpreasheetGeneratorDoubleEntry(service, "5", "3", "output.xlsx");
+            var generator = new SpreadsheetGeneratorDoubleEntry(service, "5", "3", "output.xlsx");
 
             // Act
             var result = await generator.Generate();

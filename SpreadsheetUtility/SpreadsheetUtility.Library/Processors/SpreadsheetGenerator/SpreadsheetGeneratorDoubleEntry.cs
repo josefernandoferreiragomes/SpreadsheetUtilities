@@ -4,16 +4,23 @@ using System.IO;
 using System.Linq;
 using System.Net.WebSockets;
 using ClosedXML.Excel;
-using Utilities.Interfaces;
+using SpreadsheetUtility.Library.Infrastructure;
 
 namespace Utilities
 {
-    public class SpreasheetGeneratorMultiRow : SpreasheetGeneratorBase
+    public class SpreadsheetGeneratorDoubleEntry : SpreadsheetGeneratorBase
     {
 
-        public SpreasheetGeneratorMultiRow(IExcelWorkbook workbook, string keyColumnID, string valuesColumnID, string outputFilePath, string? headersRow = null, string? worksheetIndex = null)
+
+        public SpreadsheetGeneratorDoubleEntry()
+            : base(new ExcelWorkbook(string.Empty), string.Empty, string.Empty, string.Empty)
+        {
+        }
+
+        public SpreadsheetGeneratorDoubleEntry(IExcelWorkbook workbook, string keyColumnID, string valuesColumnID, string outputFilePath, string? headersRow = null, string? worksheetIndex = null)
             : base(workbook, keyColumnID, valuesColumnID, outputFilePath, headersRow, worksheetIndex)
         {
+            
         }
 
         public override async Task<List<string>> Generate()
@@ -46,12 +53,12 @@ namespace Utilities
             return result;
         }
 
-        private async Task<Dictionary<string, HashSet<string>>> ReadInputFile()
-        {            
+        internal async Task<Dictionary<string, HashSet<string>>> ReadInputFile()
+        {
             var keyMappings = new Dictionary<string, HashSet<string>>();
             await Task.Run(() =>
-            {  
-                                 
+            {
+
                 var worksheet = _workbook.Worksheet(_worksheetIndexInt);
                 int rowCount = worksheet.LastRowUsed()?.RowNumber() ?? 0;
 
@@ -66,18 +73,18 @@ namespace Utilities
                     if (!keyMappings.ContainsKey(keyColumn))
                         keyMappings[keyColumn] = new HashSet<string>();
 
-                    foreach (var thirdPartyService in valuesColumn.Split(new[] { '\n', ',' }, StringSplitOptions.RemoveEmptyEntries))
+                    foreach (var valueContent in valuesColumn.Split(new[] { '\n', ',' }, StringSplitOptions.RemoveEmptyEntries))
                     {
-                        string service = thirdPartyService.Trim();
-                        if (!string.IsNullOrEmpty(service))
+                        string valueItem = valueContent.Trim();
+                        if (!string.IsNullOrEmpty(valueItem))
                         {
-                            keyMappings[keyColumn].Add(service);
+                            keyMappings[keyColumn].Add(valueItem);
                         }
                     }
-                }                          
-            });            
+                }
+            });
             return keyMappings;
-        }      
+        }
 
         protected override async Task WriteOutputFile(Dictionary<string, HashSet<string>> serviceMappings, HashSet<string> uniqueThirdPartyServices)
         {

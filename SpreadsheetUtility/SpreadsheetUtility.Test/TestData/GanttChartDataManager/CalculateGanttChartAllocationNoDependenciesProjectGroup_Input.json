@@ -164,7 +164,7 @@
       "developerId": "1",
       "name": "Alice",
       "dailyWorkHours": 6.0,
-      "vacationPeriods": "2025-03-10;2025-03-15|2025-05-10;2025-05-15"
+      "vacationPeriods": "2026-08-10;2026-08-15|2026-05-10;2026-05-15"
     },
     {
       "teamId": "1",
@@ -180,7 +180,7 @@
       "developerId": "3",
       "name": "Charlie",
       "dailyWorkHours": 7.0,
-      "vacationPeriods": "2025-04-05;2025-04-10|"
+      "vacationPeriods": "2026-06-05;2026-06-10|"
     },
     {
       "teamId": "1",
@@ -188,7 +188,7 @@
       "developerId": "4",
       "name": "Dave",
       "dailyWorkHours": 6.0,
-      "vacationPeriods": "2025-02-25;2025-02-28|"
+      "vacationPeriods": "2026-07-25;2026-07-28|"
     }
   ],
   "projectDtos": [

@@ -1,6 +1,6 @@
 ﻿using ClosedXML.Excel;
 
-public class DoubleEntrySpreasheetGeneratorSimplified
+public class DoubleEntrySpreadsheetGeneratorSimplified
 {
     private const int WORKSHEET_INDEX_COUNT_DEFAULT = 1;
     private const int HEADER_ROW_INDEX_DEFAULT = 2;
@@ -15,7 +15,7 @@ public class DoubleEntrySpreasheetGeneratorSimplified
     private int _headersRowInt;
     private int _worksheetIndexInt;
 
-    public DoubleEntrySpreasheetGeneratorSimplified(string inputFilePath, string keyColumnID, string valuesColumnID, string outputFilePath, string? headersRow = null, string? worksheetIndex = null)
+    public DoubleEntrySpreadsheetGeneratorSimplified(string inputFilePath, string keyColumnID, string valuesColumnID, string outputFilePath, string? headersRow = null, string? worksheetIndex = null)
     {
         _inputFilePath = inputFilePath;
         _keyColumnID = keyColumnID;
@@ -27,7 +27,7 @@ public class DoubleEntrySpreasheetGeneratorSimplified
         _headersRowInt = int.TryParse(_headersRow, out _headersRowInt) ? _headersRowInt : HEADER_ROW_INDEX_DEFAULT;
     }
 
-    public async Task<List<string>> GenerateDoubleEntrySpreasheet()
+    public async Task<List<string>> GenerateDoubleEntrySpreadsheet()
     {
         ValidateInput();
         var result = new List<string>();

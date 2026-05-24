@@ -1,6 +1,6 @@
 ﻿using SpreadsheetUtility.Library.Calculators;
 using SpreadsheetUtility.Library.Models;
-using SpreadsheetUtility.Library.Domain;
+using SpreadsheetUtility.Domain.Models;
 using System.Globalization;
 
 namespace SpreadsheetUtility.Library.Mappers
@@ -34,7 +34,7 @@ namespace SpreadsheetUtility.Library.Mappers
 
 
         public List<Developer> MapDevelopersFromDeveloperDtos(List<DeveloperDto> developerDtos)
-            => developerDtos.Select(dto => new Developer(_dateCalculator)
+            => developerDtos.Select(dto => new Developer()
             {
                 TeamId = dto.TeamId,
                 Team = dto.Team,

@@ -1,4 +1,5 @@
 using SpreadsheetUtility.Library.Models;
+using SpreadsheetUtility.Domain.Models;
 
 namespace SpreadsheetUtility.Library.ListGenerators;
 public abstract class ListGenerator<TInput, TOutput> : IListGenerator<TInput, TOutput>

@@ -25,4 +25,8 @@
     <Folder Include="GlobalModels\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\SpreadsheetUtility.Domain\SpreadsheetUtility.Domain.csproj" />
+  </ItemGroup>
+
 </Project>

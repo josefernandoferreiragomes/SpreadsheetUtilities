@@ -1,6 +1,6 @@
 ﻿using Moq;
 using SpreadsheetUtility.Library.Calculators;
-using SpreadsheetUtility.Library.Models;
+using SpreadsheetUtility.Domain.Models;
 using SpreadsheetUtility.Library.Providers;
 
 namespace SpreadsheetUtility.Tests.Calculators

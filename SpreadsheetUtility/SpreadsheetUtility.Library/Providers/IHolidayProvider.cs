@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using SpreadsheetUtility.Library.Models;
+using SpreadsheetUtility.Domain.Models;
 
 namespace SpreadsheetUtility.Library.Providers
 {

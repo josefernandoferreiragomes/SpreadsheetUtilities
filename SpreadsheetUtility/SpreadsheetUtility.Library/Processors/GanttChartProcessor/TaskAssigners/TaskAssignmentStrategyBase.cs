@@ -1,6 +1,6 @@
 using SpreadsheetUtility.Library.Calculators;
 using SpreadsheetUtility.Library.Models;
-using SpreadsheetUtility.Library.Domain;
+using SpreadsheetUtility.Domain.Models;
 
 namespace SpreadsheetUtility.Library.TaskAssigners;
 public abstract class TaskAssignmentStrategyBase(IDateCalculator _dateCalculator) : ITaskAssignmentStrategy
@@ -30,8 +30,18 @@ public abstract class TaskAssignmentStrategyBase(IDateCalculator _dateCalculator
     }
 
     private Developer? SelectDeveloperForTask(List<Developer> developerList, DateTime startDate)
-        => developerList.OrderBy(d => d.NextAvailableDate(startDate)).FirstOrDefault();    
+        => developerList.OrderBy(d => GetNextAvailableDateForDeveloper(d, startDate)).FirstOrDefault();    
 
+
+    private DateTime GetNextAvailableDateForDeveloper(Developer developer, DateTime fromDate)
+    {
+        DateTime date = _dateCalculator.GetNextWorkingDay(fromDate > developer.NextAvailableDateForTasks ? fromDate : developer.NextAvailableDateForTasks);
+        while (developer.IsOnVacation(date))
+        {
+            date = date.AddDays(1);
+        }
+        return date;
+    }
 
     private (DateTime TaskStart, DateTime TaskEnd) ScheduleTask(
         GanttTask task,
@@ -41,7 +51,7 @@ public abstract class TaskAssignmentStrategyBase(IDateCalculator _dateCalculator
         List<GanttTask> projectTasks
     )
     {
-        DateTime taskStart = developer.NextAvailableDate(startDate);
+        DateTime taskStart = GetNextAvailableDateForDeveloper(developer, startDate);
         var taskStartFromDependency = projectTasks.Find(t => t.Id == task.Dependencies)?.EndDate ?? DateTime.MinValue;
 
         taskStart = taskStart > taskStartFromDependency

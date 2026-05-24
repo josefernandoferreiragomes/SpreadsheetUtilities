@@ -1,4 +1,6 @@
-﻿namespace SpreadsheetUtility.Library.Models;
+﻿using SpreadsheetUtility.Domain.Models;
+
+namespace SpreadsheetUtility.Library.Models;
 
 public class DeveloperAvailability
 {

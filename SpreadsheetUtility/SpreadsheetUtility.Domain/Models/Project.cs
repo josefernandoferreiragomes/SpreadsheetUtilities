@@ -1,9 +1,9 @@
-﻿namespace SpreadsheetUtility.Library.Models;
+namespace SpreadsheetUtility.Domain.Models;
 
 public class Project
 {
     public string? ProjectID { get; set; }
-    public string? ProjectName { get; set; }        
+    public string? ProjectName { get; set; }
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
     public List<GanttTask>? Tasks { get; set; }
@@ -12,4 +12,3 @@ public class Project
     public string? TeamId { get; set; }
     public string? Color { get; set; }
 }
-

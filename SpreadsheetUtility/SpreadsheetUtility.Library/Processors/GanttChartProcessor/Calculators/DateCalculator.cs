@@ -1,4 +1,4 @@
-﻿using SpreadsheetUtility.Library.Models;
+﻿using SpreadsheetUtility.Domain.Models;
 using SpreadsheetUtility.Library.Providers;
 
 namespace SpreadsheetUtility.Library.Calculators

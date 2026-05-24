@@ -1,32 +1,31 @@
-﻿using Newtonsoft.Json;
-using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
-namespace SpreadsheetUtility.Library.Models;
+namespace SpreadsheetUtility.Domain.Models;
 
 public class GanttTask
 {
-    [JsonProperty("id")]
+    [JsonPropertyName("id")]
     public required string Id { get; set; }
 
-    [JsonProperty("name")]    
+    [JsonPropertyName("name")]
     public required string TaskName { get; set; }
 
-    [JsonProperty("start")]
-    public string? Start { get; set; } // Format: "YYYY-MM-DD"
+    [JsonPropertyName("start")]
+    public string? Start { get; set; }
 
-    [JsonProperty("end")]
-    public string? End { get; set; }   // Format: "YYYY-MM-DD"
+    [JsonPropertyName("end")]
+    public string? End { get; set; }
 
-    [JsonProperty("progress")]
+    [JsonPropertyName("progress")]
     public int Progress { get; set; } = 0;
 
-    [JsonProperty("dependencies")]
+    [JsonPropertyName("dependencies")]
     public string Dependencies { get; set; } = "";
 
-    [JsonProperty("custom_class")]
-    public string? CustomClass { get; set; } // New property for styling
+    [JsonPropertyName("custom_class")]
+    public string? CustomClass { get; set; }
 
-    [JsonProperty("resource")]
+    [JsonPropertyName("resource")]
     public string? Resource { get; set; }
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
@@ -40,19 +39,13 @@ public class GanttTask
     public string? ProjectDependency { get; set; }
     public string? AssignedDeveloper { get; set; }
     public string? AssignedDeveloperId { get; set; }
-    /// <summary>
-    /// To be defined... The task is updated by the user
-    /// </summary>
     internal bool DependencyUpdated { get; set; } = false;
     public string? TaskEndWeekDescriptionDescription { get; set; }
 
     public string? ActualStart { get; set; }
     public string? ActualEnd { get; set; }
 
-    /// <summary>
-    /// To be defined... The actual progress of the task, represented as a consumed time, in hour
-    /// </summary>
-    public int ActualProgress { get; set; }   // 0-100%
+    public int ActualProgress { get; set; }
 
     public int? IntervalDays { get; set; }
     public int? WorkDays { get; set; }
@@ -60,4 +53,3 @@ public class GanttTask
     public int? NonWorkingDays { get; set; }
     public int? DailyWorkHours { get; set; }
 }
-

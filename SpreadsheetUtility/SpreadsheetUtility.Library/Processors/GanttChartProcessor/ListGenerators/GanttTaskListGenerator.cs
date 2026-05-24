@@ -1,4 +1,4 @@
-using SpreadsheetUtility.Library.Models;
+using SpreadsheetUtility.Domain.Models;
 
 namespace SpreadsheetUtility.Library.ListGenerators;
 public class GanttTaskListGenerator : ListGenerator<GanttTask, GanttTask>

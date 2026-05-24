@@ -56,19 +56,20 @@
 
 ---
 
-## Phase 1 — Domain Layer (`SpreadsheetUtility.Domain`)
+## Phase 1 — Domain Layer (`SpreadsheetUtility.Domain`) ✅
 
 **Extract from `Processors/GanttChartProcessor/Domain/` and `Models/`**
+**Status:** ✅ Complete (2026-05-24)
 
-| # | Step |
-|---|---|
-| **1.1** | Create project; **zero dependencies** (not even NuGet beyond `net10.0`) |
-| **1.2** | Move pure entities: `Developer`, `GanttTask`, `Project`, `ProjectGroup`, `Holiday` |
-| **1.3** | Extract value objects: `DateRange`, `EffortHours`, `VacationPeriod`, `DeveloperAvailability` |
-| **1.4** | **Remove `IDateCalculator` dependency from `Developer`** — extract `NextAvailableDate()` logic into a domain service |
-| **1.5** | Define domain service interfaces: `IDateCalculationService`, `IHolidayLookupService` (pure, no I/O) |
-| **1.6** | Define repository interfaces: `IHolidayRepository`, `IDeveloperRepository` (contracts only) |
-| 1.7 | Add `Domain` ref to Library; update imports; `dotnet test` |
+| # | Step | Result |
+|---|---|---|
+| **1.1** | Create project; **zero dependencies** (not even NuGet beyond `net10.0`) | ✅ `SpreadsheetUtility.Domain` created, added to solution |
+| **1.2** | Move pure entities: `Developer`, `GanttTask`, `Project`, `ProjectGroup`, `Holiday` | ✅ All 5 entities moved to `Domain/Models/` |
+| **1.3** | Extract value objects: `DateRange`, `VacationPeriod` | ✅ `DateRange` and `VacationPeriod` in `Domain/ValueObjects/` (deferred `DeveloperAvailability` and `EffortHours` to Phase 2) |
+| **1.4** | **Remove `IDateCalculator` dependency from `Developer`** — extract `NextAvailableDate()` logic into a domain service | ✅ `Developer` is now constructor-free; `NextAvailableDate()` logic inlined in `TaskAssignmentStrategyBase`; domain service interface `IDateCalculationService` defined |
+| **1.5** | Define domain service interfaces: `IDateCalculationService`, `IHolidayLookupService` (pure, no I/O) | ✅ Created in `Domain/Services/` |
+| **1.6** | Define repository interfaces: `IHolidayRepository`, `IDeveloperRepository` (contracts only) | ✅ Created in `Domain/Repositories/` |
+| 1.7 | Add `Domain` ref to Library; update imports; `dotnet test` | ✅ Build: 0 errors. Tests: 26 pass, 0 failures |
 
 ---
 

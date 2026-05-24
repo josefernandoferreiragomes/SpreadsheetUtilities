@@ -1,5 +1,6 @@
 ﻿using SpreadsheetUtility.Library;
 using SpreadsheetUtility.Library.Models;
+using SpreadsheetUtility.Domain.Models;
 using SpreadsheetUtility.Library.Processors;
 
 namespace SpreadsheetUtility.Library.Services;

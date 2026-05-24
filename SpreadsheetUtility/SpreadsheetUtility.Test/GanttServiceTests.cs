@@ -13,7 +13,7 @@ using SpreadsheetUtility.Test.Helpers;
 using SpreadsheetUtility.Library.Grouppers;
 using SpreadsheetUtility.Library.TaskSorters;
 using Microsoft.Extensions.DependencyInjection;
-using SpreadsheetUtility.Library.Domain;
+using SpreadsheetUtility.Domain.Models;
 
 namespace SpreadsheetUtility.Test
 {

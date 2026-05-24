@@ -3,6 +3,7 @@
 @inject SpreadsheetUtility.UI.Web.Services.SessionService SessionService;
 @using Microsoft.JSInterop
 @using Newtonsoft.Json
+@using SpreadsheetUtility.Domain.Models
 @using SpreadsheetUtility.Library
 @using Microsoft.AspNetCore.Components.QuickGrid;
 @using SpreadsheetUtility.Library.Models
@@ -555,9 +556,9 @@
             // Wait for the DOM to be updated before calling JavaScript
             await Task.Delay(100);
 
-            await JS.InvokeVoidAsync("renderGanttTasks", JsonConvert.SerializeObject(ganttTaskListOutput, Formatting.Indented), chartMode.ToString(), "true");
-            await JS.InvokeVoidAsync("renderGanttProjects", JsonConvert.SerializeObject(ganttProjectListOutput, Formatting.Indented), chartMode.ToString(), "true");
-            await JS.InvokeVoidAsync("renderDeveloperGanttTasks", JsonConvert.SerializeObject(developerGanttTaskListOutput, Formatting.Indented), chartMode.ToString(), "true");
+            await JS.InvokeVoidAsync("renderGanttTasks", System.Text.Json.JsonSerializer.Serialize(ganttTaskListOutput, new System.Text.Json.JsonSerializerOptions { WriteIndented = true }), chartMode.ToString(), "true");
+            await JS.InvokeVoidAsync("renderGanttProjects", System.Text.Json.JsonSerializer.Serialize(ganttProjectListOutput, new System.Text.Json.JsonSerializerOptions { WriteIndented = true }), chartMode.ToString(), "true");
+            await JS.InvokeVoidAsync("renderDeveloperGanttTasks", System.Text.Json.JsonSerializer.Serialize(developerGanttTaskListOutput, new System.Text.Json.JsonSerializerOptions { WriteIndented = true }), chartMode.ToString(), "true");
         }
         catch (Exception ex)
         {

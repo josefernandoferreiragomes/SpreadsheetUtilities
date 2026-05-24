@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Architecture
+
+- Phase 1 refactoring: extracted `SpreadsheetUtility.Domain` project with zero dependencies
+- Moved pure entities to Domain: `Holiday`, `Project`, `ProjectGroup`, `GanttTask`, `Developer`
+- Removed `IDateCalculator` dependency from `Developer` entity; extracted logic into `TaskAssignmentStrategyBase`
+- Swapped `GanttTask` serialization from `Newtonsoft.Json` to `System.Text.Json` (built-in)
+- Added value objects: `DateRange`, `VacationPeriod`
+- Added domain service interfaces: `IDateCalculationService`, `IHolidayLookupService`
+- Added repository interfaces: `IHolidayRepository`, `IDeveloperRepository`
+- Updated all imports across Library, Tests, and Web UI to reference `SpreadsheetUtility.Domain.Models`
+
 ### Added
 
 - opencode AI assistant configuration (AGENTS.md)

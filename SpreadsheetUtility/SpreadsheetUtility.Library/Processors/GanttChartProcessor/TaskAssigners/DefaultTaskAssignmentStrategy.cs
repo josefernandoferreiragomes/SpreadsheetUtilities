@@ -1,6 +1,6 @@
 using SpreadsheetUtility.Library.Calculators;
 using SpreadsheetUtility.Library.Models;
-using SpreadsheetUtility.Library.Domain;
+using SpreadsheetUtility.Domain.Models;
 
 namespace SpreadsheetUtility.Library.TaskAssigners;
 public class DefaultTaskAssignmentStrategy : TaskAssignmentStrategyBase

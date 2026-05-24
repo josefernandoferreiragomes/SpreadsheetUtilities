@@ -1,4 +1,4 @@
-﻿namespace SpreadsheetUtility.Library.Models;
+namespace SpreadsheetUtility.Domain.Models;
 
 public class ProjectGroup
 {

@@ -8,7 +8,7 @@ using SpreadsheetUtility.Library.Mappers;
 using SpreadsheetUtility.Library.Models;
 using SpreadsheetUtility.Library.Providers;
 using SpreadsheetUtility.Library.TaskAssigners;
-using SpreadsheetUtility.Library.Domain;
+using SpreadsheetUtility.Domain.Models;
 
 namespace SpreadsheetUtility.Library.Processors;
 

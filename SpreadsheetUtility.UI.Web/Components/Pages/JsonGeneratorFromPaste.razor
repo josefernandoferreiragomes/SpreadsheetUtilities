@@ -1,11 +1,10 @@
 ﻿@page "/jsonGeneratorFromPaste"
-@inject IGanttChartDataManager GanttService
+@inject MediatR.IMediator Mediator
 @rendermode InteractiveServer
 @using Newtonsoft.Json
+@using SpreadsheetUtility.Application.DTOs
+@using SpreadsheetUtility.Application.UseCases.LoadTasks
 @using SpreadsheetUtility.Domain.Models
-@using SpreadsheetUtility.Library
-@using SpreadsheetUtility.Library.Models
-@using SpreadsheetUtility.Library.Services
 
 <PageTitle>Json Generator from Paste</PageTitle>
 
@@ -29,7 +28,7 @@
     private List<GanttTask> ganttTasks = new List<GanttTask>();
     private string ganttTasksJson = "";
 
-    private void ConvertToGanttTasks()
+    private async Task ConvertToGanttTasks()
     {
         var lines = excelData.Split('\n', StringSplitOptions.RemoveEmptyEntries);
         var tasks = new List<TaskDto>();
@@ -54,7 +53,7 @@
             }
         }
 
-        ganttTasks = GanttService.LoadTasksFromDtos(tasks);
+        ganttTasks = await Mediator.Send(new LoadTasksQuery(tasks));
         ganttTasksJson = JsonConvert.SerializeObject(ganttTasks, Formatting.Indented);
     }
 }

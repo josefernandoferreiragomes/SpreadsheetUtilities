@@ -73,27 +73,32 @@
 
 ---
 
-## Phase 2 — Application Layer (`SpreadsheetUtility.Application`)
+## Phase 2 — Application Layer (`SpreadsheetUtility.Application`) ✅
 
 **Extract use-case orchestration from `GanttChartProcessor` and related classes**
+**Status:** ✅ Complete (2026-05-24)
 
-| # | Step |
-|---|---|
-| **2.1** | Create project; references `Domain` + `MediatR` (+ `FluentValidation`) |
-| **2.2** | Move DTOs (`TaskDto`, `ProjectDto`, `DeveloperDto`, input/output classes) → `Application/DTOs/` |
-| **2.3** | Move `GanttChartMapper` → `Application/Mappers/` (DTO ↔ Domain) |
-| **2.4** | **Split `GanttChartProcessor` god-class into MediatR use cases:** |
-| | - `CalculateGanttChartAllocationQuery` / `Handler` |
-| | - `LoadTasksQuery` / `Handler` |
-| | - `ParseExcelDataCommand` / `Handler` (moved from UI helper) |
-| **2.5** | Move port interfaces: `IHolidayProvider`, `IDateTimeProvider`, `IExcelWorkbook` → `Application/Ports/` |
-| **2.6** | Move `CalculatorFacade`, `DateCalculator`, `DeveloperHoursCalculator` → `Application/Services/` |
-| **2.7** | Move `ListGenerators`, `Grouppers`, `Builders` → `Application/Services/` |
-| **2.8** | Replace `LoggingInvoker` Command pattern with **MediatR pipeline behavior** (`LoggingBehavior<TRequest, TResponse>`) |
-| **2.9** | Add `ValidationBehavior` pipeline for `FluentValidation` |
-| **2.10** | Move `SpreadsheetGenerator` (legacy) → `Application/UseCases/` as `GenerateSpreadsheetCommand` |
-| 2.11 | Replace `IGanttChartDataManager` with direct use case injection |
-| 2.12 | `dotnet test` — green |
+| # | Step | Result |
+|---|---|---|
+| **2.1** | Create project; references `Domain` + `MediatR` (+ `FluentValidation`) | ✅ `SpreadsheetUtility.Application` created, added to solution |
+| **2.2** | Move DTOs (`TaskDto`, `ProjectDto`, `DeveloperDto`, input/output classes) → `Application/DTOs/` | ✅ 7 files moved, namespaces updated |
+| **2.3** | Move `GanttChartMapper` → `Application/Mappers/` (DTO ↔ Domain) | ✅ `IGanttChartMapper` and `GanttChartMapper` moved |
+| **2.4** | **Split `GanttChartProcessor` god-class into MediatR use cases:** | ✅ All 3 use cases implemented |
+| | - `CalculateGanttChartAllocationQuery` / `Handler` | ✅ |
+| | - `LoadTasksQuery` / `Handler` | ✅ |
+| | - `ParseExcelDataCommand` / `Handler` (moved from UI helper) | ✅ |
+| **2.5** | Move port interfaces: `IHolidayProvider`, `IDateTimeProvider`, `IExcelWorkbook` → `Application/Ports/` | ✅ With refactored `IExcelWorksheet` wrapper (no ClosedXML leakage) |
+| **2.6** | Move `CalculatorFacade`, `DateCalculator`, `DeveloperHoursCalculator` → `Application/Services/` | ✅ All calculator services moved |
+| **2.7** | Move `ListGenerators`, `Grouppers`, `Builders` → `Application/Services/` | ✅ All moved |
+| **2.8** | Replace `LoggingInvoker` Command pattern with **MediatR pipeline behavior** (`LoggingBehavior<TRequest, TResponse>`) | ✅ `LoggingBehavior` created; `LoggingInvoker`/`ILogCommand` deleted |
+| **2.9** | Add `ValidationBehavior` pipeline for `FluentValidation` | ✅ `ValidationBehavior` created |
+| **2.10** | Move `SpreadsheetGenerator` (legacy) → `Application/UseCases/` as `GenerateSpreadsheetCommand` | 🔄 Deferred to Phase 3 |
+| **2.11** | Replace `IGanttChartDataManager` with direct use case injection | ✅ `IGanttChartDataManager`/`GanttChartDataManager` deleted; UI pages use `IMediator.Send()` |
+| **2.12** | `dotnet test` — green | ✅ 26 pass, 0 failures |
+
+### Test Fix Applied
+
+- Changed all `System.Reflection.MethodBase.GetCurrentMethod()?.Name` calls to `nameof(...)` in JSON-driven tests, because async state machine returns `MoveNext` instead of the actual method name
 
 ---
 

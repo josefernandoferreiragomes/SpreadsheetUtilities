@@ -1,7 +1,7 @@
 ﻿using Moq;
-using SpreadsheetUtility.Library.Calculators;
+using SpreadsheetUtility.Application.Ports;
+using SpreadsheetUtility.Application.Services;
 using SpreadsheetUtility.Domain.Models;
-using SpreadsheetUtility.Library.Providers;
 
 namespace SpreadsheetUtility.Tests.Calculators
 {

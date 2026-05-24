@@ -1,0 +1,14 @@
+using SpreadsheetUtility.Domain.Models;
+
+namespace SpreadsheetUtility.Application.Services;
+
+public class GroupProjectsByProjectGroupQuery
+{
+    public List<ProjectGroup> Execute(List<Project> projects)
+    => projects.GroupBy(p => p.ProjectGroup)
+        .Select(g => new ProjectGroup
+        {
+            ProjectGroupID = g.Key ?? "",
+            Projects = g.ToList()
+        }).ToList();
+}

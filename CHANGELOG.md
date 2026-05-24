@@ -6,6 +6,14 @@ All notable changes to this project will be documented in this file.
 
 ### Architecture
 
+- Phase 2 refactoring: extracted `SpreadsheetUtility.Application` project with MediatR, FluentValidation
+- DTOs moved to `Application/DTOs/` (`TaskDto`, `DeveloperDto`, `ProjectDto`, I/O classes)
+- Port interfaces moved to `Application/Ports/` (`IDateTimeProvider`, `IHolidayProvider`, `IExcelWorkbook`/`IExcelWorksheet`)
+- Mappers moved to `Application/Mappers/` (`IGanttChartMapper`, `GanttChartMapper`)
+- Calculator services moved to `Application/Services/` (`CalculatorFacade`, `DateCalculator`, `DeveloperHoursCalculator`, strategies, list generators, builders, factories)
+- Replaced `LoggingInvoker`/`ILogCommand` Command pattern with MediatR pipeline `LoggingBehavior`
+- Added `ValidationBehavior` pipeline with `FluentValidation`
+- Deleted `IGanttChartDataManager`/`GanttChartDataManager`; consumers now use `IMediator.Send()`
 - Phase 1 refactoring: extracted `SpreadsheetUtility.Domain` project with zero dependencies
 - Moved pure entities to Domain: `Holiday`, `Project`, `ProjectGroup`, `GanttTask`, `Developer`
 - Removed `IDateCalculator` dependency from `Developer` entity; extracted logic into `TaskAssignmentStrategyBase`

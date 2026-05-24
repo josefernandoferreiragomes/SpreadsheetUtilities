@@ -1,13 +1,12 @@
 @page "/ganttGeneratorFromPaste"
-@inject IGanttChartDataManager GanttService
+@inject MediatR.IMediator Mediator
 @inject SpreadsheetUtility.UI.Web.Services.SessionService SessionService;
 @using Microsoft.JSInterop
 @using Newtonsoft.Json
+@using SpreadsheetUtility.Application.DTOs
+@using SpreadsheetUtility.Application.UseCases.CalculateGanttChartAllocation
 @using SpreadsheetUtility.Domain.Models
-@using SpreadsheetUtility.Library
 @using Microsoft.AspNetCore.Components.QuickGrid;
-@using SpreadsheetUtility.Library.Models
-@using SpreadsheetUtility.Library.Services
 @using SpreadsheetUtility.UI.Web.Components;
 @using SpreadsheetUtility.UI.Web.Helpers
 @using SpreadsheetUtility.UI.Web.Models
@@ -538,7 +537,7 @@
             sessionContent = JsonConvert.SerializeObject(input, Formatting.Indented);
             await UpdateSession();
 
-            var ganttChartAllocation = GanttService.CalculateGanttChartAllocation(input);
+            var ganttChartAllocation = await Mediator.Send(new CalculateGanttChartAllocationQuery(input));
 
             ganttTaskListOutput = ganttChartAllocation.GanttTasks.AsQueryable();
             developerListOutput = ganttChartAllocation.DeveloperAvailability.AsQueryable();

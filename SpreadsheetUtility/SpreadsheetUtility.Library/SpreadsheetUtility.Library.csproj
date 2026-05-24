@@ -27,6 +27,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SpreadsheetUtility.Domain\SpreadsheetUtility.Domain.csproj" />
+    <ProjectReference Include="..\SpreadsheetUtility.Application\SpreadsheetUtility.Application.csproj" />
   </ItemGroup>
 
 </Project>

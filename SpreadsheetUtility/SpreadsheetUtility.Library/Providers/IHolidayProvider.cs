@@ -5,11 +5,7 @@ using SpreadsheetUtility.Domain.Models;
 
 namespace SpreadsheetUtility.Library.Providers
 {
-    public interface IHolidayProvider
-    {
-        List<Holiday> LoadHolidaysFromConfigurationFile();
-    }
-    public class HolidayProvider : IHolidayProvider
+    public class HolidayProvider : Application.Ports.IHolidayProvider
     {
         private readonly ILogger<List<Holiday>> _logger;
         private readonly IConfiguration _configuration;
@@ -30,7 +26,6 @@ namespace SpreadsheetUtility.Library.Providers
             }
             catch (Exception ex)
             {
-                // Handle exceptions (e.g., file not found, JSON parsing errors)
                 Console.WriteLine($"An error occurred processing holidays: {ex.Message}");
             }
 

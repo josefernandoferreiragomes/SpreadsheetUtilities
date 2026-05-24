@@ -2,7 +2,7 @@
 
 > Comprehensive Excel-based project management and data transformation suite with Gantt chart visualization
 
-![.NET](https://img.shields.io/badge/.NET-8%2B%209-blue)
+![.NET](https://img.shields.io/badge/.NET-10-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Status](https://img.shields.io/badge/status-Active-brightgreen)
 
@@ -28,9 +28,9 @@
 
 1. **Double Entry Spreadsheet Generator** - Transform single-entry spreadsheets with multi-line cells into clean double-entry format
 2. **Gantt Chart Generator** - Visualize project schedules with automatic task assignment to team members considering vacation periods and dependencies
-3. **Reusable Library** - Battle-tested, design-pattern-driven library for spreadsheet processing and project management
+3. **Layered Architecture** - Clean Architecture with Domain, Application, and Library layers following SOLID principles and multiple industry-standard design patterns
 
-The solution combines console applications, a Blazor web interface, and a robust core library following SOLID principles and multiple industry-standard design patterns.
+The solution combines console applications, a Blazor web interface, and a layered architecture following Clean Architecture and Domain-Driven Design principles.
 
 ---
 
@@ -74,17 +74,36 @@ The solution combines console applications, a Blazor web interface, and a robust
 
 ## 📦 Projects in This Solution
 
-### 1. **SpreadsheetUtility.Library** (.NET 8)
-Core business logic and reusable components for both console and web applications.
+### 1. **SpreadsheetUtility.Domain** (.NET 10)
+Pure domain model with zero dependencies. Contains entities, value objects, domain service interfaces, and repository interfaces.
 
 **Key Components:**
-- `GanttChartProcessor` - Main orchestrator for task allocation and scheduling
-- `DateCalculator` - Advanced date calculations with holiday support
-- `GanttChartMapper` - DTO to domain model transformations
-- `TaskAssignment & Sorting Strategies` - Pluggable algorithm implementations
-- `Holiday & DateTime Providers` - External dependency abstraction
+- `Developer`, `GanttTask`, `Project`, `ProjectGroup`, `Holiday` entities
+- `DateRange`, `VacationPeriod` value objects
+- `IDateCalculationService`, `IHolidayLookupService` domain service interfaces
+- `IHolidayRepository`, `IDeveloperRepository` repository interfaces
 
-### 2. **SpreadsheetUtility.UI.Web** (.NET 9 - Blazor Server)
+### 2. **SpreadsheetUtility.Application** (.NET 10)
+Use-case orchestration layer using MediatR. Contains DTOs, mappers, port abstractions, calculators, strategies, and pipeline behaviors.
+
+**Key Components:**
+- MediatR use cases: `CalculateGanttChartAllocation`, `LoadTasks`, `ParseExcelData`
+- DTOs: `TaskDto`, `ProjectDto`, `DeveloperDto`, input/output classes
+- `GanttChartMapper` - DTO ↔ Domain mapping
+- Port interfaces: `IDateTimeProvider`, `IHolidayProvider`, `IExcelWorkbook`
+- Calculator services: `DateCalculator`, `DeveloperHoursCalculator`, `CalculatorFacade`
+- Strategy pattern: Task assignment & sorting strategies with factories
+- Pipeline behaviors: `LoggingBehavior`, `ValidationBehavior`
+
+### 3. **SpreadsheetUtility.Library** (.NET 10)
+Infrastructure implementations and legacy code. Implements port interfaces from the Application layer.
+
+**Key Components:**
+- `DateTimeProvider` / `HolidayProvider` - implements `Application.Ports` interfaces
+- `ExcelWorkbook` - ClosedXML-based spreadsheet I/O
+- `SpreadsheetGenerator` - Legacy double-entry generator (to be moved in Phase 3)
+
+### 4. **SpreadsheetUtility.UI.Web** (.NET 10 - Blazor Server)
 Interactive web application for Gantt chart generation with real-time data visualization.
 
 **Features:**
@@ -99,8 +118,9 @@ Interactive web application for Gantt chart generation with real-time data visua
 - `/` - Home page
 - `/ganttGeneratorFromPaste` - Interactive Gantt generator
 - `/jsonGeneratorFromPaste` - JSON data generator (experimental)
+- `/examplefiles` - Example file browser and download
 
-### 3. **SpreadsheetUtility.UI.Console** (.NET 8)
+### 5. **SpreadsheetUtility.UI.Console** (.NET 10)
 Console-based double entry spreadsheet generator.
 
 **Usage:**
@@ -108,11 +128,8 @@ Console-based double entry spreadsheet generator.
 dotnet run <input.xlsx> <key column> <values column> [output.xlsx] [headers row] [worksheet index]
 ```
 
-### 4. **SimplifiedUtilityConsole** (.NET 8)
-Lightweight console application for basic spreadsheet transformations.
-
-### 5. **SpreadsheetUtility.Test** (.NET 8)
-Comprehensive unit test suite for library components using xUnit and Moq.
+### 6. **SpreadsheetUtility.Test** (.NET 10)
+Comprehensive unit test suite (26 tests) using xUnit and Moq.
 
 ---
 
@@ -120,8 +137,7 @@ Comprehensive unit test suite for library components using xUnit and Moq.
 
 ### Prerequisites
 
-- **.NET 8 SDK** (for console apps and library)
-- **.NET 9 SDK** (for Blazor web application)
+- **.NET 10 SDK**
 - **Visual Studio 2022** or VS Code with C# extension (recommended)
 - **Git** for cloning the repository
 
@@ -142,26 +158,16 @@ dotnet restore
 dotnet build
 ```
 
-### Required NuGet Packages (already included in projects)
+### Key NuGet Packages (already included in projects)
 
-```bash
-# Excel processing
-dotnet add package ClosedXML
-
-# Gantt chart visualization
-dotnet add package Newtonsoft.Json
-
-# Data grid components (Blazor)
-dotnet add package Microsoft.AspNetCore.Components.QuickGrid
-
-# Testing
-dotnet add package xunit
-dotnet add package Moq
-
-# Dependency injection
-dotnet add package Microsoft.Extensions.Hosting
-dotnet add package Microsoft.Extensions.Hosting.Abstractions
-```
+| Package | Used By | Purpose |
+|---------|---------|---------|
+| `ClosedXML` | Library | Excel spreadsheet I/O |
+| `Newtonsoft.Json` | Library, Web | JSON serialization (Gantt chart data) |
+| `MediatR` | Application | Use-case orchestration |
+| `FluentValidation` | Application | Input validation |
+| `Microsoft.AspNetCore.Components.QuickGrid` | UI.Web | Sortable data tables |
+| `xunit` / `Moq` | Test | Unit testing |
 
 ---
 
@@ -313,61 +319,47 @@ TEAM-B   Team B   Bob Johnson   8   2025-01-01;2025-01-03
 
 ## 🏗️ Architecture & Design Patterns
 
-The **SpreadsheetUtility.Library** project implements 11 industry-standard design patterns for maintainability and testability.
+The solution follows **Clean Architecture** with three main layers:
+
+```
+Presentation (UI.Web, UI.Console, Auth.Api)
+       ↓
+Application (Use Cases, DTOs, Mappers, Ports)
+       ↓
+Domain (Entities, Value Objects, Services)
+       ↑
+Library (Infrastructure implementations, legacy code)
+```
 
 ### 1. Observer Pattern
 
-**Location:** `DateCalculator.cs`, `GanttChartProcessor.cs`
+**Location:** `DateCalculator.cs`, `CalculateGanttChartAllocationQueryHandler.cs`
 
-Implements notification mechanism for holiday detection events.
+Holiday detection notifications using `IObserver<Holiday>`.
 
 **Key Components:**
-- `IObserver<Holiday>` interface for holiday notifications
 - `AddObserver()` / `RemoveObserver()` in `DateCalculator`
-- `GanttChartProcessor` implements `IObserver<Holiday>`
-
-**Advantages:**
-- Decouples holiday detection from handling
-- Multiple independent observers
-- Reactive programming support
-- Easy observer addition without code changes
+- `CalculateGanttChartAllocationQueryHandler` implements `IObserver<Holiday>`
 
 ---
 
 ### 2. Strategy Pattern
 
-**Location:** Task assignment and sorting strategies
+**Location:** `Application/Services/` — task assignment and sorting strategies
 
-Enables runtime switching between different algorithms.
+Runtime-switchable algorithms for task allocation and sorting.
 
 **Key Components:**
-- `ITaskAssignmentStrategy` with `DefaultTaskAssignmentStrategy`
-- `ITaskSortingStrategy` with `DefaultTaskSortingStrategy` and `TaskSortingStrategyEffortBased`
-- Base classes provide common functionality
-
-**Advantages:**
-- Runtime algorithm switching
-- New strategies without modifying existing code
-- Independently testable
-- Open/Closed Principle compliance
+- `ITaskAssignmentStrategy` / `DefaultTaskAssignmentStrategy`
+- `ITaskSortingStrategy` / `DefaultTaskSortingStrategy` / `TaskSortingStrategyEffortBased`
 
 ---
 
 ### 3. Factory Pattern
 
-**Location:** Strategy factories
+**Location:** `Application/Services/` — `TaskAssignmentStrategyFactory`, `TaskSortingStrategyFactory`
 
-Centralizes strategy instantiation with dependency injection.
-
-**Key Components:**
-- `ITaskAssignmentStrategyFactory` / `TaskAssignmentStrategyFactory`
-- `ITaskSortingStrategyFactory` / `TaskSortingStrategyFactory`
-
-**Advantages:**
-- Decouples instantiation from usage
-- Centralized creation logic
-- DI integration
-- Testability improvement
+Centralizes strategy instantiation via DI.
 
 ---
 
@@ -375,13 +367,7 @@ Centralizes strategy instantiation with dependency injection.
 
 **Location:** `TaskAssignmentStrategyBase.cs`, `ListGenerator<TInput, TOutput>`
 
-Base classes define skeleton algorithms, subclasses implement specific steps.
-
-**Advantages:**
-- Code reuse across implementations
-- Consistent operation structure
-- Reduced duplication
-- Explicit algorithm structure
+Base classes define skeleton algorithms; subclasses fill in specific steps.
 
 ---
 
@@ -389,130 +375,70 @@ Base classes define skeleton algorithms, subclasses implement specific steps.
 
 **Location:** `CalculateGanttChartAllocationOutputBuilder.cs`
 
-Simplifies construction of complex objects.
-
-**Key Components:**
-- Fluent API with method chaining
-- `WithProjects()`, `WithGanttTasks()`, etc.
-- `Build()` method finalizer
-
-**Advantages:**
-- Improved readability
-- Elegant complex initialization
-- Immutable result objects
-- Clear optional parameters
+Fluent API for constructing complex output objects with method chaining.
 
 ---
 
 ### 6. Facade Pattern
 
-**Location:** `CalculatorFacade.cs`, `ICalculatorFacade.cs`
+**Location:** `CalculatorFacade.cs`
 
-Provides unified interface to multiple calculator services.
-
-**Advantages:**
-- Reduced complexity
-- Single service entry point
-- Easy extension
-- Client decoupling
+Unified interface over `DateCalculator`, `DeveloperHoursCalculator`, and related services.
 
 ---
 
 ### 7. Mapper/Adapter Pattern
 
-**Location:** `GanttChartMapper.cs`, `IGanttChartMapper.cs`
+**Location:** `GanttChartMapper.cs`
 
-Transforms between DTOs and domain models.
-
-**Key Transformations:**
-- TaskDto → GanttTask
-- ProjectDto → Project
-- DeveloperDto → Developer
-- Developer → DeveloperAvailability
-
-**Advantages:**
-- DTO/Domain model decoupling
-- Clean transformations
-- Centralized mapping logic
-- Easier testing
+Transforms DTOs (`TaskDto`, `ProjectDto`, `DeveloperDto`) to Domain entities and back.
 
 ---
 
-### 8. Generic List Generator Pattern
+### 8. MediatR Pipeline Behavior Pattern
 
-**Location:** `IListGenerator<TInput, TOutput>`
+**Location:** `Application/Behaviors/`
 
-Type-safe, reusable grouping and aggregation.
-
-**Key Components:**
-- `GanttTaskProjectListGenerator` - GanttTask → Project
-- `GanttTaskListGenerator` - GanttTask → GanttTask
-- `DeveloperTaskListGenerator` - Developer → List<GanttTask>
+Replaces the legacy Command pattern for cross-cutting concerns. Uses MediatR pipeline behaviors for:
+- `LoggingBehavior<TRequest, TResponse>` — logs every request/response
+- `ValidationBehavior<TRequest, TResponse>` — validates inputs via FluentValidation
 
 **Advantages:**
-- Type safety with generics
-- Code reuse
-- Independent testability
-- Easy extension
+- Declarative cross-cutting concerns
+- No modification to handler code
+- Ordered pipeline execution
+- Reusable across all use cases
 
 ---
 
-### 9. Command Pattern
+### 9. Generic List Generator Pattern
 
-**Location:** `ILogCommand.cs`, logging implementations
+**Location:** `IListGenerator<TInput, TOutput>` implementations
 
-Encapsulates logging requests for deferred execution.
+Type-safe, reusable grouping and aggregation using generics.
 
-**Key Components:**
-- `ILogCommand` interface
-- `ProcessorMessageLogCommand`
-- `CalculateGanttChartAllocationInputLogCommand`
-- `CalculateGanttChartAllocationOutputLogCommand`
-- `LoggingInvoker` for queue management
-
-**Advantages:**
-- Request encapsulation
-- Batch logging operations
-- Deferred execution
-- Easy new command addition
+**Implementations:**
+- `GanttTaskProjectListGenerator` — GanttTask → Project
+- `GanttTaskListGenerator` — GanttTask → GanttTask
+- `DeveloperTaskListGenerator` — Developer → List<GanttTask>
 
 ---
 
 ### 10. Dependency Injection Pattern
 
-**Location:** Throughout library and Program.cs
+**Location:** Throughout all layers
 
-Constructor injection for loose coupling.
-
-**Key Components:**
-- Service registration in `Program.cs`
-- Constructor injection in all services
-- `IServiceProvider` for runtime resolution
-
-**Advantages:**
-- Improved testability
-- Reduced coupling
-- Centralized configuration
-- Easy service substitution
+Constructor injection with centralized registration via `AddApplication()` extension method and `Program.cs`.
 
 ---
 
 ### 11. Provider Pattern
 
-**Location:** `IHolidayProvider.cs`, `IDateTimeProvider.cs`
+**Location:** `Application/Ports/` and `Library/Providers/`
 
-Abstracts external dependencies.
-
-**Key Components:**
-- `IHolidayProvider` - Holiday data provisioning
-- `IDateTimeProvider` - Date/time abstraction
-- Mock-friendly implementations
-
-**Advantages:**
-- External dependency abstraction
-- Easy testing with mocks
-- Business logic isolation
-- Multiple implementation support
+Abstractions in the Application layer, implementations in Library:
+- `IDateTimeProvider` → `DateTimeProvider`
+- `IHolidayProvider` → `HolidayProvider`
 
 ---
 
@@ -566,24 +492,37 @@ dotnet publish -c Release --self-contained -r win-x64
 ```
 SpreadsheetUtilities/
 ├── SpreadsheetUtility/
-│   ├── SpreadsheetUtility.Library/          # Core business logic
-│   │   ├── Calculators/                     # Date, hours calculations
-│   │   ├── Mappers/                         # DTO transformations
-│   │   ├── Providers/                       # Holiday, DateTime abstractions
-│   │   ├── Processors/                      # GanttChartProcessor
-│   │   ├── TaskAssigners/                   # Task assignment strategies
-│   │   ├── TaskSorters/                     # Task sorting strategies
-│   │   ├── ListGenerators/                  # Generic list generation
-│   │   └── Models/                          # DTOs and domain models
+│   ├── SpreadsheetUtility.Domain/           # Pure domain (zero dependencies)
+│   │   ├── Models/                          # Entities
+│   │   ├── ValueObjects/                    # Value objects
+│   │   └── Services/                        # Domain service interfaces
+│   │
+│   ├── SpreadsheetUtility.Application/      # Use-case orchestration
+│   │   ├── DTOs/                            # Data transfer objects
+│   │   ├── Ports/                           # Abstractions (IDateTimeProvider, etc.)
+│   │   ├── Mappers/                         # DTO ↔ Domain mapping
+│   │   ├── Services/                        # Calculators, strategies, builders
+│   │   ├── Behaviors/                       # MediatR pipeline behaviors
+│   │   └── UseCases/                        # MediatR queries/commands + handlers
+│   │
+│   ├── SpreadsheetUtility.Library/          # Infrastructure + legacy
+│   │   ├── Providers/                       # DateTimeProvider, HolidayProvider
+│   │   ├── Excel/                           # ClosedXML implementations
+│   │   └── SpreadsheetGenerator/            # Legacy double-entry generator
+│   │
 │   ├── SpreadsheetUtility.UI.Console/       # Console app
-│   └── SpreadsheetUtility.Test/             # Unit tests
+│   └── SpreadsheetUtility.Test/             # Unit tests (xUnit)
+│
 ├── SpreadsheetUtility.UI.Web/               # Blazor web app
 │   ├── Components/
 │   │   ├── Pages/                           # Razor pages
 │   │   └── Layout/                          # Layout components
 │   ├── Helpers/                             # Utility helpers
 │   └── wwwroot/                             # Static assets
-└── SimplifiedUtilityConsole/                # Legacy console app
+│
+├── SpreadsheetUtilities.Auth.Api/           # Minimal API auth
+├── SpreadsheetUtilities.ServiceDefaults/    # Aspire service defaults
+└── SpreadsheetUtilities.AppHost/            # Aspire orchestrator
 ```
 
 ---

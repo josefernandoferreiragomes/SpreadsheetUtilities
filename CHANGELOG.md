@@ -16,10 +16,6 @@
 - Build: 0 errors, Tests: 71 pass, 0 failures
 - Test count grew from 26 to 71 (+173% coverage increase)
 
-
-
-### Architecture
-
 - Phase 5 refactoring: deleted SpreadsheetUtility.Library project after migrating all code
 - Created SpreadsheetUtility.Bootstrapper project with AddSpreadsheetUtilities() extension method
 - Refactored tests: migrated DoubleEntrySpreadsheetGenerator tests from Library to DoubleEntryGeneratorService

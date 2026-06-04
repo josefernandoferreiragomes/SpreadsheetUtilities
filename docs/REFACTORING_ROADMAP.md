@@ -173,15 +173,20 @@
 
 ---
 
-## Phase 6 — Testing Restructure
+## Phase 6 — Testing Restructure ✅
 
-| # | Step | Status |
+**Scope:** Single test project, organized by subfolders
+**Goal:** Restructure tests, activate dormant FluentValidation pipeline, add coverage for all handlers
+**Status:** ✅ Complete (2026-06-04)
+
+| # | Step | Result |
 |---|---|---|
-| 6.1 | Split tests into folders: `Domain.Tests/`, `Application.Tests/`, `Infrastructure.Tests/` (in existing test project or separate projects) | |
-| 6.2 | Add MediatR handler unit tests for each use case | |
-| 6.3 | Add `FluentValidation` tests for input DTOs | |
-| 6.4 | Move integration tests touching filesystem → `Infrastructure.Tests` | |
-| 6.5 | `dotnet test --collect:"XPlat Code Coverage"` — verify coverage maintained | |
+| **6.1** | Restructure test folders: `ApplicationTests/`, `InfrastructureTests/`, `DomainTests/` (+ subfolders `Validators/`, `UseCases/`) | ✅ Files moved, namespaces updated, old `UnitTests/` and `IntegratedTests/` folders removed |
+| **6.2** | Create 7 FluentValidation validators in `Application/Validation/` + 7 test classes (21 test methods) | ✅ Validators created for all commands/queries; validation pipeline now functional |
+| **6.3** | Add MediatR handler unit tests for 6 untested use cases (12 test methods) | ✅ `LoadTasks`, `ParseExcelData`, `GenerateDoubleEntry`, `InitiateSession`, `UpdateSession`, `GetSession` handlers now covered |
+| **6.4** | Tag integration tests with `[Trait("Category", "Integration")]` for CI filtering | ✅ `dotnet test --filter "Category!=Integration"` runs 68 unit tests |
+| **6.5** | Add domain entity/value object tests (10 test methods) | ✅ `DateRange`, `VacationPeriod`, `GanttTask`, `Developer`, `Project`, `ProjectGroup`, `Holiday` tested |
+| | **Final metrics** | ✅ Build: 0 errors, Tests: **71 pass** (up from 26), 0 failures |
 
 ---
 

@@ -133,13 +133,13 @@
 | # | Step | Status |
 |---|---|---|
 | **4.1** | Move `GanttMapperHelper` static methods â†’ `Application/UseCases/ParseExcelDataCommand` | |
-| **4.2** | **Split `GanttGeneratorFromPaste.razor`** (567 lines â†’ components): `SessionComponent`, `GanttConfigComponent`, `GanttResultsComponent` | |
+| **4.2** | **Split `GanttGeneratorFromPaste.razor`** into 4 components (Session, DataPasteGrid, GanttConfig, GanttResults) | ✅ Done |
 | **4.3** | Create ViewModel classes for Blazor pages (stop exposing Domain entities directly) | |
 | **4.4** | Replace `IGanttChartDataManager` â†’ inject `IMediator` + specific use cases | âœ… done in Phase 2 |
-| **4.5** | Refactor `ExampleFilesController` from `[ApiController]` to Minimal API endpoint in `Program.cs` | |
+| **4.5** | Refactor `ExampleFilesController` from `[ApiController]` to Minimal API endpoints in `Endpoints/` | ✅ Done |
 | 4.6 | Remove direct `SpreadsheetUtility.Library` reference; only reference `Application` + `Infrastructure` | |
 | **4.7** | Add `MediatR` + `FluentValidation` services in `Program.cs` | âœ… done in Phase 2 via `AddApplication()` |
-| 4.8 | Replace manual service validation loop with DI validation from `ServiceDefaults` | |
+| 4.8 | Replace manual service validation loop with `UseDefaultServiceProvider.ValidateOnBuild` | ✅ Done |
 
 ### 4b. `SpreadsheetUtilities.Auth.Api`
 

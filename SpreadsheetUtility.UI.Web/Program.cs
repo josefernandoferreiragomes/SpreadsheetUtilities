@@ -1,9 +1,8 @@
-using MediatR;
-using SpreadsheetUtility.Application;
-using SpreadsheetUtility.Application.Ports;
+﻿using SpreadsheetUtility.Application;
 using SpreadsheetUtility.Infrastructure;
 using SpreadsheetUtility.UI.Web.ViewModels;
 using SpreadsheetUtility.UI.Web.Components;
+using SpreadsheetUtility.UI.Web.Endpoints;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,24 +26,15 @@ builder.Services.AddInfrastructure();
 
 builder.Services.AddScoped<GanttGeneratorViewModel>();
 
+builder.Host.UseDefaultServiceProvider((context, options) =>
+{
+    options.ValidateScopes = context.HostingEnvironment.IsDevelopment();
+    options.ValidateOnBuild = context.HostingEnvironment.IsDevelopment();
+});
+
 var app = builder.Build();
 
 app.MapDefaultEndpoints();
-
-using (var scope = app.Services.CreateScope())
-{
-    var servicesToValidate = new Type[]
-    {
-        typeof(IMediator),
-        typeof(IDateTimeProvider),
-        typeof(IHolidayProvider),
-    };
-
-    foreach (var serviceType in servicesToValidate)
-    {
-        scope.ServiceProvider.GetRequiredService(serviceType);
-    }
-}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -58,6 +48,8 @@ app.UseHttpsRedirection();
 
 app.UseStaticFiles();
 app.UseAntiforgery();
+
+app.MapExampleFilesEndpoints();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();

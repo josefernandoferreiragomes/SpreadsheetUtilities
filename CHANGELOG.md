@@ -21,6 +21,15 @@ All notable changes to this project will be documented in this file.
 - Added Assembly.GetExecutingAssembly() and auto-discovery scanning for the Session use case handlers
 - Build: 0 errors, Tests: 26 pass, 0 failures
 
+### UI.Web — Component Split & Cleanup
+
+- Split 535-line GanttGeneratorFromPaste.razor into 4 components: SessionComponent, DataPasteGridComponent, GanttConfigComponent, GanttResultsComponent
+- Converted ExampleFilesController ([ApiController]) to Minimal API endpoints in Endpoints/
+- Replaced manual DI validation loop with UseDefaultServiceProvider.ValidateOnBuild/ValidateScopes
+- Updated _Imports.razor with shared namespaces (Application.Services, ViewModels, QuickGrid, Newtonsoft.Json)
+- Build: 0 errors, Tests: 26 pass, 0 failures
+
+
 
 ### Fixed
 

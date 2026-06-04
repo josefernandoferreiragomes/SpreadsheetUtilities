@@ -1,21 +1,21 @@
+using SpreadsheetUtility.Application.Ports;
 using SpreadsheetUtility.Domain.Models;
 using SpreadsheetUtility.Domain.Repositories;
-using SpreadsheetUtility.Infrastructure.Providers;
 
 namespace SpreadsheetUtility.Infrastructure.Repositories;
 
 public class HolidayRepository : IHolidayRepository
 {
-    private readonly HolidayFileProvider _holidayFileProvider;
+    private readonly IHolidayProvider _holidayProvider;
 
-    public HolidayRepository(HolidayFileProvider holidayFileProvider)
+    public HolidayRepository(IHolidayProvider holidayProvider)
     {
-        _holidayFileProvider = holidayFileProvider;
+        _holidayProvider = holidayProvider;
     }
 
     public Task<List<Holiday>> GetAllAsync()
     {
-        var holidays = _holidayFileProvider.LoadHolidaysFromConfigurationFile();
+        var holidays = _holidayProvider.LoadHolidaysFromConfigurationFile();
         return Task.FromResult(holidays);
     }
 }

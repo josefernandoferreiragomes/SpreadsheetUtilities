@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+
+- Fixed DI resolution error in `HolidayRepository` by switching from concrete `HolidayFileProvider` dependency to `IHolidayProvider` interface
+
 ### Architecture
 
 - Phase 2 refactoring: extracted `SpreadsheetUtility.Application` project with MediatR, FluentValidation

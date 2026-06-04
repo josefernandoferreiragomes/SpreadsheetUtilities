@@ -102,21 +102,27 @@
 
 ---
 
-## Phase 3 — Infrastructure Layer (`SpreadsheetUtility.Infrastructure`)
+## Phase 3 — Infrastructure Layer (`SpreadsheetUtility.Infrastructure`) ✅
 
 **Move all I/O, external dependencies, and provider implementations**
+**Status:** ✅ Complete (2026-06-04)
 
-| # | Step | Status |
+| # | Step | Result |
 |---|---|---|
-| **3.1** | Create project; references `Application` + `Domain` + `ClosedXML` | |
-| **3.2** | `HolidayProvider` → `Infrastructure/Providers/HolidayFileProvider.cs` | |
-| **3.3** | `DateTimeProvider` → `Infrastructure/Providers/DateTimeProvider.cs` | |
-| **3.4** | `ExcelWorkbook` / `IExcelWorkbook` → `Infrastructure/Excel/` | |
-| **3.5** | `SessionService` (moved from UI.Web) → `Infrastructure/Services/SessionService.cs` | |
-| **3.6** | `AuthApiClient` (NSwag) → `Infrastructure/ApiClients/` | |
-| **3.7** | Implement repo interfaces from Domain | |
-| 3.8 | Add `Holidays/2025HolidaysPT.json` as embedded resource | |
-| 3.9 | `dotnet test` — green | |
+| **3.1** | Create project with `Microsoft.NET.Sdk` + `<FrameworkReference Include="Microsoft.AspNetCore.App" />`; references `Application` + `Domain` + `ClosedXML` | ✅ Created, added to solution |
+| **3.2** | `HolidayProvider` → `Infrastructure/Providers/HolidayFileProvider.cs` | ✅ Renamed to `HolidayFileProvider` |
+| **3.3** | `DateTimeProvider` → `Infrastructure/Providers/DateTimeProvider.cs` | ✅ Moved, namespace updated |
+| **3.4** | `IExcelWorkbook`/`ExcelWorkbook` → `Infrastructure/Excel/` as `IExcelDocument`/`ExcelDocument` (renamed to avoid collision with `Application.Ports.IExcelWorkbook`) | ✅ Moved + renamed, all consumers updated |
+| **3.5** | `SessionService` (moved from UI.Web) → `Infrastructure/Services/SessionService.cs` | ✅ Moved, uses `IDataProtectionProvider` from ASP.NET Core |
+| **3.6** | `AuthApiClient` (NSwag) → `Infrastructure/ApiClients/` | ✅ NSwag config/scripts copied, old assets cleaned from UI.Web |
+| **3.7** | Implement repo interfaces from Domain: `HolidayRepository`, `DeveloperRepository` | ✅ Both implemented in `Infrastructure/Repositories/` |
+| 3.8 | Move `2025HolidaysPT.json` → `Infrastructure/Holidays/`; keep as `<Content CopyToOutputDirectory>` (not embedded resource) | ✅ Moved from Library; `IHolidayRepository` delegates to `HolidayFileProvider` which reads via `IConfiguration` |
+| 3.9 | Move `FolderExampleFileProvider` + `IExampleFileProvider` + models from UI.Web | ✅ `IExampleFileProvider` → `Abstractions/`; `FolderExampleFileProvider` → `Services/`; `SessionState`, `ExampleFileInfo`, `FileDownloadDto` → `Models/` |
+| **3.10** | Create `DependencyInjection.cs` with `AddInfrastructure()` extension method | ✅ Registers all services at once |
+| **3.11** | Update `UI.Web`: drop Library ref, add Infrastructure ref, replace individual DI with `AddInfrastructure()` | ✅ Program.cs cleaned up |
+| **3.12** | Update `Library`: remove moved files/packages, add Infrastructure ref; `SpreadsheetGenerator` now uses `IExcelDocument` from Infrastructure | ✅ Library stripped to legacy generators only |
+| **3.13** | Update `UI.Console` + `Test`: add Infrastructure ref, update imports | ✅ All namespaces updated |
+| **3.14** | `dotnet build` / `dotnet test` — green | ✅ Build: 0 errors, 26 tests pass |
 
 ---
 

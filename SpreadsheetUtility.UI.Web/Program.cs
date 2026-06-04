@@ -8,6 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
 
 builder.Services.AddDataProtection();
+builder.Services.AddMemoryCache();
 
 builder.Services.AddRazorComponents(options =>
         options.DetailedErrors = builder.Environment.IsDevelopment()

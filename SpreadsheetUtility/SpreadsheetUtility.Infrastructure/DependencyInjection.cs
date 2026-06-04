@@ -17,7 +17,6 @@ public static class DependencyInjection
         services.AddScoped<IHolidayProvider, HolidayFileProvider>();
         services.AddScoped<IHolidayRepository, HolidayRepository>();
         services.AddScoped<IDeveloperRepository, DeveloperRepository>();
-        services.AddScoped<SessionService>();
         services.AddScoped<IExampleFileProvider, FolderExampleFileProvider>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IDoubleEntryGeneratorService, DoubleEntryGeneratorService>();

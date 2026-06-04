@@ -1,0 +1,101 @@
+﻿@inject SpreadsheetUtility.Infrastructure.Services.SessionService SessionService
+@inject IPasteParserService PasteParser
+@inject IJSRuntime JS
+@inject GanttGeneratorViewModel ViewModel
+@using Newtonsoft.Json
+
+<div class="row">
+    <div class="col-12">
+        <div class="card p-3">
+            <h5>User Authentication</h5>
+            <div class="row">
+                <div class="col-md-4">    
+                    <label>Email</label>
+                    <InputText @bind-Value="ViewModel.Email" placeholder="Enter your email" disabled="@ViewModel.IsSessionInitialized" class="form-control" />
+                </div>
+                <div class="col-md-2">
+                    <label>&nbsp;</label>
+                    <button @onclick="InitializeSession" disabled="@(ViewModel.IsSessionInitialized || string.IsNullOrWhiteSpace(ViewModel.Email))" class="btn btn-primary w-100">
+                        @(ViewModel.IsSessionInitialized ? "Logged In" : "Initialize Session")
+                    </button>
+                </div>
+                <div class="col-md-6">
+                    <label>&nbsp;</label>
+                    <div class="alert alert-info mb-0">
+                        <strong>Session Status:</strong> 
+                        @if (ViewModel.IsSessionInitialized)
+                        {
+                            <span>Logged in as <strong>@ViewModel.Email</strong> | Session ID: @ViewModel.SessionIdentifierGuid</span>
+                        }
+                        else
+                        {
+                            <span>Please enter your email and initialize a session</span>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private async Task InitializeSession()
+    {        
+        if (string.IsNullOrWhiteSpace(ViewModel.Email))
+        {
+            await JS.InvokeVoidAsync("console.error", "Email is required to initialize a session");
+            return;
+        }
+
+        await JS.InvokeVoidAsync("console.log", $"Email: {ViewModel.Email}: InitializeSession");
+
+        try
+        {
+            var sessionIdString = SessionService.InitiateSession(ViewModel.Email);
+            ViewModel.SessionIdentifierGuid = Guid.Parse(sessionIdString);
+            ViewModel.IsSessionInitialized = true;
+
+            await JS.InvokeVoidAsync("console.log", $"Session initiated with email: {ViewModel.Email} and guid: {ViewModel.SessionIdentifierGuid}");
+            await LoadCachedSessionData();
+        }
+        catch (Exception ex)
+        {
+            await JS.InvokeVoidAsync("console.error", $"Error initializing session: {ex.Message}");
+        }
+    }
+
+    private async Task LoadCachedSessionData()
+    {
+        try
+        {
+            var cachedState = SessionService.LoadCachedSessionData(ViewModel.Email);
+
+            if (cachedState != null)
+            {
+                if (!string.IsNullOrEmpty(cachedState.ProjectData))
+                {
+                    ViewModel.ExcelProjectData = cachedState.ProjectData;
+                    ViewModel.ProjectDtoListOutput = PasteParser.ParseProjects(cachedState.ProjectData).AsQueryable();
+                }
+
+                if (!string.IsNullOrEmpty(cachedState.TaskData))
+                {
+                    ViewModel.ExcelTaskData = cachedState.TaskData;
+                    ViewModel.TaskDtoListOutput = PasteParser.ParseTasks(cachedState.TaskData).AsQueryable();
+                }
+
+                if (!string.IsNullOrEmpty(cachedState.TeamData))
+                {
+                    ViewModel.ExcelTeamData = cachedState.TeamData;
+                    ViewModel.TeamDtoListOutput = PasteParser.ParseTeam(cachedState.TeamData).AsQueryable();
+                }
+
+                await JS.InvokeVoidAsync("console.log", $"Cached session data loaded for email: {ViewModel.Email}");
+            }
+        }
+        catch (Exception ex)
+        {
+            await JS.InvokeVoidAsync("console.error", $"Error loading cached session data: {ex.Message}");
+        }
+    }
+}

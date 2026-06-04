@@ -1,0 +1,65 @@
+﻿@inject GanttGeneratorViewModel ViewModel
+
+<div class="row">
+    <div class="col-12">
+        <h5>Chart Configuration</h5>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-3">
+        <label>Projects start Date</label>
+        <InputDate @bind-Value="ViewModel.ProjectStartDate" class="form-control" />
+    </div>
+    <div class="col-md-3">
+        <label>Chart Mode</label>
+        <InputRadioGroup @bind-Value="ViewModel.ChartMode" class="d-block">
+            <div class="form-check">
+                <InputRadio Value="@GanttGeneratorViewModel.ChartModeType.Week" id="weekMode" class="form-check-input" />
+                <label class="form-check-label" for="weekMode">Week</label>
+            </div>
+            <div class="form-check">
+                <InputRadio Value="@GanttGeneratorViewModel.ChartModeType.Day" id="dayMode" class="form-check-input" />
+                <label class="form-check-label" for="dayMode">Day</label>
+            </div>
+        </InputRadioGroup>
+    </div>
+    <div class="col-md-3">
+        <label>Pre Sort Tasks</label>
+        <InputRadioGroup @bind-Value="ViewModel.PreSortTasks" class="d-block">
+            <div class="form-check">
+                <InputRadio Value="true" id="preSortYes" class="form-check-input" />
+                <label class="form-check-label" for="preSortYes">Yes</label>
+            </div>
+            <div class="form-check">
+                <InputRadio Value="false" id="preSortNo" class="form-check-input" />
+                <label class="form-check-label" for="preSortNo">No</label>
+            </div>
+        </InputRadioGroup>
+    </div>
+    <div class="col-md-3">
+        <label>Fix Team To Project Group</label>
+        <InputRadioGroup @bind-Value="ViewModel.SetTeamsToProjectGroups" class="d-block">
+            <div class="form-check">
+                <InputRadio Value="true" id="teamFixYes" class="form-check-input" />
+                <label class="form-check-label" for="teamFixYes">Yes</label>
+            </div>
+            <div class="form-check">
+                <InputRadio Value="false" id="teamFixNo" class="form-check-input" />
+                <label class="form-check-label" for="teamFixNo">No</label>
+            </div>
+        </InputRadioGroup>
+    </div>
+</div>
+
+<div class="row mt-3">
+    <div class="col-12">
+        <button @onclick="() => OnGenerate.InvokeAsync()" class="btn btn-primary btn-lg w-100">
+            Generate Gantt Charts
+        </button>
+    </div>
+</div>
+
+@code {
+    [Parameter] public EventCallback OnGenerate { get; set; }
+}

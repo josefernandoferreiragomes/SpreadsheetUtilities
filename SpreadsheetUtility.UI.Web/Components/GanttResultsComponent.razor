@@ -1,0 +1,82 @@
+﻿@inject GanttGeneratorViewModel ViewModel
+
+@if (ViewModel.GanttTaskListOutput?.Count() > 0)
+{
+    <div class="row mt-4">
+        <div class="col-12">
+            <h5>Generated Charts</h5>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <p>Tasks Gantt Chart:</p>
+            <div id="gantt-chart-tasks"></div>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-12">
+            <p>Projects Gantt Chart:</p>
+            <div id="gantt-chart-projects"></div>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-12">
+            <p>Developer Tasks Gantt Chart:</p>
+            <div id="developer-gantt-chart-tasks"></div>
+        </div>
+    </div>
+
+    <!-- DETAILED DATA GRIDS -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <h5>Detailed Data</h5>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <p>Project data</p>
+            <QuickGrid Items="@ViewModel.ProjectListOutput">
+                <PropertyColumn Property="@(p => p.ProjectID)" Sortable="true" />
+                <PropertyColumn Property="@(p => p.ProjectName)" Sortable="true" />      
+                <PropertyColumn Property="@(p => p.StartDate.ToString("dd-MM-yyyy"))" Title="StartDate" Sortable="true" />
+                <PropertyColumn Property="@(p => p.EndDate.ToString("dd-MM-yyyy"))" Title="EndDate" Sortable="true" />
+                <PropertyColumn Property="@(p => p.TotalEffortHours)" Sortable="true" />                      
+                <PropertyColumn Property="@(p => p.ProjectGroup)" Sortable="true" />
+                <PropertyColumn Property="@(p => p.TeamId)" Sortable="true" />
+            </QuickGrid>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-12">
+            <p>Task data</p>
+            <QuickGrid Items="@ViewModel.GanttTaskListOutput">
+                <PropertyColumn Property="@(p => p.Id)" Sortable="true" />
+                <PropertyColumn Property="@(p => p.TaskExtendedDescription)" Sortable="true" />
+                <PropertyColumn Property="@(p => p.ProjectName)" Sortable="true" />
+                <PropertyColumn Property="@(p => p.AssignedDeveloper)" Sortable="true" />
+                <PropertyColumn Property="@(p => p.StartDate.ToString("dd-MM-yyyy"))" Title="StartDate" Sortable="true" />
+                <PropertyColumn Property="@(p => p.EndDate.ToString("dd-MM-yyyy"))" Title="EndDate" Sortable="true" />
+                <PropertyColumn Property="@(p => p.EffortHours)" Sortable="true" />
+            </QuickGrid>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-12">
+            <p>Developer data</p>
+            <QuickGrid Items="@ViewModel.DeveloperListOutput">
+                <PropertyColumn Property="@(p => p.Name)" Sortable="true" />
+                <PropertyColumn Property="@(p => p.DailyWorkHours)" Sortable="true" />
+                <PropertyColumn Property="@(p => p.AllocatedDays)" Sortable="true" />
+                <PropertyColumn Property="@(p => p.AllocatedHours)" Sortable="true" />
+                <PropertyColumn Property="@(p => p.SlackHours)" Sortable="true" />
+                <PropertyColumn Property="@(p => p.TotalHours)" Sortable="true" />
+            </QuickGrid>
+        </div>
+    </div>
+}

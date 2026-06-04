@@ -1,463 +1,39 @@
 ﻿@page "/ganttGeneratorFromPaste"
 @inject MediatR.IMediator Mediator
-@inject SpreadsheetUtility.Infrastructure.Services.SessionService SessionService;
+@inject SpreadsheetUtility.Infrastructure.Services.SessionService SessionService
 @inject IPasteParserService PasteParser
 @inject GanttGeneratorViewModel ViewModel
-@using Microsoft.JSInterop
 @using Newtonsoft.Json
 @using SpreadsheetUtility.Application.DTOs
 @using SpreadsheetUtility.Application.UseCases.CalculateGanttChartAllocation
 @using SpreadsheetUtility.Domain.Models
-@using Microsoft.AspNetCore.Components.QuickGrid;
-@using SpreadsheetUtility.Application.Services
-@using SpreadsheetUtility.UI.Web.Components;
 @using SpreadsheetUtility.UI.Web.Helpers
-@using SpreadsheetUtility.Infrastructure.Models
-@using SpreadsheetUtility.UI.Web.ViewModels
-@using static Microsoft.AspNetCore.Components.Web.RenderMode
 @inject IJSRuntime JS
 @rendermode InteractiveServer
 
 <h3>Gantt Generator Paste</h3>
 
-<!-- EMAIL LOGIN SECTION -->
-<div class="row">
-    <div class="col-12">
-        <div class="card p-3">
-            <h5>User Authentication</h5>
-            <div class="row">
-                <div class="col-md-4">    
-                    <label>Email</label>
-                    <InputText @bind-Value="ViewModel.Email" placeholder="Enter your email" disabled="@ViewModel.IsSessionInitialized" class="form-control" />
-                </div>
-                <div class="col-md-2">
-                    <label>&nbsp;</label>
-                    <button @onclick="InitializeSession" disabled="@(ViewModel.IsSessionInitialized || string.IsNullOrWhiteSpace(ViewModel.Email))" class="btn btn-primary w-100">
-                        @(ViewModel.IsSessionInitialized ? "Logged In" : "Initialize Session")
-                    </button>
-                </div>
-                <div class="col-md-6">
-                    <label>&nbsp;</label>
-                    <div class="alert alert-info mb-0">
-                        <strong>Session Status:</strong> 
-                        @if (ViewModel.IsSessionInitialized)
-                        {
-                            <span>Logged in as <strong>@ViewModel.Email</strong> | Session ID: @ViewModel.SessionIdentifierGuid</span>
-                        }
-                        else
-                        {
-                            <span>Please enter your email and initialize a session</span>
-                        }
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+<SessionComponent />
 
 <p></p>
 
-<!-- MAIN CONTENT - ONLY VISIBLE AFTER LOGIN -->
 @if (ViewModel.IsSessionInitialized)
 {
-    <!-- PROJECTS SECTION -->
-    <div class="row">
-        <div class="col-12">
-            <h5>Projects</h5>
-            <p class="text-muted">
-                Project groups will have their assigned tasks in order. The tasks for the next project will be assigned upon completion of the previous project group.
-            </p>
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="col-sm-3">
-            <textarea @bind="ViewModel.ExcelProjectData" placeholder="Paste your project Excel data here" rows="10" cols="60" class="form-control"></textarea>
-            <div class="mt-2">
-                <button @onclick="ParseProjects" class="btn btn-success w-100">Parse Projects</button>
-            </div>
-        </div>
-        <div class="col-sm-9 border border-primary">
-            @if (ViewModel.ProjectDtoListOutput?.Count() > 0)
-            {
-                <QuickGrid Items="@ViewModel.ProjectDtoListOutput">
-                    <PropertyColumn Property="@(p => p.ProjectID)" Sortable="true" />
-                    <PropertyColumn Property="@(p => p.ProjectName)" Sortable="true" />       
-                    <PropertyColumn Property="@(p => p.ProjectGroup)" Sortable="true" />
-                    <PropertyColumn Property="@(p => p.TeamId)" Sortable="true" />
-                </QuickGrid>
-            }
-            else
-            {
-                <p class="text-muted">No projects loaded yet</p>
-            }
-        </div>
-    </div>
-
+    <DataPasteGridComponent />
+    
     <p></p>
-
-    <!-- TASKS SECTION -->
-    <div class="row">
-        <div class="col-12">
-            <h5>Tasks</h5>
-            <p class="text-muted">
-                Dependencies can only exist within the same project.
-            </p>
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="col-sm-3">
-            <textarea @bind="ViewModel.ExcelTaskData" placeholder="Paste your task Excel data here" rows="10" cols="60" class="form-control"></textarea>
-            <div class="mt-2">
-                <button @onclick="ParseTasks" class="btn btn-success w-100">Parse Tasks</button>
-            </div>
-        </div>
-        <div class="col-sm-9 border border-primary">
-            @if (ViewModel.TaskDtoListOutput?.Count() > 0)
-            {
-                <QuickGrid Items="@ViewModel.TaskDtoListOutput">
-                    <PropertyColumn Property="@(p => p.Id)" Sortable="true" />
-                    <PropertyColumn Property="@(p => p.ProjectID)" Sortable="true" />
-                    <PropertyColumn Property="@(p => p.ProjectName)" Sortable="true" />
-                    <PropertyColumn Property="@(p => p.TaskName)" Sortable="true" />
-                    <PropertyColumn Property="@(p => p.EffortHours)" Sortable="true" />
-                    <PropertyColumn Property="@(p => p.Dependencies)" Sortable="true" />
-                    <PropertyColumn Property="@(p => p.Progress)" Sortable="true" />
-                    <PropertyColumn Property="@(p => p.InternalID)" Sortable="true" />
-                </QuickGrid>
-            }
-            else
-            {
-                <p class="text-muted">No tasks loaded yet</p>
-            }
-        </div>
-    </div>
-
+    
+    <GanttConfigComponent OnGenerate="LoadGanttChartTasks" />
+    
     <p></p>
-
-    <!-- TEAM SECTION -->
-    <div class="row">
-        <div class="col-12">
-            <h5>Team</h5>
-            <p class="text-muted">
-                Team members will be assigned tasks based on their availability and daily work hours
-            </p>
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="col-sm-3">
-            <textarea @bind="ViewModel.ExcelTeamData" placeholder="Paste your team Excel data here" rows="10" cols="30" class="form-control"></textarea>
-            <div class="mt-2">
-                <button @onclick="ParseTeam" class="btn btn-success w-100">Parse Team</button>
-            </div>
-        </div>
-        <div class="col-sm-9 border border-primary">
-            @if (ViewModel.TeamDtoListOutput?.Count() > 0)
-            {
-                <QuickGrid Items="@ViewModel.TeamDtoListOutput">
-                    <PropertyColumn Property="@(p => p.TeamId)" Sortable="true" />
-                    <PropertyColumn Property="@(p => p.Team)" Sortable="true" />
-                    <PropertyColumn Property="@(p => p.DeveloperId)" Sortable="true" />
-                    <PropertyColumn Property="@(p => p.Name)" Sortable="true" />
-                    <PropertyColumn Property="@(p => p.VacationPeriods)" Sortable="true" />
-                    <PropertyColumn Property="@(p => p.DailyWorkHours)" Sortable="true" />
-                </QuickGrid>
-            }
-            else
-            {
-                <p class="text-muted">No team loaded yet</p>
-            }
-        </div>
-    </div>
-
-    <p></p>
-
-    <!-- CHART CONFIGURATION & GENERATION -->
-    <div class="row">
-        <div class="col-12">
-            <h5>Chart Configuration</h5>
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="col-md-3">
-            <label>Projects start Date</label>
-            <InputDate @bind-Value="ViewModel.ProjectStartDate" class="form-control" />
-        </div>
-        <div class="col-md-3">
-            <label>Chart Mode</label>
-            <InputRadioGroup @bind-Value="ViewModel.ChartMode" class="d-block">
-                <div class="form-check">
-                    <InputRadio Value="@GanttGeneratorViewModel.ChartModeType.Week" id="weekMode" class="form-check-input" />
-                    <label class="form-check-label" for="weekMode">Week</label>
-                </div>
-                <div class="form-check">
-                    <InputRadio Value="@GanttGeneratorViewModel.ChartModeType.Day" id="dayMode" class="form-check-input" />
-                    <label class="form-check-label" for="dayMode">Day</label>
-                </div>
-            </InputRadioGroup>
-        </div>
-        <div class="col-md-3">
-            <label>Pre Sort Tasks</label>
-            <InputRadioGroup @bind-Value="ViewModel.PreSortTasks" class="d-block">
-                <div class="form-check">
-                    <InputRadio Value="true" id="preSortYes" class="form-check-input" />
-                    <label class="form-check-label" for="preSortYes">Yes</label>
-                </div>
-                <div class="form-check">
-                    <InputRadio Value="false" id="preSortNo" class="form-check-input" />
-                    <label class="form-check-label" for="preSortNo">No</label>
-                </div>
-            </InputRadioGroup>
-        </div>
-        <div class="col-md-3">
-            <label>Fix Team To Project Group</label>
-            <InputRadioGroup @bind-Value="ViewModel.SetTeamsToProjectGroups" class="d-block">
-                <div class="form-check">
-                    <InputRadio Value="true" id="teamFixYes" class="form-check-input" />
-                    <label class="form-check-label" for="teamFixYes">Yes</label>
-                </div>
-                <div class="form-check">
-                    <InputRadio Value="false" id="teamFixNo" class="form-check-input" />
-                    <label class="form-check-label" for="teamFixNo">No</label>
-                </div>
-            </InputRadioGroup>
-        </div>
-    </div>
-
-    <div class="row mt-3">
-        <div class="col-12">
-            <button @onclick="LoadGanttChartTasks" class="btn btn-primary btn-lg w-100">
-                Generate Gantt Charts
-            </button>
-        </div>
-    </div>
-
-    <p></p>
-
-    <!-- CHARTS AND DATA OUTPUT (only shown after generation) -->
-    @if (ViewModel.GanttTaskListOutput?.Count() > 0)
-    {
-        <div class="row mt-4">
-            <div class="col-12">
-                <h5>Generated Charts</h5>
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col-12">
-                <p>Tasks Gantt Chart:</p>
-                <div id="gantt-chart-tasks"></div>
-            </div>
-        </div>
-
-        <div class="row mt-3">
-            <div class="col-12">
-                <p>Projects Gantt Chart:</p>
-                <div id="gantt-chart-projects"></div>
-            </div>
-        </div>
-
-        <div class="row mt-3">
-            <div class="col-12">
-                <p>Developer Tasks Gantt Chart:</p>
-                <div id="developer-gantt-chart-tasks"></div>
-            </div>
-        </div>
-
-        <!-- DETAILED DATA GRIDS -->
-        <div class="row mt-4">
-            <div class="col-12">
-                <h5>Detailed Data</h5>
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col-12">
-                <p>Project data</p>
-                <QuickGrid Items="@ViewModel.ProjectListOutput">
-                    <PropertyColumn Property="@(p => p.ProjectID)" Sortable="true" />
-                    <PropertyColumn Property="@(p => p.ProjectName)" Sortable="true" />      
-                    <PropertyColumn Property="@(p => p.StartDate.ToString("dd-MM-yyyy"))" Title="StartDate" Sortable="true" />
-                    <PropertyColumn Property="@(p => p.EndDate.ToString("dd-MM-yyyy"))" Title="EndDate" Sortable="true" />
-                    <PropertyColumn Property="@(p => p.TotalEffortHours)" Sortable="true" />                      
-                    <PropertyColumn Property="@(p => p.ProjectGroup)" Sortable="true" />
-                    <PropertyColumn Property="@(p => p.TeamId)" Sortable="true" />
-                </QuickGrid>
-            </div>
-        </div>
-
-        <div class="row mt-3">
-            <div class="col-12">
-                <p>Task data</p>
-                <QuickGrid Items="@ViewModel.GanttTaskListOutput">
-                    <PropertyColumn Property="@(p => p.Id)" Sortable="true" />
-                    <PropertyColumn Property="@(p => p.TaskExtendedDescription)" Sortable="true" />
-                    <PropertyColumn Property="@(p => p.ProjectName)" Sortable="true" />
-                    <PropertyColumn Property="@(p => p.AssignedDeveloper)" Sortable="true" />
-                    <PropertyColumn Property="@(p => p.StartDate.ToString("dd-MM-yyyy"))" Title="StartDate" Sortable="true" />
-                    <PropertyColumn Property="@(p => p.EndDate.ToString("dd-MM-yyyy"))" Title="EndDate" Sortable="true" />
-                    <PropertyColumn Property="@(p => p.EffortHours)" Sortable="true" />
-                </QuickGrid>
-            </div>
-        </div>
-
-        <div class="row mt-3">
-            <div class="col-12">
-                <p>Developer data</p>
-                <QuickGrid Items="@ViewModel.DeveloperListOutput">
-                    <PropertyColumn Property="@(p => p.Name)" Sortable="true" />
-                    <PropertyColumn Property="@(p => p.DailyWorkHours)" Sortable="true" />
-                    <PropertyColumn Property="@(p => p.AllocatedDays)" Sortable="true" />
-                    <PropertyColumn Property="@(p => p.AllocatedHours)" Sortable="true" />
-                    <PropertyColumn Property="@(p => p.SlackHours)" Sortable="true" />
-                    <PropertyColumn Property="@(p => p.TotalHours)" Sortable="true" />
-                </QuickGrid>
-            </div>
-        </div>
-    }
+    
+    <GanttResultsComponent />
 }
 
 @code {
-    /// <summary>
-    /// Initializes the component on page load.
-    /// </summary>
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-    }
-
-    /// <summary>
-    /// Initializes a new session with the provided email.
-    /// </summary>
-    private async Task InitializeSession()
-    {        
-        if (string.IsNullOrWhiteSpace(ViewModel.Email))
-        {
-            await JS.InvokeVoidAsync("console.error", "Email is required to initialize a session");
-            return;
-        }
-
-        var messageLog = $"Email: {ViewModel.Email}: InitializeSession";
-        await JS.InvokeVoidAsync("console.log", messageLog);
-
-        try
-        {
-            var sessionIdString = SessionService.InitiateSession(ViewModel.Email);
-            ViewModel.SessionIdentifierGuid = Guid.Parse(sessionIdString);
-            ViewModel.IsSessionInitialized = true;
-
-            var messageLogAfterSessionInit = $"Session initiated with email: {ViewModel.Email} and guid: {ViewModel.SessionIdentifierGuid}";
-            await JS.InvokeVoidAsync("console.log", messageLogAfterSessionInit);
-
-            // Try to load cached session data
-            await LoadCachedSessionData();
-        }
-        catch (Exception ex)
-        {
-            await JS.InvokeVoidAsync("console.error", $"Error initializing session: {ex.Message}");
-        }
-    }
-
-    /// <summary>
-    /// Loads any cached session data from the current session.
-    /// </summary>
-    private async Task LoadCachedSessionData()
-    {
-        try
-        {
-            var cachedState = SessionService.LoadCachedSessionData(ViewModel.Email);
-
-            if (cachedState != null)
-            {
-                if (!string.IsNullOrEmpty(cachedState.ProjectData))
-                {
-                    ViewModel.ExcelProjectData = cachedState.ProjectData;
-                    var tempProjectDtoList = PasteParser.ParseProjects(ViewModel.ExcelProjectData);
-                    ViewModel.ProjectDtoListOutput = tempProjectDtoList.AsQueryable();
-                }
-
-                if (!string.IsNullOrEmpty(cachedState.TaskData))
-                {
-                    ViewModel.ExcelTaskData = cachedState.TaskData;
-                    var tempTaskDtoList = PasteParser.ParseTasks(ViewModel.ExcelTaskData);
-                    ViewModel.TaskDtoListOutput = tempTaskDtoList.AsQueryable();
-                }
-
-                if (!string.IsNullOrEmpty(cachedState.TeamData))
-                {
-                    ViewModel.ExcelTeamData = cachedState.TeamData;
-                    var tempTeamDtoList = PasteParser.ParseTeam(ViewModel.ExcelTeamData);
-                    ViewModel.TeamDtoListOutput = tempTeamDtoList.AsQueryable();
-                }
-
-                var messageLog = $"Cached session data loaded for email: {ViewModel.Email}";
-                await JS.InvokeVoidAsync("console.log", messageLog);
-            }
-        }
-        catch (Exception ex)
-        {
-            await JS.InvokeVoidAsync("console.error", $"Error loading cached session data: {ex.Message}");
-        }
-    }
-
-    private async Task ParseProjects()
-    {
-        try
-        {
-            var tempProjectDtoList = PasteParser.ParseProjects(ViewModel.ExcelProjectData);
-            ViewModel.ProjectDtoListOutput = tempProjectDtoList.AsQueryable();
-            ViewModel.SessionContent = JsonConvert.SerializeObject(tempProjectDtoList, Formatting.Indented);
-
-            if (ViewModel.SessionIdentifierGuid.HasValue)
-            {
-                SessionService.SaveProjectData(ViewModel.Email, ViewModel.SessionIdentifierGuid.Value, ViewModel.ExcelProjectData);
-            }
-        }
-        catch (Exception ex)
-        {
-            await JS.InvokeVoidAsync("console.error", $"Error parsing projects: {ex.Message}");
-        }
-    }
-
-    private async Task ParseTasks()
-    {
-        try
-        {
-            var tempTaskDtoList = PasteParser.ParseTasks(ViewModel.ExcelTaskData);
-            ViewModel.TaskDtoListOutput = tempTaskDtoList.AsQueryable();
-            ViewModel.SessionContent = JsonConvert.SerializeObject(ViewModel.TaskDtoListOutput, Formatting.Indented);
-
-            if (ViewModel.SessionIdentifierGuid.HasValue)
-            {
-                SessionService.SaveTaskData(ViewModel.Email, ViewModel.SessionIdentifierGuid.Value, ViewModel.ExcelTaskData);
-            }
-        }
-        catch (Exception ex)
-        {
-            await JS.InvokeVoidAsync("console.error", $"Error parsing tasks: {ex.Message}");
-        }
-    }
-
-    private async Task ParseTeam()
-    {
-        try
-        {
-            var tempTeamDtoList = PasteParser.ParseTeam(ViewModel.ExcelTeamData);
-            ViewModel.TeamDtoListOutput = tempTeamDtoList.AsQueryable();
-            ViewModel.SessionContent = JsonConvert.SerializeObject(ViewModel.TeamDtoListOutput, Formatting.Indented);
-
-            if (ViewModel.SessionIdentifierGuid.HasValue)
-            {
-                SessionService.SaveTeamData(ViewModel.Email, ViewModel.SessionIdentifierGuid.Value, ViewModel.ExcelTeamData);
-            }
-        }
-        catch (Exception ex)
-        {
-            await JS.InvokeVoidAsync("console.error", $"Error parsing team: {ex.Message}");
-        }
     }
 
     private async Task UpdateSession()
@@ -468,14 +44,13 @@
             return;
         }
 
-        var messageLog = $"Email: {ViewModel.Email} | Guid:{ViewModel.SessionIdentifierGuid.ToString()} | UpdateSession";
-        await JS.InvokeVoidAsync("console.log", messageLog);
+        await JS.InvokeVoidAsync("console.log", $"Email: {ViewModel.Email} | Guid:{ViewModel.SessionIdentifierGuid.ToString()} | UpdateSession");
 
         var sessionIdentifier = (System.Guid)ViewModel.SessionIdentifierGuid;
         var result = SessionService.UpdateSession(ViewModel.Email, sessionIdentifier, ViewModel.SessionContent);
-        var encryptedSessionContent = SessionService.StoreSessionContentInCookie(ViewModel.SessionContent);
+        SessionService.StoreSessionContentInCookie(ViewModel.SessionContent);
 
-        var messageLogAfterSessionInit = $"Session Updated initiated with email: {ViewModel.Email} | guid: {ViewModel.SessionIdentifierGuid} | sessionContent: {result}";
+        await JS.InvokeVoidAsync("console.log", $"Session Updated initiated with email: {ViewModel.Email} | guid: {ViewModel.SessionIdentifierGuid} | sessionContent: {result}");
     }
 
     private async Task LoadGanttChartTasks()
@@ -513,10 +88,7 @@
             GanttColorHelper.SetupProjectColor(ViewModel.GanttProjectListOutput, ViewModel.GanttTaskListOutput);
             GanttColorHelper.SetupDeveloperColor(ViewModel.DeveloperListOutput, ViewModel.DeveloperGanttTaskListOutput);
 
-            // Force Blazor to render the component with the new data
             StateHasChanged();
-        
-            // Wait for the DOM to be updated before calling JavaScript
             await Task.Delay(100);
 
             await JS.InvokeVoidAsync("renderGanttTasks", System.Text.Json.JsonSerializer.Serialize(ViewModel.GanttTaskListOutput, new System.Text.Json.JsonSerializerOptions { WriteIndented = true }), ViewModel.ChartMode.ToString(), "true");
@@ -529,7 +101,3 @@
         }
     }
 }
-
-
-
-

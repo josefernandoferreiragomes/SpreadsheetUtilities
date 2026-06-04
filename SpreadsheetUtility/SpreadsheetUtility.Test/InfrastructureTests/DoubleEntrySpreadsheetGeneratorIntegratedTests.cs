@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -7,8 +7,9 @@ using SpreadsheetUtility.Application.DTOs;
 using SpreadsheetUtility.Infrastructure.Excel;
 using Xunit;
 
-namespace SpreadsheetUtility.Test;
+namespace SpreadsheetUtility.Test.InfrastructureTests;
 
+[Trait("Category", "Integration")]
 public class DoubleEntrySpreadsheetGeneratorIntegratedTests
 {
     [Fact]
@@ -112,3 +113,4 @@ public class DoubleEntrySpreadsheetGeneratorIntegratedTests
         }
     }
 }
+

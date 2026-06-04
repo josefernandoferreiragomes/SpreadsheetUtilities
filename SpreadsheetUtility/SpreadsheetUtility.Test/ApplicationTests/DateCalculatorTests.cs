@@ -1,9 +1,9 @@
-﻿using Moq;
+using Moq;
 using SpreadsheetUtility.Application.Ports;
 using SpreadsheetUtility.Application.Services;
 using SpreadsheetUtility.Domain.Models;
 
-namespace SpreadsheetUtility.Tests.Calculators
+namespace SpreadsheetUtility.Test.ApplicationTests
 {
     public class DateCalculatorTests
     {

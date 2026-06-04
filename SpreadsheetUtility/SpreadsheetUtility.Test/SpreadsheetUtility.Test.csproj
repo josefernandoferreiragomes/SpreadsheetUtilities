@@ -2,7 +2,6 @@
 
   <PropertyGroup>
 
-
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
@@ -15,6 +14,7 @@
 
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="6.0.0" />
+    <PackageReference Include="FluentValidation" Version="11.11.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.4" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
     <PackageReference Include="moq" Version="4.20.72" />
@@ -25,6 +25,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SpreadsheetUtility.Application\SpreadsheetUtility.Application.csproj" />
+    <ProjectReference Include="..\SpreadsheetUtility.Domain\SpreadsheetUtility.Domain.csproj" />
     <ProjectReference Include="..\SpreadsheetUtility.Infrastructure\SpreadsheetUtility.Infrastructure.csproj" />
   </ItemGroup>
 
@@ -57,10 +58,6 @@
     <None Update="TestData\GanttChartDataManager\CalculateGanttChartAllocationProjectGroupFixedTeam_Output.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="IntegratedTests\" />
   </ItemGroup>
 
 </Project>

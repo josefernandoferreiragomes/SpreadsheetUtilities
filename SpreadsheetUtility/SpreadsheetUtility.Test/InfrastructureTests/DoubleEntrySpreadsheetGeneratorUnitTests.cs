@@ -1,7 +1,7 @@
-﻿using SpreadsheetUtility.Application.DTOs;
+using SpreadsheetUtility.Application.DTOs;
 using SpreadsheetUtility.Infrastructure.Excel;
 
-namespace SpreadsheetUtility.Test;
+namespace SpreadsheetUtility.Test.InfrastructureTests;
 
 public class DoubleEntrySpreadsheetGeneratorUnitTests
 {

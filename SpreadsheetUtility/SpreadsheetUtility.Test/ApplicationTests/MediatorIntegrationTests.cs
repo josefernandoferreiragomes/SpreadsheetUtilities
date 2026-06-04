@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -10,7 +10,7 @@ using SpreadsheetUtility.Application.UseCases.CalculateGanttChartAllocation;
 using SpreadsheetUtility.Domain.Models;
 using SpreadsheetUtility.Test.Helpers;
 
-namespace SpreadsheetUtility.Test;
+namespace SpreadsheetUtility.Test.ApplicationTests;
 
 public class GanttServiceTests
 {

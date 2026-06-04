@@ -29,8 +29,12 @@ You take a high-level feature request and drive it through the full development 
 4. **Build** — invoke `build-project` skill to verify compilation
 5. **Test** — delegate to `test-runner` agent to run unit tests
 6. **Review** — delegate to `review` agent for code quality check
-7. **Commit** — delegate to `git` agent to commit and push
-8. **Final verify** — run build + test one more time
+7. **Governance** — load `update-governance-docs` skill, then update the three governance docs:
+   - `CHANGELOG.md` — add entry under `[Unreleased]` with category heading, changes, test count
+   - `docs/REFACTORING_ROADMAP.md` — update phase status if a phase boundary was crossed
+   - `docs/PROJECT_STRUCTURE.md` — update if folder structure or dependencies changed
+8. **Commit** — delegate to `git` agent to commit and push (includes governance doc changes)
+9. **Final verify** — run build + test one more time
 
 ### Delegation Rules
 - Use `task` with `subagent_type` to call git, coding, test-runner, and review

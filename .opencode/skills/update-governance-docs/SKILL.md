@@ -79,33 +79,14 @@ When you run out of context window or need to stop mid-phase:
 
 3. **New session startup** — Load this skill, then read the three governance files to reconstruct full context.
 
-## Current Project State (last updated: 2026-06-04)
+## Getting Current State
 
-### Completed Phases
-- Phase 0 — Foundation & Namespace Unification ✅
-- Phase 1 — Domain Layer ✅
-- Phase 2 — Application Layer ✅
-- Phase 3 — Infrastructure Layer ✅
-- Phase 4a — UI.Web Refactoring ✅
-- Phase 4b — Auth.Api Refactoring ✅
-- Phase 4c — UI.Console Refactoring ✅
-- **Phase 4 — Presentation Layer Refactoring (ALL)** ✅
-- **Phase 5 — Cross-Cutting & Final Cleanup** ✅
-- **Phase 6 — Testing Restructure** ✅ (71 tests, 0 failures)
+Load this skill, then read the three governance files to reconstruct full context:
+- `CHANGELOG.md` (latest `[Unreleased]` section)
+- `docs/REFACTORING_ROADMAP.md` (phase-by-phase checklist with status)
+- `docs/PROJECT_STRUCTURE.md` (solution layout, dependencies, folder organization)
 
-### Completed Phase 6 Details
-| # | Step | Result |
-|---|---|---|
-| **6.1** | Restructure test folders | ✅ `ApplicationTests/`, `InfrastructureTests/`, `DomainTests/` with subfolders |
-| **6.2** | 7 FluentValidation validators + 7 test classes (21 tests) | ✅ Validation pipeline now active |
-| **6.3** | 6 MediatR handler unit test classes (12 tests) | ✅ All handlers covered |
-| **6.4** | Tag integration tests with Category=Integration | ✅ `dotnet test --filter "Category!=Integration"` runs 68 unit tests |
-| **6.5** | Domain entity/value object tests (10 tests) | ✅ All domain entities tested |
-
-### Next Phase
-- **Phase 7 — Final Cleanup & Library Deletion** ⬜ (start when ready)
-
-### Key Constraints
+## Key Constraints
 - ViewModels stay in UI.Web project, not Application/DTOs
 - Minimal API endpoints go in `Endpoints/` folder
 - DI validation via `UseDefaultServiceProvider` (standard ASP.NET Core pattern)

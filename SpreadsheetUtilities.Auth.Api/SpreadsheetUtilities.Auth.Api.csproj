@@ -13,6 +13,7 @@
     <ProjectReference Include="..\SpreadsheetUtilities.ServiceDefaults\SpreadsheetUtilities.ServiceDefaults.csproj" />
     <ProjectReference Include="..\SpreadsheetUtility\SpreadsheetUtility.Application\SpreadsheetUtility.Application.csproj" />
     <ProjectReference Include="..\SpreadsheetUtility\SpreadsheetUtility.Infrastructure\SpreadsheetUtility.Infrastructure.csproj" />
+    <ProjectReference Include="..\SpreadsheetUtility\SpreadsheetUtility.Bootstrapper\SpreadsheetUtility.Bootstrapper.csproj" />
   </ItemGroup>
 
 </Project>

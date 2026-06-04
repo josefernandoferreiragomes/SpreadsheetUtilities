@@ -4,75 +4,92 @@
 
 ```
 SpreadsheetUtilities.sln
-â”‚
-â”œâ”€â”€ src/
-â”‚   â”œâ”€â”€ SpreadsheetUtility.Domain/          # Pure domain entities & value objects
-â”‚   â”œâ”€â”€ SpreadsheetUtility.Application/     # Use cases, DTOs, mappers, ports, services
-â”‚   â”œâ”€â”€ SpreadsheetUtility.Library/         # Legacy (being phased out)
-â”‚   â”‚   â”œâ”€â”€ Providers/                      # Implement Application.Ports interfaces
-â”‚   â”‚   â”œâ”€â”€ Excel/                          # ClosedXML-dependent implementations
-â”‚   â”‚   â””â”€â”€ SpreadsheetGenerator/           # Legacy (deferred to Phase 3)
-â”‚   â”‚
-â”‚   â””â”€â”€ Presentation/
-â”‚       â”œâ”€â”€ SpreadsheetUtility.UI.Web/      # Blazor Server app
-â”‚       â”œâ”€â”€ SpreadsheetUtility.UI.Console/  # Console app
-â”‚       â””â”€â”€ SpreadsheetUtilities.Auth.Api/  # Auth Minimal API
-â”‚
-â”œâ”€â”€ tests/
-â”‚   â””â”€â”€ SpreadsheetUtility.Test/           # All tests (xUnit)
-â”‚
-â””â”€â”€ shared/
-    â”œâ”€â”€ SpreadsheetUtilities.ServiceDefaults/  # Aspire service defaults
-    â””â”€â”€ SpreadsheetUtilities.AppHost/          # Aspire orchestrator
+│
+├── SpreadsheetUtility.Domain/          # Pure domain entities & value objects
+├── SpreadsheetUtility.Application/     # Use cases, DTOs, mappers, ports, services
+├── SpreadsheetUtility.Infrastructure/  # All I/O, ClosedXML, repos, providers, API clients
+├── SpreadsheetUtility.Bootstrapper/    # DI composition root
+│
+├── SpreadsheetUtility.UI.Web/          # Blazor Server app (Presentation)
+├── SpreadsheetUtility.UI.Console/      # Console app (Presentation)
+├── SpreadsheetUtilities.Auth.Api/      # Auth Minimal API (Presentation)
+│
+├── SpreadsheetUtility.Test/            # All tests (xUnit)
+│
+├── SpreadsheetUtilities.ServiceDefaults/  # Aspire service defaults
+└── SpreadsheetUtilities.AppHost/          # Aspire orchestrator
 ```
 
 ## Project Dependencies
 
 ```
 SpreadsheetUtility.Domain          net10.0     [no dependencies]
-       â†‘
+       ↑
 SpreadsheetUtility.Application     net10.0     [Domain, MediatR, FluentValidation]
-       â†‘
-SpreadsheetUtility.Library         net10.0     [Domain, Application, ClosedXML, Newtonsoft.Json]
-       â†‘
-├── SpreadsheetUtility.UI.Web      net10.0     [Application, Infrastructure]
-├── SpreadsheetUtility.UI.Console  net10.0     [Application, Infrastructure]
-└── SpreadsheetUtilities.Auth.Api  net10.0     [Application, Infrastructure]
+       ↑
+SpreadsheetUtility.Infrastructure  net10.0     [Domain, Application, ClosedXML]
+       ↑
+SpreadsheetUtility.Bootstrapper    net10.0     [Application, Infrastructure]
+       ↑
+├── SpreadsheetUtility.UI.Web      net10.0     [Bootstrapper]
+├── SpreadsheetUtility.UI.Console  net10.0     [Bootstrapper]
+└── SpreadsheetUtilities.Auth.Api  net10.0     [Bootstrapper]
+
+Shared:
+  SpreadsheetUtilities.ServiceDefaults  net10.0  [Aspire]
+  SpreadsheetUtilities.AppHost          net10.0  [Aspire orchestration]
 ```
 
 ## Key Folders (Application)
 
 | Path | Description |
 |------|-------------|
-| `Application/DTOs/` | 7 DTOs: `TaskDto`, `ProjectDto`, `DeveloperDto`, `CalculateGanttChartAllocationInput/Output`, `DeveloperAvailability`, `ListGeneratorInput` |
-| `Application/Ports/` | Abstractions: `IDateTimeProvider`, `IHolidayProvider`, `IExcelWorkbook`, `IExcelWorksheet` |
-| `Application/Mappers/` | `IGanttChartMapper` / `GanttChartMapper` (DTO â†” Domain) |
+| `Application/DTOs/` | 9 DTOs: `TaskDto`, `ProjectDto`, `DeveloperDto`, `CalculateGanttChartAllocationInput/Output`, `DeveloperAvailability`, `ListGeneratorInput`, `GenerateDoubleEntryInput/Output` |
+| `Application/Ports/` | Abstractions: `IDateTimeProvider`, `IHolidayProvider`, `IExcelWorkbook`, `IExcelWorksheet`, `IDoubleEntryGeneratorService`, `IAuthService` |
+| `Application/Mappers/` | `IGanttChartMapper` / `GanttChartMapper` (DTO ↔ Domain) |
 | `Application/Services/` | Calculators, strategies, factories, list generators, builders, PasteParserService |
-| `Application/UseCases/` | MediatR queries/commands and handlers |
+| `Application/UseCases/` | MediatR queries/commands and handlers (CalculateGanttChartAllocation, LoadTasks, ParseExcelData, Session, GenerateDoubleEntrySpreadsheet) |
 | `Application/Behaviors/` | `LoggingBehavior`, `ValidationBehavior` pipelines |
+
+## Key Folders (Infrastructure)
+
+| Path | Description |
+|------|-------------|
+| `Infrastructure/Excel/` | ClosedXML implementations: `IExcelDocument`/`ExcelDocument`, `DoubleEntryGeneratorService` |
+| `Infrastructure/Services/` | `AuthService`, `SessionService`, `FolderExampleFileProvider` |
+| `Infrastructure/Providers/` | `DateTimeProvider`, `HolidayFileProvider` |
+| `Infrastructure/Repositories/` | `HolidayRepository`, `DeveloperRepository` |
+| `Infrastructure/ApiClients/` | NSwag-generated `AuthApiClient` |
+| `Infrastructure/Models/` | `SessionState`, `ExampleFileInfo`, `FileDownloadDto` |
+| `Infrastructure/Abstractions/` | `IExampleFileProvider` |
+| `Infrastructure/Holidays/` | `2025HolidaysPT.json` |
 
 ## Layer Responsibility
 
 | Layer | Responsible For |
 |-------|----------------|
 | **Domain** | Entities (`GanttTask`, `Developer`, `Project`, `ProjectGroup`, `Holiday`), Value Objects (`DateRange`, `VacationPeriod`), Domain service interfaces, Repository interfaces |
-| **Application** | Use case orchestration via MediatR, DTOs, mapping, port abstractions, business logic services (calculators, strategies) |
-| **Library** | Infrastructure implementations (providers), legacy code, spreadsheet I/O (ClosedXML), `SpreadsheetGenerator` |
-| **Presentation** | Blazor components/pages, API endpoints, console I/O |
+| **Application** | Use case orchestration via MediatR, DTOs, mapping, port abstractions, business logic services (calculators, strategies, PasteParserService) |
+| **Infrastructure** | All I/O (ClosedXML Excel operations), repository implementations, external API clients, caching (`IMemoryCache`), providers (date, holiday, example files) |
+| **Bootstrapper** | DI composition: single `AddSpreadsheetUtilities()` extension method calling `AddApplication()` + `AddInfrastructure()` |
+| **Presentation** | Blazor components/pages, Minimal API endpoints, console I/O |
 
 ## Key Files
 
 | File | Description |
 |------|-------------|
-| `Application/DependencyInjection.cs` | `AddApplication()` extension for DI registration |
+| `Application/DependencyInjection.cs` | `AddApplication()` extension for DI registration (MediatR, validators, services) |
 | `Application/Behaviors/LoggingBehavior.cs` | MediatR pipeline: logs requests/responses |
 | `Application/Behaviors/ValidationBehavior.cs` | MediatR pipeline: validates inputs via FluentValidation |
 | `Application/UseCases/CalculateGanttChartAllocation/` | Query + Handler replacing `GanttChartProcessor` |
 | `Application/UseCases/LoadTasks/` | Query + Handler for loading tasks from Excel |
 | `Application/UseCases/ParseExcelData/` | Command + Handler for parsing pasted Excel data |
-| `Library/Providers/IDateTimeProvider.cs` | Implements `Application.Ports.IDateTimeProvider` |
-| `Library/Providers/IHolidayProvider.cs` | Implements `Application.Ports.IHolidayProvider` |
+| `Application/UseCases/GenerateDoubleEntrySpreadsheet/` | Command + Handler for double-entry spreadsheet generation |
+| `Application/UseCases/Session/` | InitiateSession, GetSession, UpdateSession use cases |
 | `Application/Services/IPasteParserService.cs` | Interface for parsing pasted TSV data |
 | `Application/Services/PasteParserService.cs` | Implementation: ParseProjects, ParseTasks, ParseTeam |
+| `Bootstrapper/DependencyInjection.cs` | `AddSpreadsheetUtilities()` extension combining Application and Infrastructure registrations |
+| `Infrastructure/DependencyInjection.cs` | `AddInfrastructure()` extension for DI registration |
+| `Infrastructure/Excel/DoubleEntryGeneratorService.cs` | ClosedXML-based implementation of `IDoubleEntryGeneratorService` |
 | `Infrastructure/Services/AuthService.cs` | IAuthService implementation using IMemoryCache |
 | `UI.Web/ViewModels/GanttGeneratorViewModel.cs` | Page state holder for GanttGeneratorFromPaste.razor |

@@ -26,7 +26,6 @@
   <ItemGroup>
     <ProjectReference Include="..\SpreadsheetUtility.Application\SpreadsheetUtility.Application.csproj" />
     <ProjectReference Include="..\SpreadsheetUtility.Infrastructure\SpreadsheetUtility.Infrastructure.csproj" />
-    <ProjectReference Include="..\SpreadsheetUtility.Library\SpreadsheetUtility.Library.csproj" />
   </ItemGroup>
 
   <ItemGroup>

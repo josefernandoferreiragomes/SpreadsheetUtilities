@@ -1,5 +1,4 @@
-﻿using SpreadsheetUtility.Application;
-using SpreadsheetUtility.Infrastructure;
+﻿using SpreadsheetUtility.Bootstrapper;
 using SpreadsheetUtility.UI.Web.ViewModels;
 using SpreadsheetUtility.UI.Web.Components;
 using SpreadsheetUtility.UI.Web.Endpoints;
@@ -20,9 +19,7 @@ builder.Services.AddLogging(logging =>
     logging.AddConsole();
 });
 
-builder.Services.AddApplication();
-
-builder.Services.AddInfrastructure();
+builder.Services.AddSpreadsheetUtilities();
 
 builder.Services.AddScoped<GanttGeneratorViewModel>();
 

@@ -1,9 +1,8 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Scalar.AspNetCore;
-using SpreadsheetUtility.Application;
 using SpreadsheetUtility.Application.UseCases.Session;
-using SpreadsheetUtility.Infrastructure;
+using SpreadsheetUtility.Bootstrapper;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,8 +11,7 @@ builder.AddServiceDefaults();
 builder.Services.AddOpenApi();
 builder.Services.AddMemoryCache();
 
-builder.Services.AddApplication();
-builder.Services.AddInfrastructure();
+builder.Services.AddSpreadsheetUtilities();
 
 var app = builder.Build();
 

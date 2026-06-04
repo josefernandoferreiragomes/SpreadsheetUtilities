@@ -1,9 +1,8 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using MediatR;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Utilities;
-using SpreadsheetUtility.Infrastructure.Excel;
-// See https://aka.ms/new-console-template for more information
-// Display help if arguments are missing
+using SpreadsheetUtility.Application.UseCases.GenerateDoubleEntrySpreadsheet;
+using SpreadsheetUtility.Bootstrapper;
 
 Console.WriteLine("Double Entry Spreadsheet Generator is about to Start...");
 
@@ -13,32 +12,32 @@ if (args.Length < 1)
     return;
 }
 
-// Get input and output file paths
-string keyColumnID = args.Length > 1 ? args[1] : string.Empty;
-string valuesColumnID = args.Length > 2 ? args[2] : string.Empty;
-string outputFilePath = args.Length > 3 ? args[3] : string.Empty;
-string headersRow = args.Length > 4 ? args[4] : string.Empty;
-string worksheetIndex = args.Length > 5 ? args[5] : string.Empty;
+var host = CreateHostBuilder(args).Build();
+var mediator = host.Services.GetRequiredService<IMediator>();
 
-var host = CreateHostBuilder(args);
-var service = host.Build().Services.GetRequiredService<IExcelDocument>();
+var command = new GenerateDoubleEntrySpreadsheetCommand
+{
+    InputFilePath = args[0],
+    KeyColumnId = args.Length > 1 ? args[1] : string.Empty,
+    ValuesColumnId = args.Length > 2 ? args[2] : string.Empty,
+    OutputFilePath = args.Length > 3 ? args[3] : string.Empty,
+    HeadersRow = args.Length > 4 ? args[4] : string.Empty,
+    WorksheetIndex = args.Length > 5 ? args[5] : string.Empty
+};
 
-SpreadsheetGeneratorDoubleEntry generator = new SpreadsheetGeneratorDoubleEntry(service, keyColumnID, valuesColumnID, outputFilePath, headersRow, worksheetIndex);
+var result = await mediator.Send(command);
 
-List<string> result = await generator.Generate();
-
-foreach (var line in result)
+foreach (var line in result.Messages)
 {
     Console.WriteLine(line);
 }
 
 Console.WriteLine("Press any key to exit...");
+Console.ReadKey();
 
 static IHostBuilder CreateHostBuilder(string[] args) =>
     Host.CreateDefaultBuilder(args)
-        .ConfigureServices((hostContext, services) =>
+        .ConfigureServices((_, services) =>
         {
-            string filePath = args[0];
-            services.AddTransient<IExcelDocument>(factoryProvider => new ExcelDocument(filePath));
-            services.AddTransient<SpreadsheetGeneratorDoubleEntry>();
+            services.AddSpreadsheetUtilities();
         });

@@ -1,108 +1,114 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using ClosedXML.Excel;
-using Moq;
-using Utilities;
+using SpreadsheetUtility.Application.DTOs;
 using SpreadsheetUtility.Infrastructure.Excel;
 using Xunit;
 
-namespace DoubleEntrySpreadsheetGeneratorTests
+namespace SpreadsheetUtility.Test;
+
+public class DoubleEntrySpreadsheetGeneratorIntegratedTests
 {
-
-    public class DoubleEntrySpreadsheetGeneratorIntegratedTests
+    [Fact]
+    public async Task GenerateDoubleEntrySpreadsheet_InputFileNotFound_ReturnsError()
     {
-        //startup method
-        
-
-        [Fact]
-        public async Task GenerateDoubleEntrySpreadsheet_InputFileNotFound_ReturnsError()
-        {            
-            // Arrange
-            var inputFilePath = "nonexistent.xlsx";
-            var service = new ExcelDocument(inputFilePath);
-            var generator = new SpreadsheetGeneratorDoubleEntry(service, "5", "3", "output.xlsx");
-
-            // Act
-            var result = await generator.Generate();
-            var path = System.IO.Path.GetFullPath(inputFilePath);
-            // Assert
-            Assert.Contains($"Error processing the file: Could not find file '{path}'.", result);
-        }
-
-        [Fact]
-        public async Task GenerateDoubleEntrySpreadsheet_ValidInputFile_GeneratesOutputFile()
+        // Arrange
+        var inputFilePath = "nonexistent.xlsx";
+        var service = new DoubleEntryGeneratorService();
+        var input = new GenerateDoubleEntryInput
         {
-            // Arrange
-            var inputFilePath = "test_input.xlsx";
-            var outputFilePath = "test_output.xlsx";
-            CreateTestInputFile(inputFilePath);
-            var service = new ExcelDocument(inputFilePath);
+            InputFilePath = inputFilePath,
+            KeyColumnId = "5",
+            ValuesColumnId = "3",
+            OutputFilePath = "output.xlsx"
+        };
 
-            var generator = new SpreadsheetGeneratorDoubleEntry(service, "2", "4", outputFilePath);
+        // Act
+        var result = await service.GenerateAsync(input);
 
-            // Act
-            var result = await generator.Generate();
+        // Assert
+        Assert.False(result.Success);
+        Assert.Contains($"Error: Input file '{inputFilePath}' not found.", result.Messages);
+    }
 
-            // Assert
-            Assert.Contains($"Output file saved: {outputFilePath}", result);
-            Assert.True(File.Exists(outputFilePath));
-
-            // Clean up
-            File.Delete(inputFilePath);
-            File.Delete(outputFilePath);
-        }        
-
-        [Fact]
-        public async Task GenerateDoubleEntrySpreadsheet_InputFileWithNoData_ReturnsError()
+    [Fact]
+    public async Task GenerateDoubleEntrySpreadsheet_ValidInputFile_GeneratesOutputFile()
+    {
+        // Arrange
+        var inputFilePath = "test_input.xlsx";
+        var outputFilePath = "test_output.xlsx";
+        CreateTestInputFile(inputFilePath);
+        var service = new DoubleEntryGeneratorService();
+        var input = new GenerateDoubleEntryInput
         {
-            // Arrange
-            var inputFilePath = "empty_input.xlsx";
-            CreateEmptyTestInputFile(inputFilePath);
-            var service = new ExcelDocument(inputFilePath);
+            InputFilePath = inputFilePath,
+            KeyColumnId = "2",
+            ValuesColumnId = "4",
+            OutputFilePath = outputFilePath
+        };
 
-            var generator = new SpreadsheetGeneratorDoubleEntry(service, "5", "3", "output.xlsx");
+        // Act
+        var result = await service.GenerateAsync(input);
 
-            // Act
-            var result = await generator.Generate();
+        // Assert
+        Assert.True(result.Success);
+        Assert.Contains($"Output file saved: {outputFilePath}", result.Messages);
+        Assert.True(File.Exists(outputFilePath));
 
-            // Assert
-            Assert.Contains("Error: No valid data found in input file.", result);
+        // Clean up
+        File.Delete(inputFilePath);
+        File.Delete(outputFilePath);
+    }
 
-            // Clean up
-            File.Delete(inputFilePath);
-        }
-
-        private void CreateTestInputFile(string filePath)
+    [Fact]
+    public async Task GenerateDoubleEntrySpreadsheet_InputFileWithNoData_ReturnsError()
+    {
+        // Arrange
+        var inputFilePath = "empty_input.xlsx";
+        CreateEmptyTestInputFile(inputFilePath);
+        var service = new DoubleEntryGeneratorService();
+        var input = new GenerateDoubleEntryInput
         {
-            using (var workbook = new XLWorkbook())
-            {
-                var worksheet = workbook.Worksheets.Add("Sheet1");
-                worksheet.Cell(1, 2).Value = "serviceName";
-                worksheet.Cell(1, 4).Value = "thirdPartyServices";
-                worksheet.Cell(2, 2).Value = "Service1";
-                worksheet.Cell(2, 4).Value = "ThirdParty1, ThirdParty2";
-                workbook.SaveAs(filePath);
-            }
-        }
+            InputFilePath = inputFilePath,
+            KeyColumnId = "5",
+            ValuesColumnId = "3",
+            OutputFilePath = "output.xlsx"
+        };
 
-        private void CreateEmptyTestInputFile(string filePath)
+        // Act
+        var result = await service.GenerateAsync(input);
+
+        // Assert
+        Assert.False(result.Success);
+        Assert.Contains("Error: No valid data found in input file.", result.Messages);
+
+        // Clean up
+        File.Delete(inputFilePath);
+    }
+
+    private static void CreateTestInputFile(string filePath)
+    {
+        using (var workbook = new XLWorkbook())
         {
-            using (var workbook = new XLWorkbook())
-            {
-                var worksheet = workbook.Worksheets.Add("Sheet1");
-                worksheet.Cell(1, 2).Value = "serviceName";
-                worksheet.Cell(1, 4).Value = "thirdPartyServices";
-                workbook.SaveAs(filePath);
-            }
+            var worksheet = workbook.Worksheets.Add("Sheet1");
+            worksheet.Cell(1, 2).Value = "serviceName";
+            worksheet.Cell(1, 4).Value = "thirdPartyServices";
+            worksheet.Cell(2, 2).Value = "Service1";
+            worksheet.Cell(2, 4).Value = "ThirdParty1, ThirdParty2";
+            workbook.SaveAs(filePath);
         }
+    }
 
-        // TODO: after managing the excel reader as a dependency, add tests for the ReadInputFile method, using something like this:
-        /*
-         * var content = File.OpenRead(@"C:\myfile.xlsx");
-        var file = new Mock<IFormFile>();
-        file.Setup(_ => _.OpenReadStream()).Returns(content);
-         */
+    private static void CreateEmptyTestInputFile(string filePath)
+    {
+        using (var workbook = new XLWorkbook())
+        {
+            var worksheet = workbook.Worksheets.Add("Sheet1");
+            worksheet.Cell(1, 2).Value = "serviceName";
+            worksheet.Cell(1, 4).Value = "thirdPartyServices";
+            workbook.SaveAs(filePath);
+        }
     }
 }

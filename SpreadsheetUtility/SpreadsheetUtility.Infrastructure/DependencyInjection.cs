@@ -1,7 +1,8 @@
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using SpreadsheetUtility.Application.Ports;
 using SpreadsheetUtility.Domain.Repositories;
 using SpreadsheetUtility.Infrastructure.Abstractions;
+using SpreadsheetUtility.Infrastructure.Excel;
 using SpreadsheetUtility.Infrastructure.Providers;
 using SpreadsheetUtility.Infrastructure.Repositories;
 using SpreadsheetUtility.Infrastructure.Services;
@@ -19,6 +20,7 @@ public static class DependencyInjection
         services.AddScoped<SessionService>();
         services.AddScoped<IExampleFileProvider, FolderExampleFileProvider>();
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IDoubleEntryGeneratorService, DoubleEntryGeneratorService>();
 
         return services;
     }

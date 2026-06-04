@@ -14,10 +14,25 @@ SpreadsheetUtilities.sln
 ├── SpreadsheetUtility.UI.Console/      # Console app (Presentation)
 ├── SpreadsheetUtilities.Auth.Api/      # Auth Minimal API (Presentation)
 │
-├── SpreadsheetUtility.Test/            # All tests (xUnit)
+├── SpreadsheetUtility.Test/            # All tests (xUnit) — 71 tests
 │
 ├── SpreadsheetUtilities.ServiceDefaults/  # Aspire service defaults
 └── SpreadsheetUtilities.AppHost/          # Aspire orchestrator
+```
+
+### Test Project Structure (Phase 6)
+
+```
+SpreadsheetUtility.Test/                  # Single xUnit test project
+├── ApplicationTests/                     # Handler + validator unit tests
+│   ├── Validators/                       # 7 FluentValidation test classes (21 methods)
+│   ├── UseCases/                         # 6 MediatR handler test classes (12 methods)
+│   └── MediatorIntegrationTests.cs       # End-to-end handler test (integration)
+├── InfrastructureTests/                  # Infrastructure layer tests
+│   ├── DoubleEntrySpreadsheetGeneratorTests.cs        # Unit tests
+│   └── DoubleEntrySpreadsheetGeneratorIntegratedTests.cs  # Integration (Category=Integration)
+└── DomainTests/                          # Domain layer tests
+    └── EntityValueObjectTests.cs          # 10 entity/value object tests
 ```
 
 ## Project Dependencies
@@ -47,6 +62,7 @@ Shared:
 | `Application/DTOs/` | 9 DTOs: `TaskDto`, `ProjectDto`, `DeveloperDto`, `CalculateGanttChartAllocationInput/Output`, `DeveloperAvailability`, `ListGeneratorInput`, `GenerateDoubleEntryInput/Output` |
 | `Application/Ports/` | Abstractions: `IDateTimeProvider`, `IHolidayProvider`, `IExcelWorkbook`, `IExcelWorksheet`, `IDoubleEntryGeneratorService`, `IAuthService` |
 | `Application/Mappers/` | `IGanttChartMapper` / `GanttChartMapper` (DTO ↔ Domain) |
+| `Application/Validation/` | 7 FluentValidation validators: CalculateGanttChartAllocation, GenerateDoubleEntry, LoadTasks, ParseExcelData, InitiateSession, UpdateSession, GetSession |
 | `Application/Services/` | Calculators, strategies, factories, list generators, builders, PasteParserService |
 | `Application/UseCases/` | MediatR queries/commands and handlers (CalculateGanttChartAllocation, LoadTasks, ParseExcelData, Session, GenerateDoubleEntrySpreadsheet) |
 | `Application/Behaviors/` | `LoggingBehavior`, `ValidationBehavior` pipelines |

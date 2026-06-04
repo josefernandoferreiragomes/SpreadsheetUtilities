@@ -90,19 +90,20 @@ When you run out of context window or need to stop mid-phase:
 - Phase 4b — Auth.Api Refactoring ✅
 - Phase 4c — UI.Console Refactoring ✅
 - **Phase 4 — Presentation Layer Refactoring (ALL)** ✅
+- **Phase 5 — Cross-Cutting & Final Cleanup** ✅
+- **Phase 6 — Testing Restructure** ✅ (71 tests, 0 failures)
 
-### Next: Phase 5 — Cross-Cutting & Final Cleanup
-
-| # | Step | Status |
+### Completed Phase 6 Details
+| # | Step | Result |
 |---|---|---|
-| **5.1** | Delete `SpreadsheetUtility.Library` after all code migrated | ⬜ |
-| **5.2** | Create `SpreadsheetUtility.Bootstrapper` extension methods or use `ServiceDefaults` patterns for DI composition | ⬜ |
-| **5.3** | Update `.sln` solution folders to match architecture: `src/Domain/`, `src/Application/`, `src/Infrastructure/`, `src/Presentation/` | ⬜ |
-| **5.4** | Update CHANGELOG.md, docs/, AGENTS.md | ⬜ |
-| **5.5** | dotnet build — clean | ⬜ |
+| **6.1** | Restructure test folders | ✅ `ApplicationTests/`, `InfrastructureTests/`, `DomainTests/` with subfolders |
+| **6.2** | 7 FluentValidation validators + 7 test classes (21 tests) | ✅ Validation pipeline now active |
+| **6.3** | 6 MediatR handler unit test classes (12 tests) | ✅ All handlers covered |
+| **6.4** | Tag integration tests with Category=Integration | ✅ `dotnet test --filter "Category!=Integration"` runs 68 unit tests |
+| **6.5** | Domain entity/value object tests (10 tests) | ✅ All domain entities tested |
 
-### After Phase 5: Phase 6 — Testing Restructure
-### After Phase 6: Phase 7 — Final Cleanup & Library Deletion
+### Next Phase
+- **Phase 7 — Final Cleanup & Library Deletion** ⬜ (start when ready)
 
 ### Key Constraints
 - ViewModels stay in UI.Web project, not Application/DTOs
@@ -112,3 +113,4 @@ When you run out of context window or need to stop mid-phase:
 - Use MediatR for use case orchestration
 - Infrastructure owns all ClosedXML/NSwag references
 - Console uses `Host.CreateDefaultBuilder` + `AddApplication()` + `AddInfrastructure()`
+- Test count baseline: **71 tests**, always verify with `dotnet test`

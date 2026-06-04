@@ -49,7 +49,7 @@ Three files track the project's state across sessions:
 - `update-governance-docs` — Update governance files and capture session handoff state
 - `second-opinion` — Get code review from another agent
 
-## Current Dependency Graph (as of Phase 5 complete)
+## Current Dependency Graph (as of Phase 6 complete — 71 tests)
 
 ```
 SpreadsheetUtility.Domain          [no deps]
@@ -73,6 +73,7 @@ Shared:
 
 ```bash
 dotnet build     # 0 errors expected
-dotnet test      # 26/26 pass expected
+dotnet test      # 71/71 pass expected
 ```
+
 

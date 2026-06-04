@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net.WebSockets;
 using ClosedXML.Excel;
-using SpreadsheetUtility.Library.Infrastructure;
+using SpreadsheetUtility.Infrastructure.Excel;
 
 namespace Utilities
 {
@@ -12,7 +11,7 @@ namespace Utilities
     {
         internal const int WORKSHEET_INDEX_COUNT_DEFAULT = 1;
         internal const int HEADER_ROW_INDEX_DEFAULT = 2;
-        internal readonly IExcelWorkbook _workbook;
+        internal readonly IExcelDocument _workbook;
         internal string _keyColumnID;
         internal string _valuesColumnID;
         internal string _outputFilePath;
@@ -23,7 +22,7 @@ namespace Utilities
         internal int _headersRowInt;
         internal int _worksheetIndexInt;
 
-        public SpreadsheetGeneratorBase(IExcelWorkbook workbook, string keyColumnID, string valuesColumnID, string outputFilePath, string? headersRow = null, string? worksheetIndex = null)
+        public SpreadsheetGeneratorBase(IExcelDocument workbook, string keyColumnID, string valuesColumnID, string outputFilePath, string? headersRow = null, string? worksheetIndex = null)
         {
             _workbook = workbook;
            

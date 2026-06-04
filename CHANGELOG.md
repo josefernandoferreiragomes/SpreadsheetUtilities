@@ -27,6 +27,27 @@ All notable changes to this project will be documented in this file.
 
 - opencode AI assistant configuration (AGENTS.md)
 
+## [1.2.0] - 2026-06-04
+
+### Architecture
+
+- Phase 3 refactoring: created `SpreadsheetUtility.Infrastructure` project with `Microsoft.AspNetCore.App` framework reference
+- Moved `DateTimeProvider` → `Infrastructure/Providers/DateTimeProvider.cs`
+- Moved `HolidayProvider` (renamed to `HolidayFileProvider`) → `Infrastructure/Providers/HolidayFileProvider.cs`
+- Moved and renamed `IExcelWorkbook`/`ExcelWorkbook` → `Infrastructure/Excel/IExcelDocument`/`ExcelDocument` (avoids naming collision with `Application.Ports.IExcelWorkbook`)
+- Moved `SessionService` → `Infrastructure/Services/SessionService.cs`
+- Moved `FolderExampleFileProvider` + `IExampleFileProvider` → `Infrastructure/Services/` and `Infrastructure/Abstractions/`
+- Moved NSwag-generated `AuthApiClient` → `Infrastructure/ApiClients/AuthApiClient.cs`
+- Moved models (`SessionState`, `ExampleFileInfo`, `FileDownloadDto`) → `Infrastructure/Models/`
+- Moved `2025HolidaysPT.json` → `Infrastructure/Holidays/`
+- Implemented `IHolidayRepository` (`HolidayRepository`) and `IDeveloperRepository` (`DeveloperRepository`) in `Infrastructure/Repositories/`
+- Created `Infrastructure/DependencyInjection.cs` with `AddInfrastructure()` extension method
+- `UI.Web` dropped `Library` project reference; now depends on `Infrastructure` + `Application`
+- `Library` project stripped to legacy `SpreadsheetGenerator` only; references `Infrastructure` for `IExcelDocument`
+- `UI.Console` and `Test` added `Infrastructure` project reference
+- Updated all imports and namespaces across consuming projects
+- `dotnet build`: 0 errors, `dotnet test`: 26 pass, 0 failures
+
 ## [1.1.0] - 2024-01-15
 
 ### Added

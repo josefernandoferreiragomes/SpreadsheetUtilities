@@ -1,6 +1,6 @@
 @page "/ganttGeneratorFromPaste"
 @inject MediatR.IMediator Mediator
-@inject SpreadsheetUtility.UI.Web.Services.SessionService SessionService;
+@inject SpreadsheetUtility.Infrastructure.Services.SessionService SessionService;
 @using Microsoft.JSInterop
 @using Newtonsoft.Json
 @using SpreadsheetUtility.Application.DTOs
@@ -9,7 +9,7 @@
 @using Microsoft.AspNetCore.Components.QuickGrid;
 @using SpreadsheetUtility.UI.Web.Components;
 @using SpreadsheetUtility.UI.Web.Helpers
-@using SpreadsheetUtility.UI.Web.Models
+@using SpreadsheetUtility.Infrastructure.Models
 @using static Microsoft.AspNetCore.Components.Web.RenderMode
 @inject IJSRuntime JS
 @rendermode InteractiveServer

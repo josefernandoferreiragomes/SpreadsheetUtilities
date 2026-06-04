@@ -6,7 +6,7 @@
   <ItemGroup>
     <ProjectReference Include="..\SpreadsheetUtilities.ServiceDefaults\SpreadsheetUtilities.ServiceDefaults.csproj" />
     <ProjectReference Include="..\SpreadsheetUtility\SpreadsheetUtility.Application\SpreadsheetUtility.Application.csproj" />
-    <ProjectReference Include="..\SpreadsheetUtility\SpreadsheetUtility.Library\SpreadsheetUtility.Library.csproj" />
+    <ProjectReference Include="..\SpreadsheetUtility\SpreadsheetUtility.Infrastructure\SpreadsheetUtility.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>

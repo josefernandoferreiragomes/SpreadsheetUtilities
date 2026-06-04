@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SpreadsheetUtility.Library\SpreadsheetUtility.Library.csproj" />
+    <ProjectReference Include="..\SpreadsheetUtility.Infrastructure\SpreadsheetUtility.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

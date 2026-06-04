@@ -1,13 +1,13 @@
 using ClosedXML.Excel;
 
-namespace SpreadsheetUtility.Library.Infrastructure;
+namespace SpreadsheetUtility.Infrastructure.Excel;
 
-public class ExcelWorkbook : IExcelWorkbook
+public class ExcelDocument : IExcelDocument
 {
     private readonly string _filePath;
     private readonly Lazy<IXLWorkbook> _workbook;
 
-    public ExcelWorkbook(string filePath)
+    public ExcelDocument(string filePath)
     {
         try
         {
@@ -21,7 +21,7 @@ public class ExcelWorkbook : IExcelWorkbook
         }
     }
 
-    public ExcelWorkbook(string filePath, Lazy<IXLWorkbook> workbook)
+    public ExcelDocument(string filePath, Lazy<IXLWorkbook> workbook)
     {
         _filePath = filePath;
         _workbook = workbook;

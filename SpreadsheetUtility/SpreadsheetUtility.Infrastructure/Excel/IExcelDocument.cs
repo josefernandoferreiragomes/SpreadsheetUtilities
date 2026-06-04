@@ -1,8 +1,8 @@
 using ClosedXML.Excel;
 
-namespace SpreadsheetUtility.Library.Infrastructure;
+namespace SpreadsheetUtility.Infrastructure.Excel;
 
-public interface IExcelWorkbook
+public interface IExcelDocument
 {
     IXLWorksheet Worksheet(int index);
     void SaveAs(string filePath);

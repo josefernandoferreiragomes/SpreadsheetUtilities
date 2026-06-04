@@ -1,18 +1,15 @@
 using MediatR;
 using SpreadsheetUtility.Application;
 using SpreadsheetUtility.Application.Ports;
-using SpreadsheetUtility.Library.Providers;
+using SpreadsheetUtility.Infrastructure;
 using SpreadsheetUtility.UI.Web.Components;
-using SpreadsheetUtility.UI.Web.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
-// Add Data Protection services for secure cookie storage
 builder.Services.AddDataProtection();
 
-// Add services to the container.
 builder.Services.AddRazorComponents(options =>
         options.DetailedErrors = builder.Environment.IsDevelopment()
     )
@@ -23,22 +20,14 @@ builder.Services.AddLogging(logging =>
     logging.AddConsole();
 });
 
-// Register Application layer services (MediatR, use cases, mappers, calculators, strategies)
 builder.Services.AddApplication();
 
-// Register infrastructure implementations
-builder.Services.AddScoped<IDateTimeProvider, DateTimeProvider>();
-builder.Services.AddScoped<IHolidayProvider, HolidayProvider>();
-builder.Services.AddScoped<SessionService>();
-
-// Add example files service for downloading sample spreadsheets
-builder.Services.AddScoped<IExampleFileProvider, FolderExampleFileProvider>();
+builder.Services.AddInfrastructure();
 
 var app = builder.Build();
 
 app.MapDefaultEndpoints();
 
-// Validate key scoped services
 using (var scope = app.Services.CreateScope())
 {
     var servicesToValidate = new Type[]

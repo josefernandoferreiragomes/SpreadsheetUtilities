@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using SpreadsheetUtility.UI.Web.Services;
+using SpreadsheetUtility.Infrastructure.Abstractions;
+using SpreadsheetUtility.Infrastructure.Models;
 
 namespace SpreadsheetUtility.UI.Web.Components.Api;
 
@@ -43,7 +44,7 @@ public class ExampleFilesController : ControllerBase
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult<IEnumerable<Models.ExampleFileInfo>>> GetAvailableFiles()
+    public async Task<ActionResult<IEnumerable<ExampleFileInfo>>> GetAvailableFiles()
     {
         try
         {

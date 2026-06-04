@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using ClosedXML.Excel;
 using Moq;
 using Utilities;
-using SpreadsheetUtility.Library.Infrastructure;
+using SpreadsheetUtility.Infrastructure.Excel;
 using Xunit;
 
 namespace DoubleEntrySpreadsheetGeneratorTests
@@ -21,7 +21,7 @@ namespace DoubleEntrySpreadsheetGeneratorTests
         {            
             // Arrange
             var inputFilePath = "nonexistent.xlsx";
-            var service = new ExcelWorkbook(inputFilePath);
+            var service = new ExcelDocument(inputFilePath);
             var generator = new SpreadsheetGeneratorDoubleEntry(service, "5", "3", "output.xlsx");
 
             // Act
@@ -38,7 +38,7 @@ namespace DoubleEntrySpreadsheetGeneratorTests
             var inputFilePath = "test_input.xlsx";
             var outputFilePath = "test_output.xlsx";
             CreateTestInputFile(inputFilePath);
-            var service = new ExcelWorkbook(inputFilePath);
+            var service = new ExcelDocument(inputFilePath);
 
             var generator = new SpreadsheetGeneratorDoubleEntry(service, "2", "4", outputFilePath);
 
@@ -60,7 +60,7 @@ namespace DoubleEntrySpreadsheetGeneratorTests
             // Arrange
             var inputFilePath = "empty_input.xlsx";
             CreateEmptyTestInputFile(inputFilePath);
-            var service = new ExcelWorkbook(inputFilePath);
+            var service = new ExcelDocument(inputFilePath);
 
             var generator = new SpreadsheetGeneratorDoubleEntry(service, "5", "3", "output.xlsx");
 

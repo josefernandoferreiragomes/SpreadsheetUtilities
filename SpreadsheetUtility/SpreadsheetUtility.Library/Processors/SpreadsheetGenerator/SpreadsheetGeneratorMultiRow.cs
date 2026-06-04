@@ -2,16 +2,15 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net.WebSockets;
 using ClosedXML.Excel;
-using SpreadsheetUtility.Library.Infrastructure;
+using SpreadsheetUtility.Infrastructure.Excel;
 
 namespace Utilities
 {
     public class SpreadsheetGeneratorMultiRow : SpreadsheetGeneratorBase
     {
 
-        public SpreadsheetGeneratorMultiRow(IExcelWorkbook workbook, string keyColumnID, string valuesColumnID, string outputFilePath, string? headersRow = null, string? worksheetIndex = null)
+        public SpreadsheetGeneratorMultiRow(IExcelDocument workbook, string keyColumnID, string valuesColumnID, string outputFilePath, string? headersRow = null, string? worksheetIndex = null)
             : base(workbook, keyColumnID, valuesColumnID, outputFilePath, headersRow, worksheetIndex)
         {
         }

@@ -1,16 +1,15 @@
-﻿using SpreadsheetUtility.UI.Web.Services.Generated;
-using SpreadsheetUtility.UI.Web.Models;
+using SpreadsheetUtility.Infrastructure.ApiClients;
+using SpreadsheetUtility.Infrastructure.Models;
 using System.Text;
 using Microsoft.AspNetCore.DataProtection;
 
-namespace SpreadsheetUtility.UI.Web.Services
+namespace SpreadsheetUtility.Infrastructure.Services
 {
     public class SessionService
     {
         private readonly IDataProtectionProvider _dataProtectionProvider;
         private const string CookieProtectionPurpose = "SpreadsheetUtility.SessionCookie";
 
-        // In-memory cache for session states (email -> SessionState)
         private readonly Dictionary<string, SessionState> _sessionCache = new();
         private readonly object _cacheLock = new();
 
@@ -19,18 +18,14 @@ namespace SpreadsheetUtility.UI.Web.Services
             _dataProtectionProvider = dataProtectionProvider;
         }
 
-        /// <summary>
-        /// Initializes a new session for the given email and returns the session ID.
-        /// </summary>
-        public string InitiateSession(string email) 
+        public string InitiateSession(string email)
         {
             using (var http = new HttpClient())
             {
-                var authApiClient = new SpreadsheetUtilitiesAuthApiClient(http);  
+                var authApiClient = new SpreadsheetUtilitiesAuthApiClient(http);
                 var result = authApiClient.InitiateSessionAsync(email, null);
                 var sessionId = result.Result;
 
-                // Create local session state
                 lock (_cacheLock)
                 {
                     _sessionCache[email] = new SessionState
@@ -45,9 +40,6 @@ namespace SpreadsheetUtility.UI.Web.Services
             }
         }
 
-        /// <summary>
-        /// Retrieves session state from cache. Returns null if session not found.
-        /// </summary>
         public SessionState? GetSessionState(string email)
         {
             lock (_cacheLock)
@@ -60,9 +52,6 @@ namespace SpreadsheetUtility.UI.Web.Services
             return null;
         }
 
-        /// <summary>
-        /// Gets the encrypted session content from the remote API.
-        /// </summary>
         public string GetSession(string email, Guid sessionId)
         {
             using (var http = new HttpClient())
@@ -73,9 +62,6 @@ namespace SpreadsheetUtility.UI.Web.Services
             }
         }
 
-        /// <summary>
-        /// Updates the remote session and updates local cache.
-        /// </summary>
         public string UpdateSession(string email, Guid sessionId, string serializedObject)
         {
             using (var http = new HttpClient())
@@ -83,7 +69,6 @@ namespace SpreadsheetUtility.UI.Web.Services
                 var authApiClient = new SpreadsheetUtilitiesAuthApiClient(http);
                 var result = authApiClient.UpdateSessionAsync(email, sessionId, serializedObject);
 
-                // Update local cache
                 lock (_cacheLock)
                 {
                     if (_sessionCache.TryGetValue(email, out var sessionState))
@@ -96,9 +81,6 @@ namespace SpreadsheetUtility.UI.Web.Services
             }
         }
 
-        /// <summary>
-        /// Saves project data to session state and remote storage.
-        /// </summary>
         public void SaveProjectData(string email, Guid sessionId, string projectData)
         {
             lock (_cacheLock)
@@ -112,9 +94,6 @@ namespace SpreadsheetUtility.UI.Web.Services
             UpdateSession(email, sessionId, projectData);
         }
 
-        /// <summary>
-        /// Saves task data to session state and remote storage.
-        /// </summary>
         public void SaveTaskData(string email, Guid sessionId, string taskData)
         {
             lock (_cacheLock)
@@ -128,9 +107,6 @@ namespace SpreadsheetUtility.UI.Web.Services
             UpdateSession(email, sessionId, taskData);
         }
 
-        /// <summary>
-        /// Saves team data to session state and remote storage.
-        /// </summary>
         public void SaveTeamData(string email, Guid sessionId, string teamData)
         {
             lock (_cacheLock)
@@ -144,9 +120,6 @@ namespace SpreadsheetUtility.UI.Web.Services
             UpdateSession(email, sessionId, teamData);
         }
 
-        /// <summary>
-        /// Loads all cached data from the session state.
-        /// </summary>
         public SessionState? LoadCachedSessionData(string email)
         {
             lock (_cacheLock)
@@ -159,9 +132,6 @@ namespace SpreadsheetUtility.UI.Web.Services
             return null;
         }
 
-        /// <summary>
-        /// Securely stores session content in a cookie using encryption.
-        /// </summary>
         public string StoreSessionContentInCookie(string sessionContent)
         {
             try
@@ -178,9 +148,6 @@ namespace SpreadsheetUtility.UI.Web.Services
             }
         }
 
-        /// <summary>
-        /// Retrieves and decrypts session content from a cookie.
-        /// </summary>
         public string RetrieveSessionContentFromCookie(string encryptedContent)
         {
             try
@@ -197,9 +164,6 @@ namespace SpreadsheetUtility.UI.Web.Services
             }
         }
 
-        /// <summary>
-        /// Clears the session from cache.
-        /// </summary>
         public void ClearSession(string email)
         {
             lock (_cacheLock)

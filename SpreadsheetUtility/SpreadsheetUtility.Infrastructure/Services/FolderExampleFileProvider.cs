@@ -1,12 +1,10 @@
-namespace SpreadsheetUtility.UI.Web.Services;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Logging;
+using SpreadsheetUtility.Infrastructure.Abstractions;
+using SpreadsheetUtility.Infrastructure.Models;
 
-using SpreadsheetUtility.UI.Web.Models;
+namespace SpreadsheetUtility.Infrastructure.Services;
 
-/// <summary>
-/// Serves example files from the local application folder (wwwroot/ExampleFiles).
-/// This is the current implementation and works well for single-server deployments.
-/// When scaling to multiple servers, migrate to FileServerExampleFileProvider.
-/// </summary>
 public class FolderExampleFileProvider : IExampleFileProvider
 {
     private readonly IWebHostEnvironment _hostEnvironment;
@@ -23,9 +21,6 @@ public class FolderExampleFileProvider : IExampleFileProvider
         _exampleFilesPath = Path.Combine(_hostEnvironment.WebRootPath, ExampleFilesFolder);
     }
 
-    /// <summary>
-    /// Gets all available example files from the ExampleFiles folder.
-    /// </summary>
     public async Task<IEnumerable<ExampleFileInfo>> GetAvailableFilesAsync()
     {
         try
@@ -58,9 +53,6 @@ public class FolderExampleFileProvider : IExampleFileProvider
         }
     }
 
-    /// <summary>
-    /// Gets a specific example file including its content.
-    /// </summary>
     public async Task<FileDownloadDto> GetFileAsync(string fileName)
     {
         ValidateFileName(fileName);
@@ -99,9 +91,6 @@ public class FolderExampleFileProvider : IExampleFileProvider
         }
     }
 
-    /// <summary>
-    /// Gets file information without loading the content.
-    /// </summary>
     public async Task<ExampleFileInfo?> GetFileInfoAsync(string fileName)
     {
         ValidateFileName(fileName);
@@ -133,12 +122,8 @@ public class FolderExampleFileProvider : IExampleFileProvider
         }
     }
 
-    /// <summary>
-    /// Validates the file name to prevent directory traversal attacks.
-    /// </summary>
     private void ValidateFileName(string fileName)
     {
-        // Prevent directory traversal attacks
         if (string.IsNullOrWhiteSpace(fileName))
             throw new ArgumentException("File name cannot be empty", nameof(fileName));
 
@@ -148,18 +133,12 @@ public class FolderExampleFileProvider : IExampleFileProvider
         if (!fileName.EndsWith(AllowedExtension, StringComparison.OrdinalIgnoreCase))
             throw new ArgumentException($"Only {AllowedExtension} files are allowed", nameof(fileName));
 
-        // Additional validation: ensure no null characters
         if (fileName.IndexOf('\0') >= 0)
             throw new ArgumentException("Invalid file name - contains null characters", nameof(fileName));
     }
 
-    /// <summary>
-    /// Generates a human-readable description based on the file name.
-    /// Can be extended to read descriptions from a configuration file or database.
-    /// </summary>
     private string GenerateDescription(string fileName)
     {
-        // In the future, this could read from a metadata file or database
         return fileName switch
         {
             _ => "Example spreadsheet for Gantt chart generation"

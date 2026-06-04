@@ -5,29 +5,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Holidays\2025HolidaysPT.json" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="Holidays\2025HolidaysPT.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="ClosedXML" Version="0.104.2" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="9.0.2" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.2" />
-    <PackageReference Include="newtonsoft.json" Version="13.0.3" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="GlobalModels\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\SpreadsheetUtility.Domain\SpreadsheetUtility.Domain.csproj" />
-    <ProjectReference Include="..\SpreadsheetUtility.Application\SpreadsheetUtility.Application.csproj" />
+    <ProjectReference Include="..\SpreadsheetUtility.Infrastructure\SpreadsheetUtility.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

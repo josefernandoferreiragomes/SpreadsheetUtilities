@@ -1,6 +1,6 @@
 ﻿using ClosedXML.Excel;
 using Moq;
-using SpreadsheetUtility.Library.Infrastructure;
+using SpreadsheetUtility.Infrastructure.Excel;
 
 namespace Utilities.Test
 {
@@ -14,7 +14,7 @@ namespace Utilities.Test
         public async Task GenerateDoubleEntrySpreadsheet_InputFileNotFound_ReturnsError()
         {
             // Arrange
-            var mockWorkbook = new Mock<IExcelWorkbook>();
+            var mockWorkbook = new Mock<IExcelDocument>();
             var mockWorksheet = new Mock<IXLWorksheet>();
 
             // Setup mock worksheet behavior - no data (LastRowUsed returns null)
@@ -41,7 +41,7 @@ namespace Utilities.Test
             // GenerateDoubleEntrySpreadsheet_ValidInputFile_GeneratesOutputFile
             // Unit test focuses on the no-data error path which is more straightforward to mock
             // Arrange
-            var mockWorkbook = new Mock<IExcelWorkbook>();
+            var mockWorkbook = new Mock<IExcelDocument>();
             var mockWorksheet = new Mock<IXLWorksheet>();
 
             // Setup mock worksheet behavior - simulate a spreadsheet with data starting at row 1
@@ -67,7 +67,7 @@ namespace Utilities.Test
         public async Task GenerateDoubleEntrySpreadsheet_InputFileWithNoData_ReturnsError()
         {
             // Arrange
-            var mockWorkbook = new Mock<IExcelWorkbook>();
+            var mockWorkbook = new Mock<IExcelDocument>();
             var mockWorksheet = new Mock<IXLWorksheet>();
 
             // Setup mock worksheet behavior - no data (LastRowUsed returns null)

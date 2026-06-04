@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Utilities;
-using SpreadsheetUtility.Library.Infrastructure;
+using SpreadsheetUtility.Infrastructure.Excel;
 // See https://aka.ms/new-console-template for more information
 // Display help if arguments are missing
 
@@ -21,9 +21,8 @@ string headersRow = args.Length > 4 ? args[4] : string.Empty;
 string worksheetIndex = args.Length > 5 ? args[5] : string.Empty;
 
 var host = CreateHostBuilder(args);
-var service = host.Build().Services.GetRequiredService<IExcelWorkbook>();
+var service = host.Build().Services.GetRequiredService<IExcelDocument>();
 
-//TODO: Use a factory to create the generator
 SpreadsheetGeneratorDoubleEntry generator = new SpreadsheetGeneratorDoubleEntry(service, keyColumnID, valuesColumnID, outputFilePath, headersRow, worksheetIndex);
 
 List<string> result = await generator.Generate();
@@ -40,6 +39,6 @@ static IHostBuilder CreateHostBuilder(string[] args) =>
         .ConfigureServices((hostContext, services) =>
         {
             string filePath = args[0];
-            services.AddTransient<IExcelWorkbook>(factoryProvider => new ExcelWorkbook(filePath));
+            services.AddTransient<IExcelDocument>(factoryProvider => new ExcelDocument(filePath));
             services.AddTransient<SpreadsheetGeneratorDoubleEntry>();
         });

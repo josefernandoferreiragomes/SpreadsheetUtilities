@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net.WebSockets;
 using ClosedXML.Excel;
-using SpreadsheetUtility.Library.Infrastructure;
+using SpreadsheetUtility.Infrastructure.Excel;
 
 namespace Utilities
 {
@@ -13,11 +12,11 @@ namespace Utilities
 
 
         public SpreadsheetGeneratorDoubleEntry()
-            : base(new ExcelWorkbook(string.Empty), string.Empty, string.Empty, string.Empty)
+            : base(new ExcelDocument(string.Empty), string.Empty, string.Empty, string.Empty)
         {
         }
 
-        public SpreadsheetGeneratorDoubleEntry(IExcelWorkbook workbook, string keyColumnID, string valuesColumnID, string outputFilePath, string? headersRow = null, string? worksheetIndex = null)
+        public SpreadsheetGeneratorDoubleEntry(IExcelDocument workbook, string keyColumnID, string valuesColumnID, string outputFilePath, string? headersRow = null, string? worksheetIndex = null)
             : base(workbook, keyColumnID, valuesColumnID, outputFilePath, headersRow, worksheetIndex)
         {
             

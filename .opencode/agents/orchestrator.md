@@ -23,7 +23,7 @@ You take a high-level feature request and drive it through the full development 
 ### Standard Pipeline
 1. **Analyze** — break the request into clear implementation tasks
 2. **Branch** — check current branch with `git branch --show-current`:
-   - If on `master`/`main`: create a feature branch (delegate to `git` agent)
+   - If on `master`/`main`: run `git pull` first, then create a feature or bugfix branch (delegate to `git` agent)
    - If already on a non-master branch: run `git pull` to sync, then proceed (no new branch)
 3. **Implement** — delegate to `coding` subagent to write the code
 4. **Build** — invoke `build-project` skill to verify compilation
@@ -39,6 +39,7 @@ You take a high-level feature request and drive it through the full development 
 - On success: report a summary of everything that was done
 
 ### Trunk-Based Development Rules
-- Never create new branches when already on a non-master branch
+- Only create a new branch when currently on `master`/`main`; always pull first
+- When already on a non-master branch, never create another branch — work stays on that branch
 - Always pull before committing
 - Commit messages are plain (no "feature |" or "bugfix |" prefix)

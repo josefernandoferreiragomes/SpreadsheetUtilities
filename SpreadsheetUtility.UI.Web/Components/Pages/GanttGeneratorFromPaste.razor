@@ -1,15 +1,19 @@
-@page "/ganttGeneratorFromPaste"
+﻿@page "/ganttGeneratorFromPaste"
 @inject MediatR.IMediator Mediator
 @inject SpreadsheetUtility.Infrastructure.Services.SessionService SessionService;
+@inject IPasteParserService PasteParser
+@inject GanttGeneratorViewModel ViewModel
 @using Microsoft.JSInterop
 @using Newtonsoft.Json
 @using SpreadsheetUtility.Application.DTOs
 @using SpreadsheetUtility.Application.UseCases.CalculateGanttChartAllocation
 @using SpreadsheetUtility.Domain.Models
 @using Microsoft.AspNetCore.Components.QuickGrid;
+@using SpreadsheetUtility.Application.Services
 @using SpreadsheetUtility.UI.Web.Components;
 @using SpreadsheetUtility.UI.Web.Helpers
 @using SpreadsheetUtility.Infrastructure.Models
+@using SpreadsheetUtility.UI.Web.ViewModels
 @using static Microsoft.AspNetCore.Components.Web.RenderMode
 @inject IJSRuntime JS
 @rendermode InteractiveServer
@@ -24,21 +28,21 @@
             <div class="row">
                 <div class="col-md-4">    
                     <label>Email</label>
-                    <InputText @bind-Value="eMail" placeholder="Enter your email" disabled="@isSessionInitialized" class="form-control" />
+                    <InputText @bind-Value="ViewModel.Email" placeholder="Enter your email" disabled="@ViewModel.IsSessionInitialized" class="form-control" />
                 </div>
                 <div class="col-md-2">
                     <label>&nbsp;</label>
-                    <button @onclick="InitializeSession" disabled="@(isSessionInitialized || string.IsNullOrWhiteSpace(eMail))" class="btn btn-primary w-100">
-                        @(isSessionInitialized ? "Logged In" : "Initialize Session")
+                    <button @onclick="InitializeSession" disabled="@(ViewModel.IsSessionInitialized || string.IsNullOrWhiteSpace(ViewModel.Email))" class="btn btn-primary w-100">
+                        @(ViewModel.IsSessionInitialized ? "Logged In" : "Initialize Session")
                     </button>
                 </div>
                 <div class="col-md-6">
                     <label>&nbsp;</label>
                     <div class="alert alert-info mb-0">
                         <strong>Session Status:</strong> 
-                        @if (isSessionInitialized)
+                        @if (ViewModel.IsSessionInitialized)
                         {
-                            <span>Logged in as <strong>@eMail</strong> | Session ID: @sessionIdentifierGuid</span>
+                            <span>Logged in as <strong>@ViewModel.Email</strong> | Session ID: @ViewModel.SessionIdentifierGuid</span>
                         }
                         else
                         {
@@ -54,7 +58,7 @@
 <p></p>
 
 <!-- MAIN CONTENT - ONLY VISIBLE AFTER LOGIN -->
-@if (isSessionInitialized)
+@if (ViewModel.IsSessionInitialized)
 {
     <!-- PROJECTS SECTION -->
     <div class="row">
@@ -68,15 +72,15 @@
 
     <div class="row">
         <div class="col-sm-3">
-            <textarea @bind="excelProjectData" placeholder="Paste your project Excel data here" rows="10" cols="60" class="form-control"></textarea>
+            <textarea @bind="ViewModel.ExcelProjectData" placeholder="Paste your project Excel data here" rows="10" cols="60" class="form-control"></textarea>
             <div class="mt-2">
                 <button @onclick="ParseProjects" class="btn btn-success w-100">Parse Projects</button>
             </div>
         </div>
         <div class="col-sm-9 border border-primary">
-            @if (projectDtoListOutput?.Count() > 0)
+            @if (ViewModel.ProjectDtoListOutput?.Count() > 0)
             {
-                <QuickGrid Items="@projectDtoListOutput">
+                <QuickGrid Items="@ViewModel.ProjectDtoListOutput">
                     <PropertyColumn Property="@(p => p.ProjectID)" Sortable="true" />
                     <PropertyColumn Property="@(p => p.ProjectName)" Sortable="true" />       
                     <PropertyColumn Property="@(p => p.ProjectGroup)" Sortable="true" />
@@ -104,15 +108,15 @@
 
     <div class="row">
         <div class="col-sm-3">
-            <textarea @bind="excelTaskData" placeholder="Paste your task Excel data here" rows="10" cols="60" class="form-control"></textarea>
+            <textarea @bind="ViewModel.ExcelTaskData" placeholder="Paste your task Excel data here" rows="10" cols="60" class="form-control"></textarea>
             <div class="mt-2">
                 <button @onclick="ParseTasks" class="btn btn-success w-100">Parse Tasks</button>
             </div>
         </div>
         <div class="col-sm-9 border border-primary">
-            @if (taskDtoListOutput?.Count() > 0)
+            @if (ViewModel.TaskDtoListOutput?.Count() > 0)
             {
-                <QuickGrid Items="@taskDtoListOutput">
+                <QuickGrid Items="@ViewModel.TaskDtoListOutput">
                     <PropertyColumn Property="@(p => p.Id)" Sortable="true" />
                     <PropertyColumn Property="@(p => p.ProjectID)" Sortable="true" />
                     <PropertyColumn Property="@(p => p.ProjectName)" Sortable="true" />
@@ -144,15 +148,15 @@
 
     <div class="row">
         <div class="col-sm-3">
-            <textarea @bind="excelTeamData" placeholder="Paste your team Excel data here" rows="10" cols="30" class="form-control"></textarea>
+            <textarea @bind="ViewModel.ExcelTeamData" placeholder="Paste your team Excel data here" rows="10" cols="30" class="form-control"></textarea>
             <div class="mt-2">
                 <button @onclick="ParseTeam" class="btn btn-success w-100">Parse Team</button>
             </div>
         </div>
         <div class="col-sm-9 border border-primary">
-            @if (teamDtoListOutput?.Count() > 0)
+            @if (ViewModel.TeamDtoListOutput?.Count() > 0)
             {
-                <QuickGrid Items="@teamDtoListOutput">
+                <QuickGrid Items="@ViewModel.TeamDtoListOutput">
                     <PropertyColumn Property="@(p => p.TeamId)" Sortable="true" />
                     <PropertyColumn Property="@(p => p.Team)" Sortable="true" />
                     <PropertyColumn Property="@(p => p.DeveloperId)" Sortable="true" />
@@ -180,24 +184,24 @@
     <div class="row">
         <div class="col-md-3">
             <label>Projects start Date</label>
-            <InputDate @bind-Value="projectStartDate" class="form-control" />
+            <InputDate @bind-Value="ViewModel.ProjectStartDate" class="form-control" />
         </div>
         <div class="col-md-3">
             <label>Chart Mode</label>
-            <InputRadioGroup @bind-Value="chartMode" class="d-block">
+            <InputRadioGroup @bind-Value="ViewModel.ChartMode" class="d-block">
                 <div class="form-check">
-                    <InputRadio Value="ChartMode.Week" id="weekMode" class="form-check-input" />
+                    <InputRadio Value="@GanttGeneratorViewModel.ChartModeType.Week" id="weekMode" class="form-check-input" />
                     <label class="form-check-label" for="weekMode">Week</label>
                 </div>
                 <div class="form-check">
-                    <InputRadio Value="ChartMode.Day" id="dayMode" class="form-check-input" />
+                    <InputRadio Value="@GanttGeneratorViewModel.ChartModeType.Day" id="dayMode" class="form-check-input" />
                     <label class="form-check-label" for="dayMode">Day</label>
                 </div>
             </InputRadioGroup>
         </div>
         <div class="col-md-3">
             <label>Pre Sort Tasks</label>
-            <InputRadioGroup @bind-Value="preSortTasks" class="d-block">
+            <InputRadioGroup @bind-Value="ViewModel.PreSortTasks" class="d-block">
                 <div class="form-check">
                     <InputRadio Value="true" id="preSortYes" class="form-check-input" />
                     <label class="form-check-label" for="preSortYes">Yes</label>
@@ -210,7 +214,7 @@
         </div>
         <div class="col-md-3">
             <label>Fix Team To Project Group</label>
-            <InputRadioGroup @bind-Value="setTeamsToProjectGroups" class="d-block">
+            <InputRadioGroup @bind-Value="ViewModel.SetTeamsToProjectGroups" class="d-block">
                 <div class="form-check">
                     <InputRadio Value="true" id="teamFixYes" class="form-check-input" />
                     <label class="form-check-label" for="teamFixYes">Yes</label>
@@ -234,7 +238,7 @@
     <p></p>
 
     <!-- CHARTS AND DATA OUTPUT (only shown after generation) -->
-    @if (ganttTaskListOutput?.Count() > 0)
+    @if (ViewModel.GanttTaskListOutput?.Count() > 0)
     {
         <div class="row mt-4">
             <div class="col-12">
@@ -273,7 +277,7 @@
         <div class="row">
             <div class="col-12">
                 <p>Project data</p>
-                <QuickGrid Items="@projectListOutput">
+                <QuickGrid Items="@ViewModel.ProjectListOutput">
                     <PropertyColumn Property="@(p => p.ProjectID)" Sortable="true" />
                     <PropertyColumn Property="@(p => p.ProjectName)" Sortable="true" />      
                     <PropertyColumn Property="@(p => p.StartDate.ToString("dd-MM-yyyy"))" Title="StartDate" Sortable="true" />
@@ -288,7 +292,7 @@
         <div class="row mt-3">
             <div class="col-12">
                 <p>Task data</p>
-                <QuickGrid Items="@ganttTaskListOutput">
+                <QuickGrid Items="@ViewModel.GanttTaskListOutput">
                     <PropertyColumn Property="@(p => p.Id)" Sortable="true" />
                     <PropertyColumn Property="@(p => p.TaskExtendedDescription)" Sortable="true" />
                     <PropertyColumn Property="@(p => p.ProjectName)" Sortable="true" />
@@ -303,7 +307,7 @@
         <div class="row mt-3">
             <div class="col-12">
                 <p>Developer data</p>
-                <QuickGrid Items="@developerListOutput">
+                <QuickGrid Items="@ViewModel.DeveloperListOutput">
                     <PropertyColumn Property="@(p => p.Name)" Sortable="true" />
                     <PropertyColumn Property="@(p => p.DailyWorkHours)" Sortable="true" />
                     <PropertyColumn Property="@(p => p.AllocatedDays)" Sortable="true" />
@@ -317,46 +321,6 @@
 }
 
 @code {
-    enum ChartMode
-    {
-        Week,
-        Day
-    }
-
-    // UI State
-    private bool isSessionInitialized = false;
-    private string eMail = "";
-    private Guid? sessionIdentifierGuid = null;
-
-    // Configuration
-    private DateTime projectStartDate = DateTime.Today;
-    private ChartMode chartMode = ChartMode.Week;
-    private bool preSortTasks = false;
-    private bool setTeamsToProjectGroups = false;
-
-    // Input Data
-    private string excelProjectData = "";    
-    private string excelTaskData = "";    
-    private string excelTeamData = "";
-    private string sessionContent = "";
-
-    // Model Lists
-    private List<ProjectDto> projectDtoList = new List<ProjectDto>();
-    private List<TaskDto> taskDtoList = new List<TaskDto>();
-    private List<DeveloperDto> developerDtoList = new List<DeveloperDto>();
-
-    // Output Data
-    private IQueryable<ProjectDto>? projectDtoListOutput;    
-    private IQueryable<TaskDto>? taskDtoListOutput;
-    private IQueryable<DeveloperDto>? teamDtoListOutput;
-
-    private IQueryable<Holiday>? projectHolidayList;
-    private IQueryable<Project>? projectListOutput;    
-    private IQueryable<GanttTask>? ganttTaskListOutput;    
-    private IQueryable<GanttTask>? ganttProjectListOutput;    
-    private IQueryable<GanttTask>? developerGanttTaskListOutput;
-    private IQueryable<DeveloperAvailability>? developerListOutput;
-
     /// <summary>
     /// Initializes the component on page load.
     /// </summary>
@@ -370,22 +334,22 @@
     /// </summary>
     private async Task InitializeSession()
     {        
-        if (string.IsNullOrWhiteSpace(eMail))
+        if (string.IsNullOrWhiteSpace(ViewModel.Email))
         {
             await JS.InvokeVoidAsync("console.error", "Email is required to initialize a session");
             return;
         }
 
-        var messageLog = $"Email: {eMail}: InitializeSession";
+        var messageLog = $"Email: {ViewModel.Email}: InitializeSession";
         await JS.InvokeVoidAsync("console.log", messageLog);
 
         try
         {
-            var sessionIdString = SessionService.InitiateSession(eMail);
-            sessionIdentifierGuid = Guid.Parse(sessionIdString);
-            isSessionInitialized = true;
+            var sessionIdString = SessionService.InitiateSession(ViewModel.Email);
+            ViewModel.SessionIdentifierGuid = Guid.Parse(sessionIdString);
+            ViewModel.IsSessionInitialized = true;
 
-            var messageLogAfterSessionInit = $"Session initiated with email: {eMail} and guid: {sessionIdentifierGuid}";
+            var messageLogAfterSessionInit = $"Session initiated with email: {ViewModel.Email} and guid: {ViewModel.SessionIdentifierGuid}";
             await JS.InvokeVoidAsync("console.log", messageLogAfterSessionInit);
 
             // Try to load cached session data
@@ -404,32 +368,32 @@
     {
         try
         {
-            var cachedState = SessionService.LoadCachedSessionData(eMail);
+            var cachedState = SessionService.LoadCachedSessionData(ViewModel.Email);
 
             if (cachedState != null)
             {
                 if (!string.IsNullOrEmpty(cachedState.ProjectData))
                 {
-                    excelProjectData = cachedState.ProjectData;
-                    var tempProjectDtoList = GanttMapperHelper.ConvertToGanttProjects(excelProjectData);
-                    projectDtoListOutput = tempProjectDtoList.AsQueryable();
+                    ViewModel.ExcelProjectData = cachedState.ProjectData;
+                    var tempProjectDtoList = PasteParser.ParseProjects(ViewModel.ExcelProjectData);
+                    ViewModel.ProjectDtoListOutput = tempProjectDtoList.AsQueryable();
                 }
 
                 if (!string.IsNullOrEmpty(cachedState.TaskData))
                 {
-                    excelTaskData = cachedState.TaskData;
-                    var tempTaskDtoList = GanttMapperHelper.ConvertToGanttTasks(excelTaskData);
-                    taskDtoListOutput = tempTaskDtoList.AsQueryable();
+                    ViewModel.ExcelTaskData = cachedState.TaskData;
+                    var tempTaskDtoList = PasteParser.ParseTasks(ViewModel.ExcelTaskData);
+                    ViewModel.TaskDtoListOutput = tempTaskDtoList.AsQueryable();
                 }
 
                 if (!string.IsNullOrEmpty(cachedState.TeamData))
                 {
-                    excelTeamData = cachedState.TeamData;
-                    var tempTeamDtoList = GanttMapperHelper.ConvertToTeamData(excelTeamData);
-                    teamDtoListOutput = tempTeamDtoList.AsQueryable();
+                    ViewModel.ExcelTeamData = cachedState.TeamData;
+                    var tempTeamDtoList = PasteParser.ParseTeam(ViewModel.ExcelTeamData);
+                    ViewModel.TeamDtoListOutput = tempTeamDtoList.AsQueryable();
                 }
 
-                var messageLog = $"Cached session data loaded for email: {eMail}";
+                var messageLog = $"Cached session data loaded for email: {ViewModel.Email}";
                 await JS.InvokeVoidAsync("console.log", messageLog);
             }
         }
@@ -443,13 +407,13 @@
     {
         try
         {
-            var tempProjectDtoList = GanttMapperHelper.ConvertToGanttProjects(excelProjectData);
-            projectDtoListOutput = tempProjectDtoList.AsQueryable();
-            sessionContent = JsonConvert.SerializeObject(tempProjectDtoList, Formatting.Indented);
+            var tempProjectDtoList = PasteParser.ParseProjects(ViewModel.ExcelProjectData);
+            ViewModel.ProjectDtoListOutput = tempProjectDtoList.AsQueryable();
+            ViewModel.SessionContent = JsonConvert.SerializeObject(tempProjectDtoList, Formatting.Indented);
 
-            if (sessionIdentifierGuid.HasValue)
+            if (ViewModel.SessionIdentifierGuid.HasValue)
             {
-                SessionService.SaveProjectData(eMail, sessionIdentifierGuid.Value, excelProjectData);
+                SessionService.SaveProjectData(ViewModel.Email, ViewModel.SessionIdentifierGuid.Value, ViewModel.ExcelProjectData);
             }
         }
         catch (Exception ex)
@@ -462,13 +426,13 @@
     {
         try
         {
-            var tempTaskDtoList = GanttMapperHelper.ConvertToGanttTasks(excelTaskData);
-            taskDtoListOutput = tempTaskDtoList.AsQueryable();
-            sessionContent = JsonConvert.SerializeObject(taskDtoListOutput, Formatting.Indented);
+            var tempTaskDtoList = PasteParser.ParseTasks(ViewModel.ExcelTaskData);
+            ViewModel.TaskDtoListOutput = tempTaskDtoList.AsQueryable();
+            ViewModel.SessionContent = JsonConvert.SerializeObject(ViewModel.TaskDtoListOutput, Formatting.Indented);
 
-            if (sessionIdentifierGuid.HasValue)
+            if (ViewModel.SessionIdentifierGuid.HasValue)
             {
-                SessionService.SaveTaskData(eMail, sessionIdentifierGuid.Value, excelTaskData);
+                SessionService.SaveTaskData(ViewModel.Email, ViewModel.SessionIdentifierGuid.Value, ViewModel.ExcelTaskData);
             }
         }
         catch (Exception ex)
@@ -481,13 +445,13 @@
     {
         try
         {
-            var tempTeamDtoList = GanttMapperHelper.ConvertToTeamData(excelTeamData);
-            teamDtoListOutput = tempTeamDtoList.AsQueryable();
-            sessionContent = JsonConvert.SerializeObject(teamDtoListOutput, Formatting.Indented);
+            var tempTeamDtoList = PasteParser.ParseTeam(ViewModel.ExcelTeamData);
+            ViewModel.TeamDtoListOutput = tempTeamDtoList.AsQueryable();
+            ViewModel.SessionContent = JsonConvert.SerializeObject(ViewModel.TeamDtoListOutput, Formatting.Indented);
 
-            if (sessionIdentifierGuid.HasValue)
+            if (ViewModel.SessionIdentifierGuid.HasValue)
             {
-                SessionService.SaveTeamData(eMail, sessionIdentifierGuid.Value, excelTeamData);
+                SessionService.SaveTeamData(ViewModel.Email, ViewModel.SessionIdentifierGuid.Value, ViewModel.ExcelTeamData);
             }
         }
         catch (Exception ex)
@@ -498,56 +462,56 @@
 
     private async Task UpdateSession()
     {        
-        if (sessionIdentifierGuid is null)
+        if (ViewModel.SessionIdentifierGuid is null)
         {
             await JS.InvokeVoidAsync("console.error", "SessionIdentifier is mandatory");
             return;
         }
 
-        var messageLog = $"Email: {eMail} | Guid:{sessionIdentifierGuid.ToString()} | UpdateSession";
+        var messageLog = $"Email: {ViewModel.Email} | Guid:{ViewModel.SessionIdentifierGuid.ToString()} | UpdateSession";
         await JS.InvokeVoidAsync("console.log", messageLog);
 
-        var sessionIdentifier = (System.Guid)sessionIdentifierGuid;
-        var result = SessionService.UpdateSession(eMail, sessionIdentifier, sessionContent);
-        var encryptedSessionContent = SessionService.StoreSessionContentInCookie(sessionContent);
+        var sessionIdentifier = (System.Guid)ViewModel.SessionIdentifierGuid;
+        var result = SessionService.UpdateSession(ViewModel.Email, sessionIdentifier, ViewModel.SessionContent);
+        var encryptedSessionContent = SessionService.StoreSessionContentInCookie(ViewModel.SessionContent);
 
-        var messageLogAfterSessionInit = $"Session Updated initiated with email: {eMail} | guid: {sessionIdentifierGuid} | sessionContent: {result}";
+        var messageLogAfterSessionInit = $"Session Updated initiated with email: {ViewModel.Email} | guid: {ViewModel.SessionIdentifierGuid} | sessionContent: {result}";
     }
 
     private async Task LoadGanttChartTasks()
     {
         try
         {
-            projectDtoList = GanttMapperHelper.ConvertToGanttProjects(excelProjectData);
-            taskDtoList = GanttMapperHelper.ConvertToGanttTasks(excelTaskData);
-            developerDtoList = GanttMapperHelper.ConvertToTeamData(excelTeamData);
+            ViewModel.ProjectDtoList = PasteParser.ParseProjects(ViewModel.ExcelProjectData);
+            ViewModel.TaskDtoList = PasteParser.ParseTasks(ViewModel.ExcelTaskData);
+            ViewModel.DeveloperDtoList = PasteParser.ParseTeam(ViewModel.ExcelTeamData);
 
-            projectDtoListOutput = projectDtoList.AsQueryable();
+            ViewModel.ProjectDtoListOutput = ViewModel.ProjectDtoList.AsQueryable();
 
             var input = new CalculateGanttChartAllocationInput
             {
-                DeveloperDtos = developerDtoList,
-                ProjectDtos = projectDtoList,
-                TaskDtos = taskDtoList,
-                PreSortTasks = preSortTasks,
-                ProjectStartDate = projectStartDate,
-                SetTeamsToProjectGroups = setTeamsToProjectGroups,
+                DeveloperDtos = ViewModel.DeveloperDtoList,
+                ProjectDtos = ViewModel.ProjectDtoList,
+                TaskDtos = ViewModel.TaskDtoList,
+                PreSortTasks = ViewModel.PreSortTasks,
+                ProjectStartDate = ViewModel.ProjectStartDate,
+                SetTeamsToProjectGroups = ViewModel.SetTeamsToProjectGroups,
             };
 
-            sessionContent = JsonConvert.SerializeObject(input, Formatting.Indented);
+            ViewModel.SessionContent = JsonConvert.SerializeObject(input, Formatting.Indented);
             await UpdateSession();
 
             var ganttChartAllocation = await Mediator.Send(new CalculateGanttChartAllocationQuery(input));
 
-            ganttTaskListOutput = ganttChartAllocation.GanttTasks.AsQueryable();
-            developerListOutput = ganttChartAllocation.DeveloperAvailability.AsQueryable();
-            projectListOutput = ganttChartAllocation.ProjectList.AsQueryable();
-            projectHolidayList = ganttChartAllocation.HolidayList.AsQueryable();
-            ganttProjectListOutput = ganttChartAllocation.GanttProjects.AsQueryable();
-            developerGanttTaskListOutput = ganttChartAllocation.DeveloperGanttTaskList.AsQueryable();
+            ViewModel.GanttTaskListOutput = ganttChartAllocation.GanttTasks.AsQueryable();
+            ViewModel.DeveloperListOutput = ganttChartAllocation.DeveloperAvailability.AsQueryable();
+            ViewModel.ProjectListOutput = ganttChartAllocation.ProjectList.AsQueryable();
+            ViewModel.ProjectHolidayList = ganttChartAllocation.HolidayList.AsQueryable();
+            ViewModel.GanttProjectListOutput = ganttChartAllocation.GanttProjects.AsQueryable();
+            ViewModel.DeveloperGanttTaskListOutput = ganttChartAllocation.DeveloperGanttTaskList.AsQueryable();
 
-            GanttColorHelper.SetupProjectColor(ganttProjectListOutput, ganttTaskListOutput);
-            GanttColorHelper.SetupDeveloperColor(developerListOutput, developerGanttTaskListOutput);
+            GanttColorHelper.SetupProjectColor(ViewModel.GanttProjectListOutput, ViewModel.GanttTaskListOutput);
+            GanttColorHelper.SetupDeveloperColor(ViewModel.DeveloperListOutput, ViewModel.DeveloperGanttTaskListOutput);
 
             // Force Blazor to render the component with the new data
             StateHasChanged();
@@ -555,9 +519,9 @@
             // Wait for the DOM to be updated before calling JavaScript
             await Task.Delay(100);
 
-            await JS.InvokeVoidAsync("renderGanttTasks", System.Text.Json.JsonSerializer.Serialize(ganttTaskListOutput, new System.Text.Json.JsonSerializerOptions { WriteIndented = true }), chartMode.ToString(), "true");
-            await JS.InvokeVoidAsync("renderGanttProjects", System.Text.Json.JsonSerializer.Serialize(ganttProjectListOutput, new System.Text.Json.JsonSerializerOptions { WriteIndented = true }), chartMode.ToString(), "true");
-            await JS.InvokeVoidAsync("renderDeveloperGanttTasks", System.Text.Json.JsonSerializer.Serialize(developerGanttTaskListOutput, new System.Text.Json.JsonSerializerOptions { WriteIndented = true }), chartMode.ToString(), "true");
+            await JS.InvokeVoidAsync("renderGanttTasks", System.Text.Json.JsonSerializer.Serialize(ViewModel.GanttTaskListOutput, new System.Text.Json.JsonSerializerOptions { WriteIndented = true }), ViewModel.ChartMode.ToString(), "true");
+            await JS.InvokeVoidAsync("renderGanttProjects", System.Text.Json.JsonSerializer.Serialize(ViewModel.GanttProjectListOutput, new System.Text.Json.JsonSerializerOptions { WriteIndented = true }), ViewModel.ChartMode.ToString(), "true");
+            await JS.InvokeVoidAsync("renderDeveloperGanttTasks", System.Text.Json.JsonSerializer.Serialize(ViewModel.DeveloperGanttTaskListOutput, new System.Text.Json.JsonSerializerOptions { WriteIndented = true }), ViewModel.ChartMode.ToString(), "true");
         }
         catch (Exception ex)
         {
@@ -565,3 +529,7 @@
         }
     }
 }
+
+
+
+

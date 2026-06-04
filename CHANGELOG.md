@@ -1,8 +1,26 @@
-# Changelog
+﻿# Changelog
 
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+
+### Architecture
+
+- Phase 4a refactoring: Auth.Api now uses Application + Infrastructure layers
+- Phase 4b refactoring: UI.Web — replaced GanttMapperHelper static methods with IPasteParserService in Application/Services/
+- Created GanttGeneratorViewModel in UI.Web/ViewModels/ as scoped DI service for page state
+- GanttGeneratorFromPaste.razor now binds to ViewModel properties and uses PasteParserService
+- Register PasteParserService in Application/DependencyInjection.cs
+- Register GanttGeneratorViewModel in UI.Web/Program.cs
+- Build: 0 errors, Tests: 26 pass, 0 failures
+- Extracted inline session logic into MediatR use cases (InitiateSessionCommand, GetSessionQuery, UpdateSessionCommand)
+- Added IAuthService port in Application/Ports/ with AuthService implementation in Infrastructure/Services/
+- Added session DTOs (InitiateSessionRequest/Response, GetSessionRequest/Response, UpdateSessionRequest/Response)
+- Removed commented-out code and stale .http stub from Auth.Api
+- Auth.Api calls AddApplication() and AddInfrastructure() for DI composition
+- Added Assembly.GetExecutingAssembly() and auto-discovery scanning for the Session use case handlers
+- Build: 0 errors, Tests: 26 pass, 0 failures
+
 
 ### Fixed
 
@@ -36,14 +54,14 @@ All notable changes to this project will be documented in this file.
 ### Architecture
 
 - Phase 3 refactoring: created `SpreadsheetUtility.Infrastructure` project with `Microsoft.AspNetCore.App` framework reference
-- Moved `DateTimeProvider` → `Infrastructure/Providers/DateTimeProvider.cs`
-- Moved `HolidayProvider` (renamed to `HolidayFileProvider`) → `Infrastructure/Providers/HolidayFileProvider.cs`
-- Moved and renamed `IExcelWorkbook`/`ExcelWorkbook` → `Infrastructure/Excel/IExcelDocument`/`ExcelDocument` (avoids naming collision with `Application.Ports.IExcelWorkbook`)
-- Moved `SessionService` → `Infrastructure/Services/SessionService.cs`
-- Moved `FolderExampleFileProvider` + `IExampleFileProvider` → `Infrastructure/Services/` and `Infrastructure/Abstractions/`
-- Moved NSwag-generated `AuthApiClient` → `Infrastructure/ApiClients/AuthApiClient.cs`
-- Moved models (`SessionState`, `ExampleFileInfo`, `FileDownloadDto`) → `Infrastructure/Models/`
-- Moved `2025HolidaysPT.json` → `Infrastructure/Holidays/`
+- Moved `DateTimeProvider` â†’ `Infrastructure/Providers/DateTimeProvider.cs`
+- Moved `HolidayProvider` (renamed to `HolidayFileProvider`) â†’ `Infrastructure/Providers/HolidayFileProvider.cs`
+- Moved and renamed `IExcelWorkbook`/`ExcelWorkbook` â†’ `Infrastructure/Excel/IExcelDocument`/`ExcelDocument` (avoids naming collision with `Application.Ports.IExcelWorkbook`)
+- Moved `SessionService` â†’ `Infrastructure/Services/SessionService.cs`
+- Moved `FolderExampleFileProvider` + `IExampleFileProvider` â†’ `Infrastructure/Services/` and `Infrastructure/Abstractions/`
+- Moved NSwag-generated `AuthApiClient` â†’ `Infrastructure/ApiClients/AuthApiClient.cs`
+- Moved models (`SessionState`, `ExampleFileInfo`, `FileDownloadDto`) â†’ `Infrastructure/Models/`
+- Moved `2025HolidaysPT.json` â†’ `Infrastructure/Holidays/`
 - Implemented `IHolidayRepository` (`HolidayRepository`) and `IDeveloperRepository` (`DeveloperRepository`) in `Infrastructure/Repositories/`
 - Created `Infrastructure/DependencyInjection.cs` with `AddInfrastructure()` extension method
 - `UI.Web` dropped `Library` project reference; now depends on `Infrastructure` + `Application`
@@ -91,3 +109,6 @@ All notable changes to this project will be documented in this file.
 ### Architecture
 
 - 11 design patterns implemented in SpreadsheetUtility.Library (Strategy, Factory, Template Method, Builder, Facade, Mapper/Adapter, Observer, Command, Dependency Injection, Provider, Generic List Generator)
+
+
+

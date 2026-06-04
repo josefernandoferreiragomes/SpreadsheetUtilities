@@ -1,43 +1,43 @@
-# Project Structure & File Organization
+﻿# Project Structure & File Organization
 
 ## Solution Layout
 
 ```
 SpreadsheetUtilities.sln
-│
-├── src/
-│   ├── SpreadsheetUtility.Domain/          # Pure domain entities & value objects
-│   ├── SpreadsheetUtility.Application/     # Use cases, DTOs, mappers, ports, services
-│   ├── SpreadsheetUtility.Library/         # Legacy (being phased out)
-│   │   ├── Providers/                      # Implement Application.Ports interfaces
-│   │   ├── Excel/                          # ClosedXML-dependent implementations
-│   │   └── SpreadsheetGenerator/           # Legacy (deferred to Phase 3)
-│   │
-│   └── Presentation/
-│       ├── SpreadsheetUtility.UI.Web/      # Blazor Server app
-│       ├── SpreadsheetUtility.UI.Console/  # Console app
-│       └── SpreadsheetUtilities.Auth.Api/  # Auth Minimal API
-│
-├── tests/
-│   └── SpreadsheetUtility.Test/           # All tests (xUnit)
-│
-└── shared/
-    ├── SpreadsheetUtilities.ServiceDefaults/  # Aspire service defaults
-    └── SpreadsheetUtilities.AppHost/          # Aspire orchestrator
+â”‚
+â”œâ”€â”€ src/
+â”‚   â”œâ”€â”€ SpreadsheetUtility.Domain/          # Pure domain entities & value objects
+â”‚   â”œâ”€â”€ SpreadsheetUtility.Application/     # Use cases, DTOs, mappers, ports, services
+â”‚   â”œâ”€â”€ SpreadsheetUtility.Library/         # Legacy (being phased out)
+â”‚   â”‚   â”œâ”€â”€ Providers/                      # Implement Application.Ports interfaces
+â”‚   â”‚   â”œâ”€â”€ Excel/                          # ClosedXML-dependent implementations
+â”‚   â”‚   â””â”€â”€ SpreadsheetGenerator/           # Legacy (deferred to Phase 3)
+â”‚   â”‚
+â”‚   â””â”€â”€ Presentation/
+â”‚       â”œâ”€â”€ SpreadsheetUtility.UI.Web/      # Blazor Server app
+â”‚       â”œâ”€â”€ SpreadsheetUtility.UI.Console/  # Console app
+â”‚       â””â”€â”€ SpreadsheetUtilities.Auth.Api/  # Auth Minimal API
+â”‚
+â”œâ”€â”€ tests/
+â”‚   â””â”€â”€ SpreadsheetUtility.Test/           # All tests (xUnit)
+â”‚
+â””â”€â”€ shared/
+    â”œâ”€â”€ SpreadsheetUtilities.ServiceDefaults/  # Aspire service defaults
+    â””â”€â”€ SpreadsheetUtilities.AppHost/          # Aspire orchestrator
 ```
 
 ## Project Dependencies
 
 ```
 SpreadsheetUtility.Domain          net10.0     [no dependencies]
-       ↑
+       â†‘
 SpreadsheetUtility.Application     net10.0     [Domain, MediatR, FluentValidation]
-       ↑
+       â†‘
 SpreadsheetUtility.Library         net10.0     [Domain, Application, ClosedXML, Newtonsoft.Json]
-       ↑
-├── SpreadsheetUtility.UI.Web      net10.0     [Library, Application, Newtonsoft.Json]
-├── SpreadsheetUtility.UI.Console  net10.0     [Library]
-└── SpreadsheetUtilities.Auth.Api  net10.0     [Library, Aspire]
+       â†‘
+├── SpreadsheetUtility.UI.Web      net10.0     [Application, Infrastructure]
+├── SpreadsheetUtility.UI.Console  net10.0     [Application, Infrastructure]
+└── SpreadsheetUtilities.Auth.Api  net10.0     [Application, Infrastructure]
 ```
 
 ## Key Folders (Application)
@@ -46,8 +46,8 @@ SpreadsheetUtility.Library         net10.0     [Domain, Application, ClosedXML, 
 |------|-------------|
 | `Application/DTOs/` | 7 DTOs: `TaskDto`, `ProjectDto`, `DeveloperDto`, `CalculateGanttChartAllocationInput/Output`, `DeveloperAvailability`, `ListGeneratorInput` |
 | `Application/Ports/` | Abstractions: `IDateTimeProvider`, `IHolidayProvider`, `IExcelWorkbook`, `IExcelWorksheet` |
-| `Application/Mappers/` | `IGanttChartMapper` / `GanttChartMapper` (DTO ↔ Domain) |
-| `Application/Services/` | Calculators, strategies, factories, list generators, builders |
+| `Application/Mappers/` | `IGanttChartMapper` / `GanttChartMapper` (DTO â†” Domain) |
+| `Application/Services/` | Calculators, strategies, factories, list generators, builders, PasteParserService |
 | `Application/UseCases/` | MediatR queries/commands and handlers |
 | `Application/Behaviors/` | `LoggingBehavior`, `ValidationBehavior` pipelines |
 
@@ -72,3 +72,7 @@ SpreadsheetUtility.Library         net10.0     [Domain, Application, ClosedXML, 
 | `Application/UseCases/ParseExcelData/` | Command + Handler for parsing pasted Excel data |
 | `Library/Providers/IDateTimeProvider.cs` | Implements `Application.Ports.IDateTimeProvider` |
 | `Library/Providers/IHolidayProvider.cs` | Implements `Application.Ports.IHolidayProvider` |
+| `Application/Services/IPasteParserService.cs` | Interface for parsing pasted TSV data |
+| `Application/Services/PasteParserService.cs` | Implementation: ParseProjects, ParseTasks, ParseTeam |
+| `Infrastructure/Services/AuthService.cs` | IAuthService implementation using IMemoryCache |
+| `UI.Web/ViewModels/GanttGeneratorViewModel.cs` | Page state holder for GanttGeneratorFromPaste.razor |

@@ -18,6 +18,7 @@ public static class DependencyInjection
         services.AddScoped<IDeveloperRepository, DeveloperRepository>();
         services.AddScoped<SessionService>();
         services.AddScoped<IExampleFileProvider, FolderExampleFileProvider>();
+        services.AddScoped<IAuthService, AuthService>();
 
         return services;
     }

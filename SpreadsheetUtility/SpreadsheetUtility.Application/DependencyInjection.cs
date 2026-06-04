@@ -35,7 +35,9 @@ public static class DependencyInjection
         services.AddScoped<IListGenerator<GanttTask, GanttTask>, GanttTaskListGenerator>();
         services.AddScoped<IListGenerator<Developer, List<GanttTask>>, DeveloperTaskListGenerator>();
         services.AddScoped<GroupProjectsByProjectGroupQuery>();
+        services.AddScoped<IPasteParserService, PasteParserService>();
 
         return services;
     }
 }
+

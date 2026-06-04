@@ -2,6 +2,7 @@ using MediatR;
 using SpreadsheetUtility.Application;
 using SpreadsheetUtility.Application.Ports;
 using SpreadsheetUtility.Infrastructure;
+using SpreadsheetUtility.UI.Web.ViewModels;
 using SpreadsheetUtility.UI.Web.Components;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -23,6 +24,8 @@ builder.Services.AddLogging(logging =>
 builder.Services.AddApplication();
 
 builder.Services.AddInfrastructure();
+
+builder.Services.AddScoped<GanttGeneratorViewModel>();
 
 var app = builder.Build();
 

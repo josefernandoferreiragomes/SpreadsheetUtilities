@@ -4,6 +4,22 @@
 
 ### Architecture
 
+- Phase 6 testing restructure: reorganized test project into ApplicationTests/, InfrastructureTests/, DomainTests/ folders
+- Created 7 FluentValidation validators for all MediatR commands/queries (activating previously dormant validation pipeline)
+- Added 7 validator test classes (21 new test methods)
+- Added 6 MediatR handler unit test classes (12 new test methods)
+- Added domain entity/value object test class (10 new test methods)
+- Tagged integration tests with Category=Integration trait for CI filtering
+- Added Domain project reference to test project
+- Added FluentValidation NuGet package to test project (for FluentValidation.TestHelper)
+- Removed empty IntegratedTests/ placeholder folder
+- Build: 0 errors, Tests: 71 pass, 0 failures
+- Test count grew from 26 to 71 (+173% coverage increase)
+
+
+
+### Architecture
+
 - Phase 5 refactoring: deleted SpreadsheetUtility.Library project after migrating all code
 - Created SpreadsheetUtility.Bootstrapper project with AddSpreadsheetUtilities() extension method
 - Refactored tests: migrated DoubleEntrySpreadsheetGenerator tests from Library to DoubleEntryGeneratorService
@@ -134,6 +150,7 @@
 ### Architecture
 
 - 11 design patterns implemented in SpreadsheetUtility.Library (Strategy, Factory, Template Method, Builder, Facade, Mapper/Adapter, Observer, Command, Dependency Injection, Provider, Generic List Generator)
+
 
 
 

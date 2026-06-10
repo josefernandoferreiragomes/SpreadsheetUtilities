@@ -1,8 +1,18 @@
-ï»¿# Changelog
+# Changelog
 
 ## [Unreleased]
 
 ### Bug Fixes
+
+- Fixed Gantt chart results not appearing on first page visit after pasting data and pressing Generate.
+  Root cause: `DataPasteGridComponent` textareas used default `@bind` (onchange event), so ViewModel
+  properties were not updated until the textarea lost focus. If "Generate" was clicked immediately after
+  pasting, the raw data properties were still empty, causing the parse to produce empty results.
+  Fix: Changed `@bind` to `@bind:event="oninput"` on all three textareas so ViewModel properties update
+  on every keystroke/paste — data is always fresh when Generate runs.
+  Additionally, cleared all output properties at the start of `LoadGanttChartTasks()` to prevent stale
+  ghost data from persisting across navigations (scoped ViewModel lifecycles).
+  Tests: 71 pass, 0 failures.
 
 - Fixed Gantt chart `Cannot set properties of null (setting 'innerHTML')` and charts/grids not showing.
   Root cause: JS interop calls (`renderGanttTasks`, etc.) were placed in the child
@@ -11,9 +21,10 @@
   rendered content never appeared.
   Fix: Move JS interop calls directly into the parent's `LoadGanttChartTasks` method
   (after `StateHasChanged()`), relying on the `MutationObserver`-based `waitForElement()`
-  helper in `gantt.js` to wait for the DOM containers to appear â€” no error thrown,
+  helper in `gantt.js` to wait for the DOM containers to appear — no error thrown,
   no fragile `setTimeout` polling, no dependency on child lifecycle re-entry.
   Tests: 71 pass, 0 failures.
+
 ### Architecture
 
 - Phase 6 testing restructure: reorganized test project into ApplicationTests/, InfrastructureTests/, DomainTests/ folders
@@ -37,7 +48,7 @@
 - Build: 0 errors, Tests: 26 pass, 0 failures
 
 - Phase 4a refactoring: Auth.Api now uses Application + Infrastructure layers
-- Phase 4b refactoring: UI.Web â€” replaced GanttMapperHelper static methods with IPasteParserService in Application/Services/
+- Phase 4b refactoring: UI.Web — replaced GanttMapperHelper static methods with IPasteParserService in Application/Services/
 - Created GanttGeneratorViewModel in UI.Web/ViewModels/ as scoped DI service for page state
 - GanttGeneratorFromPaste.razor now binds to ViewModel properties and uses PasteParserService
 - Register PasteParserService in Application/DependencyInjection.cs
@@ -51,7 +62,7 @@
 - Added Assembly.GetExecutingAssembly() and auto-discovery scanning for the Session use case handlers
 - Build: 0 errors, Tests: 26 pass, 0 failures
 
-### UI.Web â€” Component Split & Cleanup
+### UI.Web — Component Split & Cleanup
 
 - Split 535-line GanttGeneratorFromPaste.razor into 4 components: SessionComponent, DataPasteGridComponent, GanttConfigComponent, GanttResultsComponent
 - Converted ExampleFilesController ([ApiController]) to Minimal API endpoints in Endpoints/
@@ -59,7 +70,7 @@
 - Updated _Imports.razor with shared namespaces (Application.Services, ViewModels, QuickGrid, Newtonsoft.Json)
 - Build: 0 errors, Tests: 26 pass, 0 failures
 
-### UI.Console â€” Phase 4c Refactoring
+### UI.Console — Phase 4c Refactoring
 
 - Created GenerateDoubleEntryInput/Output DTOs in Application/DTOs
 - Created IDoubleEntryGeneratorService port in Application/Ports
@@ -99,15 +110,6 @@
 - opencode AI assistant configuration (AGENTS.md)
 
 ## [1.2.0] - 2026-06-04
-
-### Architecture
-
-- Phase 3 refactoring: created SpreadsheetUtility.Infrastructure project with Microsoft.AspNetCore.App framework reference
-- Moved DateTimeProvider to Infrastructure/Providers/DateTimeProvider.cs
-- Moved HolidayProvider (renamed to HolidayFileProvider) to Infrastructure/Providers/HolidayFileProvider.cs
-- Moved and renamed IExcelWorkbook/ExcelWorkbook to Infrastructure/Excel/IExcelDocument/ExcelDocument (avoids naming collision with Application.Ports.IExcelWorkbook)
-- Moved SessionService to Infrastructure/Services/SessionService.cs
-- Moved FolderExampleFileProvider + IExampleFileProvider to Infrastructure/Services/ and Infrastructure/Abstractions/
 - Moved NSwag-generated AuthApiClient to Infrastructure/ApiClients/AuthApiClient.cs
 - Moved models (SessionState, ExampleFileInfo, FileDownloadDto) to Infrastructure/Models/
 - Moved 2025HolidaysPT.json to Infrastructure/Holidays/

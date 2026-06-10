@@ -1,4 +1,4 @@
-﻿@inject IPasteParserService PasteParser
+@inject IPasteParserService PasteParser
 @inject SpreadsheetUtility.Infrastructure.Services.SessionService SessionService
 @inject IJSRuntime JS
 @inject GanttGeneratorViewModel ViewModel
@@ -16,7 +16,7 @@
 
 <div class="row">
     <div class="col-sm-3">
-        <textarea @bind="ViewModel.ExcelProjectData" placeholder="Paste your project Excel data here" rows="10" cols="60" class="form-control"></textarea>
+        <textarea @bind="ViewModel.ExcelProjectData" @bind:event="oninput" placeholder="Paste your project Excel data here" rows="10" cols="60" class="form-control"></textarea>
         <div class="mt-2">
             <button @onclick="ParseProjects" class="btn btn-success w-100">Parse Projects</button>
         </div>
@@ -52,7 +52,7 @@
 
 <div class="row">
     <div class="col-sm-3">
-        <textarea @bind="ViewModel.ExcelTaskData" placeholder="Paste your task Excel data here" rows="10" cols="60" class="form-control"></textarea>
+        <textarea @bind="ViewModel.ExcelTaskData" @bind:event="oninput" placeholder="Paste your task Excel data here" rows="10" cols="60" class="form-control"></textarea>
         <div class="mt-2">
             <button @onclick="ParseTasks" class="btn btn-success w-100">Parse Tasks</button>
         </div>
@@ -92,7 +92,7 @@
 
 <div class="row">
     <div class="col-sm-3">
-        <textarea @bind="ViewModel.ExcelTeamData" placeholder="Paste your team Excel data here" rows="10" cols="30" class="form-control"></textarea>
+        <textarea @bind="ViewModel.ExcelTeamData" @bind:event="oninput" placeholder="Paste your team Excel data here" rows="10" cols="30" class="form-control"></textarea>
         <div class="mt-2">
             <button @onclick="ParseTeam" class="btn btn-success w-100">Parse Team</button>
         </div>

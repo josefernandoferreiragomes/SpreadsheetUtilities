@@ -1,4 +1,4 @@
-﻿@page "/ganttGeneratorFromPaste"
+@page "/ganttGeneratorFromPaste"
 @inject MediatR.IMediator Mediator
 @inject SpreadsheetUtility.Infrastructure.Services.SessionService SessionService
 @inject IPasteParserService PasteParser
@@ -63,6 +63,13 @@
     {
         try
         {
+            // Clear any stale output data from previous runs to prevent ghost data on re-navigation
+            ViewModel.GanttTaskListOutput = null;
+            ViewModel.DeveloperListOutput = null;
+            ViewModel.ProjectListOutput = null;
+            ViewModel.ProjectHolidayList = null;
+            ViewModel.GanttProjectListOutput = null;
+            ViewModel.DeveloperGanttTaskListOutput = null;
             ViewModel.ProjectDtoList = PasteParser.ParseProjects(ViewModel.ExcelProjectData);
             ViewModel.TaskDtoList = PasteParser.ParseTasks(ViewModel.ExcelTaskData);
             ViewModel.DeveloperDtoList = PasteParser.ParseTeam(ViewModel.ExcelTeamData);

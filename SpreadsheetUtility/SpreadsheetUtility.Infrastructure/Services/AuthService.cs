@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Caching.Memory;
 using SpreadsheetUtility.Application.Ports;
+using System.Security.Authentication;
 
 namespace SpreadsheetUtility.Infrastructure.Services;
 
@@ -21,7 +22,7 @@ public class AuthService : IAuthService
         return cacheValue;
     }
 
-    public string? GetSession(string email, Guid sessionId)
+    public string GetSession(string email, Guid sessionId)
     {
         var emailCacheKey = email;
         if (sessionId == Guid.Empty)
@@ -43,7 +44,7 @@ public class AuthService : IAuthService
                 }
             }
         }
-        return null;
+        throw new AuthenticationException("Invalid session.");
     }
 
     public string UpdateSession(string email, Guid sessionId, string newValue)
@@ -58,6 +59,6 @@ public class AuthService : IAuthService
                 return newValue;
             }
         }
-        throw new System.Security.Authentication.AuthenticationException("Invalid session.");
+        throw new AuthenticationException("Invalid session.");
     }
 }

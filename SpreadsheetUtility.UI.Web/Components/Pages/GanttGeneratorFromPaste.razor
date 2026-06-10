@@ -27,10 +27,12 @@
     
     <p></p>
     
-    <GanttResultsComponent />
+    <GanttResultsComponent @key="_ganttDataVersion" />
 }
 
 @code {
+    private int _ganttDataVersion = 0;
+
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
@@ -64,12 +66,12 @@
         try
         {
             // Clear any stale output data from previous runs to prevent ghost data on re-navigation
-            ViewModel.GanttTaskListOutput = null;
+            /*ViewModel.GanttTaskListOutput = null;
             ViewModel.DeveloperListOutput = null;
             ViewModel.ProjectListOutput = null;
             ViewModel.ProjectHolidayList = null;
             ViewModel.GanttProjectListOutput = null;
-            ViewModel.DeveloperGanttTaskListOutput = null;
+            ViewModel.DeveloperGanttTaskListOutput = null;*/
             ViewModel.ProjectDtoList = PasteParser.ParseProjects(ViewModel.ExcelProjectData);
             ViewModel.TaskDtoList = PasteParser.ParseTasks(ViewModel.ExcelTaskData);
             ViewModel.DeveloperDtoList = PasteParser.ParseTeam(ViewModel.ExcelTeamData);
@@ -101,6 +103,7 @@
             GanttColorHelper.SetupProjectColor(ViewModel.GanttProjectListOutput, ViewModel.GanttTaskListOutput);
             GanttColorHelper.SetupDeveloperColor(ViewModel.DeveloperListOutput, ViewModel.DeveloperGanttTaskListOutput);
 
+            _ganttDataVersion++;
             StateHasChanged();
 
             var jsonOptions = new System.Text.Json.JsonSerializerOptions { WriteIndented = true };

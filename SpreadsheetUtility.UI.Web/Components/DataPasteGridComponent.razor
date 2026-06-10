@@ -1,0 +1,176 @@
+@inject IPasteParserService PasteParser
+@inject SpreadsheetUtility.Infrastructure.Services.SessionService SessionService
+@inject IJSRuntime JS
+@inject GanttGeneratorViewModel ViewModel
+@using Newtonsoft.Json
+
+<!-- PROJECTS SECTION -->
+<div class="row">
+    <div class="col-12">
+        <h5>Projects</h5>
+        <p class="text-muted">
+            Project groups will have their assigned tasks in order. The tasks for the next project will be assigned upon completion of the previous project group.
+        </p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-sm-3">
+        <textarea @bind="ViewModel.ExcelProjectData" @bind:event="oninput" placeholder="Paste your project Excel data here" rows="10" cols="60" class="form-control"></textarea>
+        <div class="mt-2">
+            <button @onclick="ParseProjects" class="btn btn-success w-100">Parse Projects</button>
+        </div>
+    </div>
+    <div class="col-sm-9 border border-primary">
+        @if (ViewModel.ProjectDtoListOutput?.Count() > 0)
+        {
+            <QuickGrid Items="@ViewModel.ProjectDtoListOutput">
+                <PropertyColumn Property="@(p => p.ProjectID)" Sortable="true" />
+                <PropertyColumn Property="@(p => p.ProjectName)" Sortable="true" />       
+                <PropertyColumn Property="@(p => p.ProjectGroup)" Sortable="true" />
+                <PropertyColumn Property="@(p => p.TeamId)" Sortable="true" />
+            </QuickGrid>
+        }
+        else
+        {
+            <p class="text-muted">No projects loaded yet</p>
+        }
+    </div>
+</div>
+
+<p></p>
+
+<!-- TASKS SECTION -->
+<div class="row">
+    <div class="col-12">
+        <h5>Tasks</h5>
+        <p class="text-muted">
+            Dependencies can only exist within the same project.
+        </p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-sm-3">
+        <textarea @bind="ViewModel.ExcelTaskData" @bind:event="oninput" placeholder="Paste your task Excel data here" rows="10" cols="60" class="form-control"></textarea>
+        <div class="mt-2">
+            <button @onclick="ParseTasks" class="btn btn-success w-100">Parse Tasks</button>
+        </div>
+    </div>
+    <div class="col-sm-9 border border-primary">
+        @if (ViewModel.TaskDtoListOutput?.Count() > 0)
+        {
+            <QuickGrid Items="@ViewModel.TaskDtoListOutput">
+                <PropertyColumn Property="@(p => p.Id)" Sortable="true" />
+                <PropertyColumn Property="@(p => p.ProjectID)" Sortable="true" />
+                <PropertyColumn Property="@(p => p.ProjectName)" Sortable="true" />
+                <PropertyColumn Property="@(p => p.TaskName)" Sortable="true" />
+                <PropertyColumn Property="@(p => p.EffortHours)" Sortable="true" />
+                <PropertyColumn Property="@(p => p.Dependencies)" Sortable="true" />
+                <PropertyColumn Property="@(p => p.Progress)" Sortable="true" />
+                <PropertyColumn Property="@(p => p.InternalID)" Sortable="true" />
+            </QuickGrid>
+        }
+        else
+        {
+            <p class="text-muted">No tasks loaded yet</p>
+        }
+    </div>
+</div>
+
+<p></p>
+
+<!-- TEAM SECTION -->
+<div class="row">
+    <div class="col-12">
+        <h5>Team</h5>
+        <p class="text-muted">
+            Team members will be assigned tasks based on their availability and daily work hours
+        </p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-sm-3">
+        <textarea @bind="ViewModel.ExcelTeamData" @bind:event="oninput" placeholder="Paste your team Excel data here" rows="10" cols="30" class="form-control"></textarea>
+        <div class="mt-2">
+            <button @onclick="ParseTeam" class="btn btn-success w-100">Parse Team</button>
+        </div>
+    </div>
+    <div class="col-sm-9 border border-primary">
+        @if (ViewModel.TeamDtoListOutput?.Count() > 0)
+        {
+            <QuickGrid Items="@ViewModel.TeamDtoListOutput">
+                <PropertyColumn Property="@(p => p.TeamId)" Sortable="true" />
+                <PropertyColumn Property="@(p => p.Team)" Sortable="true" />
+                <PropertyColumn Property="@(p => p.DeveloperId)" Sortable="true" />
+                <PropertyColumn Property="@(p => p.Name)" Sortable="true" />
+                <PropertyColumn Property="@(p => p.VacationPeriods)" Sortable="true" />
+                <PropertyColumn Property="@(p => p.DailyWorkHours)" Sortable="true" />
+            </QuickGrid>
+        }
+        else
+        {
+            <p class="text-muted">No team loaded yet</p>
+        }
+    </div>
+</div>
+
+@code {
+    private async Task ParseProjects()
+    {
+        try
+        {
+            var tempProjectDtoList = PasteParser.ParseProjects(ViewModel.ExcelProjectData);
+            ViewModel.ProjectDtoListOutput = tempProjectDtoList.AsQueryable();
+            ViewModel.SessionContent = JsonConvert.SerializeObject(tempProjectDtoList, Formatting.Indented);
+
+            if (ViewModel.SessionIdentifierGuid.HasValue)
+            {
+                SessionService.SaveProjectData(ViewModel.Email, ViewModel.SessionIdentifierGuid.Value, ViewModel.ExcelProjectData);
+            }
+        }
+        catch (Exception ex)
+        {
+            await JS.InvokeVoidAsync("console.error", $"Error parsing projects: {ex.Message}");
+        }
+    }
+
+    private async Task ParseTasks()
+    {
+        try
+        {
+            var tempTaskDtoList = PasteParser.ParseTasks(ViewModel.ExcelTaskData);
+            ViewModel.TaskDtoListOutput = tempTaskDtoList.AsQueryable();
+            ViewModel.SessionContent = JsonConvert.SerializeObject(ViewModel.TaskDtoListOutput, Formatting.Indented);
+
+            if (ViewModel.SessionIdentifierGuid.HasValue)
+            {
+                SessionService.SaveTaskData(ViewModel.Email, ViewModel.SessionIdentifierGuid.Value, ViewModel.ExcelTaskData);
+            }
+        }
+        catch (Exception ex)
+        {
+            await JS.InvokeVoidAsync("console.error", $"Error parsing tasks: {ex.Message}");
+        }
+    }
+
+    private async Task ParseTeam()
+    {
+        try
+        {
+            var tempTeamDtoList = PasteParser.ParseTeam(ViewModel.ExcelTeamData);
+            ViewModel.TeamDtoListOutput = tempTeamDtoList.AsQueryable();
+            ViewModel.SessionContent = JsonConvert.SerializeObject(ViewModel.TeamDtoListOutput, Formatting.Indented);
+
+            if (ViewModel.SessionIdentifierGuid.HasValue)
+            {
+                SessionService.SaveTeamData(ViewModel.Email, ViewModel.SessionIdentifierGuid.Value, ViewModel.ExcelTeamData);
+            }
+        }
+        catch (Exception ex)
+        {
+            await JS.InvokeVoidAsync("console.error", $"Error parsing team: {ex.Message}");
+        }
+    }
+}

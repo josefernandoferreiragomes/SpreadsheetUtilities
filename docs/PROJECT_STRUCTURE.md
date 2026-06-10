@@ -1,358 +1,111 @@
-# Project Structure & File Organization
+﻿# Project Structure & File Organization
 
-## Updated Project Layout
+## Solution Layout
 
 ```
-SpreadsheetUtility.UI.Web/
+SpreadsheetUtilities.sln
 │
-├── Components/
-│   ├── Pages/
-│   │   └── GanttGeneratorFromPaste.razor ✅ UPDATED
-│   │       • Complete UI redesign
-│   │       • Email authentication flow
-│   │       • Conditional rendering
-│   │       • Session-aware cache loading
-│   │       • ~550 lines (from ~380 lines)
-│   │
-│   └── [Other components...]
+├── SpreadsheetUtility.Domain/          # Pure domain entities & value objects
+├── SpreadsheetUtility.Application/     # Use cases, DTOs, mappers, ports, services
+├── SpreadsheetUtility.Infrastructure/  # All I/O, ClosedXML, repos, providers, API clients
+├── SpreadsheetUtility.Bootstrapper/    # DI composition root
 │
-├── Models/ ✅ NEW FOLDER
-│   └── SessionState.cs ✅ NEW FILE
-│       • Email property (primary key)
-│       • SessionId property (secondary key)
-│       • ProjectData property
-│       • TaskData property
-│       • TeamData property
-│       • Metadata (timestamps, initialization flag)
+├── SpreadsheetUtility.UI.Web/          # Blazor Server app (Presentation)
+├── SpreadsheetUtility.UI.Console/      # Console app (Presentation)
+├── SpreadsheetUtilities.Auth.Api/      # Auth Minimal API (Presentation)
 │
-├── Services/
-│   ├── SessionService.cs ✅ UPDATED
-│   │   • In-memory cache with lock mechanism
-│   │   • New methods: SaveProjectData, SaveTaskData, SaveTeamData
-│   │   • New methods: LoadCachedSessionData, ClearSession
-│   │   • Enhanced InitiateSession with cache initialization
-│   │   • Updated UpdateSession with cache synchronization
-│   │   • Retained encryption methods: StoreSessionContentInCookie, RetrieveSessionContentFromCookie
-│   │   • Thread-safe operations throughout
-│   │   • ~200 lines (from ~90 lines)
-│   │
-│   └── [Other services...]
+├── SpreadsheetUtility.Test/            # All tests (xUnit) — 71 tests
 │
-├── Program.cs ✅ ALREADY CONFIGURED
-│   • AddDataProtection() already added
-│   • SessionService already registered as scoped
-│
-└── wwwroot/
-    └── [Static files...]
-
-Project Root/
-│
-├── IMPLEMENTATION_SUMMARY.md ✅ NEW
-│   • Technical overview
-│   • Files created/modified summary
-│   • Features and benefits
-│   • Validation results
-│
-├── SESSION_ARCHITECTURE.md ✅ NEW
-│   • System architecture diagrams
-│   • User journey flow charts
-│   • Cache structure visualization
-│   • Data flow diagrams
-│   • Thread safety explanation
-│   • Security flow
-│   • UI visibility states
-│   • Error handling flow
-│
-├── USAGE_GUIDE.md ✅ NEW
-│   • Quick start guide
-│   • Complete API reference
-│   • SessionState model documentation
-│   • Full lifecycle example
-│   • Error handling best practices
-│   • Testing scenarios
-│   • Troubleshooting guide
-│
-└── COMPLETION_CHECKLIST.md ✅ NEW
-    • Implementation verification
-    • Feature checklist
-    • Build status
-    • Code quality metrics
-    • Testing recommendations
-    • Known limitations
-    • Future enhancements
+├── SpreadsheetUtilities.ServiceDefaults/  # Aspire service defaults
+└── SpreadsheetUtilities.AppHost/          # Aspire orchestrator
 ```
 
-## File Statistics
-
-### Code Files
-
-| File | Type | Lines | Status | Notes |
-|------|------|-------|--------|-------|
-| SessionState.cs | Model | 22 | NEW | Session data model |
-| SessionService.cs | Service | 200 | UPDATED | Cache & encryption |
-| GanttGeneratorFromPaste.razor | Component | 550 | UPDATED | Complete redesign |
-| Program.cs | Config | Already configured | - | Data Protection added |
-
-### Documentation Files
-
-| File | Type | Pages | Content |
-|------|------|-------|---------|
-| IMPLEMENTATION_SUMMARY.md | Summary | 3 | Technical overview |
-| SESSION_ARCHITECTURE.md | Diagrams | 5 | Architecture & flows |
-| USAGE_GUIDE.md | Reference | 8 | API & examples |
-| COMPLETION_CHECKLIST.md | Checklist | 4 | Verification |
-
-## Code Distribution
+### Test Project Structure (Phase 6)
 
 ```
-Model Layer:
-├── SessionState.cs (22 lines)
-│
-Service Layer:
-├── SessionService.cs (200 lines)
-│   ├── Cache management (100 lines)
-│   ├── Encryption (60 lines)
-│   └── API integration (40 lines)
-│
-Presentation Layer:
-├── GanttGeneratorFromPaste.razor (550 lines)
-│   ├── UI/Markup (300 lines)
-│   └── @code block (250 lines)
-│       ├── UI State (50 lines)
-│       ├── Data Loading (100 lines)
-│       └── Business Logic (100 lines)
-
-Total: ~770 lines of new/updated code
+SpreadsheetUtility.Test/                  # Single xUnit test project
+├── ApplicationTests/                     # Handler + validator unit tests
+│   ├── Validators/                       # 7 FluentValidation test classes (21 methods)
+│   ├── UseCases/                         # 6 MediatR handler test classes (12 methods)
+│   └── MediatorIntegrationTests.cs       # End-to-end handler test (integration)
+├── InfrastructureTests/                  # Infrastructure layer tests
+│   ├── DoubleEntrySpreadsheetGeneratorTests.cs        # Unit tests
+│   └── DoubleEntrySpreadsheetGeneratorIntegratedTests.cs  # Integration (Category=Integration)
+└── DomainTests/                          # Domain layer tests
+    └── EntityValueObjectTests.cs          # 10 entity/value object tests
 ```
 
-## Dependency Diagram
+## Project Dependencies
 
 ```
-GanttGeneratorFromPaste.razor
-    ↓
-SessionService
-    ├─→ IDataProtectionProvider (DPAPI)
-    └─→ AuthApi (Remote session management)
+SpreadsheetUtility.Domain          net10.0     [no dependencies]
+       ↑
+SpreadsheetUtility.Application     net10.0     [Domain, MediatR, FluentValidation]
+       ↑
+SpreadsheetUtility.Infrastructure  net10.0     [Domain, Application, ClosedXML]
+       ↑
+SpreadsheetUtility.Bootstrapper    net10.0     [Application, Infrastructure]
+       ↑
+├── SpreadsheetUtility.UI.Web      net10.0     [Bootstrapper]
+├── SpreadsheetUtility.UI.Console  net10.0     [Bootstrapper]
+└── SpreadsheetUtilities.Auth.Api  net10.0     [Bootstrapper]
 
-    ↓
-Dictionary<string, SessionState>
-    ├─→ Email (string)
-    └─→ SessionState object
-        ├─→ ProjectData (string)
-        ├─→ TaskData (string)
-        ├─→ TeamData (string)
-        └─→ Metadata
-
-GanttMapperHelper
-    └─→ Converts Excel → DTO
-        ├─→ ProjectDto
-        ├─→ TaskDto
-        └─→ DeveloperDto
+Shared:
+  SpreadsheetUtilities.ServiceDefaults  net10.0  [Aspire]
+  SpreadsheetUtilities.AppHost          net10.0  [Aspire orchestration]
 ```
 
-## Package Dependencies
+## Key Folders (Application)
 
-```
-SpreadsheetUtility.UI.Web.csproj
+| Path | Description |
+|------|-------------|
+| `Application/DTOs/` | 9 DTOs: `TaskDto`, `ProjectDto`, `DeveloperDto`, `CalculateGanttChartAllocationInput/Output`, `DeveloperAvailability`, `ListGeneratorInput`, `GenerateDoubleEntryInput/Output` |
+| `Application/Ports/` | Abstractions: `IDateTimeProvider`, `IHolidayProvider`, `IExcelWorkbook`, `IExcelWorksheet`, `IDoubleEntryGeneratorService`, `IAuthService` |
+| `Application/Mappers/` | `IGanttChartMapper` / `GanttChartMapper` (DTO ↔ Domain) |
+| `Application/Validation/` | 7 FluentValidation validators: CalculateGanttChartAllocation, GenerateDoubleEntry, LoadTasks, ParseExcelData, InitiateSession, UpdateSession, GetSession |
+| `Application/Services/` | Calculators, strategies, factories, list generators, builders, PasteParserService |
+| `Application/UseCases/` | MediatR queries/commands and handlers (CalculateGanttChartAllocation, LoadTasks, ParseExcelData, Session, GenerateDoubleEntrySpreadsheet) |
+| `Application/Behaviors/` | `LoggingBehavior`, `ValidationBehavior` pipelines |
 
-Already Referenced:
-✅ Microsoft.AspNetCore.Components
-✅ Microsoft.AspNetCore.Components.QuickGrid
-✅ Microsoft.AspNetCore.DataProtection
-✅ Microsoft.JSInterop
-✅ Newtonsoft.Json (for JsonConvert)
+## Key Folders (Infrastructure)
 
-Project References:
-✅ SpreadsheetUtility.Library
-✅ SpreadsheetUtilities.Auth.Api
+| Path | Description |
+|------|-------------|
+| `Infrastructure/Excel/` | ClosedXML implementations: `IExcelDocument`/`ExcelDocument`, `DoubleEntryGeneratorService` |
+| `Infrastructure/Services/` | `AuthService`, `SessionService`, `FolderExampleFileProvider` |
+| `Infrastructure/Providers/` | `DateTimeProvider`, `HolidayFileProvider` |
+| `Infrastructure/Repositories/` | `HolidayRepository`, `DeveloperRepository` |
+| `Infrastructure/ApiClients/` | NSwag-generated `AuthApiClient` |
+| `Infrastructure/Models/` | `SessionState`, `ExampleFileInfo`, `FileDownloadDto` |
+| `Infrastructure/Abstractions/` | `IExampleFileProvider` |
+| `Infrastructure/Holidays/` | `2025HolidaysPT.json` |
 
-No new NuGet packages added
-(All dependencies already satisfied)
-```
+## Layer Responsibility
 
-## File Size Summary
+| Layer | Responsible For |
+|-------|----------------|
+| **Domain** | Entities (`GanttTask`, `Developer`, `Project`, `ProjectGroup`, `Holiday`), Value Objects (`DateRange`, `VacationPeriod`), Domain service interfaces, Repository interfaces |
+| **Application** | Use case orchestration via MediatR, DTOs, mapping, port abstractions, business logic services (calculators, strategies, PasteParserService) |
+| **Infrastructure** | All I/O (ClosedXML Excel operations), repository implementations, external API clients, caching (`IMemoryCache`), providers (date, holiday, example files) |
+| **Bootstrapper** | DI composition: single `AddSpreadsheetUtilities()` extension method calling `AddApplication()` + `AddInfrastructure()` |
+| **Presentation** | Blazor components/pages, Minimal API endpoints, console I/O |
 
-```
-Before Implementation:
-├── SessionService.cs: ~90 lines, ~3 KB
-├── GanttGeneratorFromPaste.razor: ~380 lines, ~12 KB
-└── No Models folder
+## Key Files
 
-After Implementation:
-├── SessionService.cs: ~200 lines, ~7 KB (+110%)
-├── GanttGeneratorFromPaste.razor: ~550 lines, ~18 KB (+45%)
-├── SessionState.cs (new): ~22 lines, ~1 KB
-└── Models folder (new)
-
-Total Addition: ~200 lines, ~13 KB of production code
-Plus: ~4 documentation files (~40 KB of docs)
-```
-
-## Class Hierarchy
-
-```
-Models/
-└── SessionState
-    ├── Email : string
-    ├── SessionId : Guid
-    ├── ProjectData : string?
-    ├── TaskData : string?
-    ├── TeamData : string?
-    ├── CreatedAt : DateTime
-    ├── LastModifiedAt : DateTime
-    └── IsInitialized : bool
-
-Services/
-└── SessionService
-    ├── Fields:
-    │   ├── _dataProtectionProvider : IDataProtectionProvider
-    │   ├── _sessionCache : Dictionary<string, SessionState>
-    │   └── _cacheLock : object
-    │
-    ├── Public Methods:
-    │   ├── InitiateSession(email) : string
-    │   ├── GetSessionState(email) : SessionState?
-    │   ├── GetSession(email, sessionId) : string
-    │   ├── UpdateSession(email, sessionId, obj) : string
-    │   ├── SaveProjectData(email, sessionId, data) : void
-    │   ├── SaveTaskData(email, sessionId, data) : void
-    │   ├── SaveTeamData(email, sessionId, data) : void
-    │   ├── LoadCachedSessionData(email) : SessionState?
-    │   ├── StoreSessionContentInCookie(content) : string
-    │   ├── RetrieveSessionContentFromCookie(content) : string
-    │   └── ClearSession(email) : void
-
-Components/
-└── GanttGeneratorFromPaste
-    ├── State:
-    │   ├── isSessionInitialized : bool
-    │   ├── eMail : string
-    │   ├── sessionIdentifierGuid : Guid?
-    │   └── [10+ data properties]
-    │
-    ├── Lifecycle:
-    │   └── OnInitializedAsync() : Task
-    │
-    ├── Authentication:
-    │   ├── InitializeSession() : Task
-    │   └── LoadCachedSessionData() : Task
-    │
-    ├── Data Operations:
-    │   ├── ParseProjects() : Task
-    │   ├── ParseTasks() : Task
-    │   ├── ParseTeam() : Task
-    │   └── UpdateSession() : Task
-    │
-    └── Chart Generation:
-        └── LoadGanttChartTasks() : Task
-```
-
-## CI/CD Integration Points
-
-```
-Build Pipeline:
-✅ Builds successfully
-✅ No compilation warnings
-✅ All NuGet packages resolved
-✅ Unit test compatible
-
-Deployment:
-✅ Web app compatible
-✅ Blazor Server compatible
-✅ .NET 10 compatible
-✅ Database optional (works with in-memory cache)
-
-Runtime Requirements:
-✅ Data Protection API available
-✅ HttpClient available
-✅ JSInterop available
-✅ Thread synchronization available
-```
-
-## Version Control
-
-```
-Repository: https://github.com/josefernandoferreiragomes/SpreadsheetUtilities
-Branch: add-session-api
-Status: Up to date with origin
-
-Changes:
-Modified:
-  - SpreadsheetUtility.UI.Web/Services/SessionService.cs
-  - SpreadsheetUtility.UI.Web/Components/Pages/GanttGeneratorFromPaste.razor
-
-Untracked/New:
-  - SpreadsheetUtility.UI.Web/Models/SessionState.cs
-  - IMPLEMENTATION_SUMMARY.md
-  - SESSION_ARCHITECTURE.md
-  - USAGE_GUIDE.md
-  - COMPLETION_CHECKLIST.md
-
-Ready for Commit/Push: ✅ YES
-```
-
-## Development Environment
-
-```
-IDE: Visual Studio Community 2026 (18.5.2) ✅
-Language: C# with Blazor
-Framework: .NET 10
-Runtime: Blazor Server (InteractiveServer)
-Package Manager: NuGet ✅
-Version Control: Git ✅
-Build Tools: MSBuild ✅
-```
-
-## Performance Metrics
-
-```
-Cache Access: O(1) - Dictionary lookup
-Memory Usage: ~1KB per session
-Startup Time: <100ms for cache init
-Cache Lock Time: <1ms typical
-Encryption Time: <10ms per operation
-```
-
-## Testing Infrastructure
-
-```
-Unit Tests Ready For:
-✅ SessionService cache operations
-✅ SessionState serialization
-✅ Component initialization
-✅ Email validation
-✅ Cache synchronization
-✅ Error handling
-
-Integration Tests Ready For:
-✅ End-to-end authentication flow
-✅ Session persistence
-✅ Remote API integration
-✅ Cookie encryption
-✅ Multi-user scenarios
-```
-
-## Deployment Checklist
-
-```
-Pre-Deployment:
-☑ Code review completed
-☑ Build successful
-☑ Tests passing
-☑ Documentation complete
-☑ Performance verified
-
-Deployment:
-☑ Database migrations (none needed)
-☑ Configuration updates (none needed)
-☑ Environment variables (none new)
-☑ SSL/TLS certificates (existing)
-☑ Service dependencies (all existing)
-
-Post-Deployment:
-☑ Monitor application logs
-☑ Verify session functionality
-☑ Test email authentication
-☑ Confirm cache operations
-☑ Check security headers
-```
+| File | Description |
+|------|-------------|
+| `Application/DependencyInjection.cs` | `AddApplication()` extension for DI registration (MediatR, validators, services) |
+| `Application/Behaviors/LoggingBehavior.cs` | MediatR pipeline: logs requests/responses |
+| `Application/Behaviors/ValidationBehavior.cs` | MediatR pipeline: validates inputs via FluentValidation |
+| `Application/UseCases/CalculateGanttChartAllocation/` | Query + Handler replacing `GanttChartProcessor` |
+| `Application/UseCases/LoadTasks/` | Query + Handler for loading tasks from Excel |
+| `Application/UseCases/ParseExcelData/` | Command + Handler for parsing pasted Excel data |
+| `Application/UseCases/GenerateDoubleEntrySpreadsheet/` | Command + Handler for double-entry spreadsheet generation |
+| `Application/UseCases/Session/` | InitiateSession, GetSession, UpdateSession use cases |
+| `Application/Services/IPasteParserService.cs` | Interface for parsing pasted TSV data |
+| `Application/Services/PasteParserService.cs` | Implementation: ParseProjects, ParseTasks, ParseTeam |
+| `Bootstrapper/DependencyInjection.cs` | `AddSpreadsheetUtilities()` extension combining Application and Infrastructure registrations |
+| `Infrastructure/DependencyInjection.cs` | `AddInfrastructure()` extension for DI registration |
+| `Infrastructure/Excel/DoubleEntryGeneratorService.cs` | ClosedXML-based implementation of `IDoubleEntryGeneratorService` |
+| `Infrastructure/Services/AuthService.cs` | IAuthService implementation using IMemoryCache |
+| `UI.Web/ViewModels/GanttGeneratorViewModel.cs` | Page state holder for GanttGeneratorFromPaste.razor |

@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-
   </PropertyGroup>
 
   <ItemGroup>
@@ -11,7 +10,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SpreadsheetUtility.Library\SpreadsheetUtility.Library.csproj" />
+    <ProjectReference Include="..\SpreadsheetUtility.Application\SpreadsheetUtility.Application.csproj" />
+    <ProjectReference Include="..\SpreadsheetUtility.Infrastructure\SpreadsheetUtility.Infrastructure.csproj" />
+    <ProjectReference Include="..\SpreadsheetUtility.Bootstrapper\SpreadsheetUtility.Bootstrapper.csproj" />
   </ItemGroup>
 
 </Project>

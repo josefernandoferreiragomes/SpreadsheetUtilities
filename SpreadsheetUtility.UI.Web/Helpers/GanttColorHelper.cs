@@ -1,5 +1,5 @@
-﻿using SpreadsheetUtility.Library;
-using SpreadsheetUtility.Library.Models;
+﻿using SpreadsheetUtility.Application.DTOs;
+using SpreadsheetUtility.Domain.Models;
 
 namespace SpreadsheetUtility.UI.Web.Helpers
 {

@@ -1,0 +1,6 @@
+using MediatR;
+using SpreadsheetUtility.Application.DTOs;
+
+namespace SpreadsheetUtility.Application.UseCases.CalculateGanttChartAllocation;
+
+public record CalculateGanttChartAllocationQuery(CalculateGanttChartAllocationInput Input) : IRequest<CalculateGanttChartAllocationOutput>;

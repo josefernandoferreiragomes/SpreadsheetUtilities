@@ -1,25 +1,16 @@
-using SpreadsheetUtility.Library.Calculators;
-using SpreadsheetUtility.Library.Domain;
-using SpreadsheetUtility.Library.Grouppers;
-using SpreadsheetUtility.Library.ListGenerators;
-using SpreadsheetUtility.Library.Mappers;
-using SpreadsheetUtility.Library.Models;
-using SpreadsheetUtility.Library.Processors;
-using SpreadsheetUtility.Library.Providers;
-using SpreadsheetUtility.Library.Services;
-using SpreadsheetUtility.Library.TaskAssigners;
-using SpreadsheetUtility.Library.TaskSorters;
+﻿using SpreadsheetUtility.Bootstrapper;
+using SpreadsheetUtility.Infrastructure.Services;
+using SpreadsheetUtility.UI.Web.ViewModels;
 using SpreadsheetUtility.UI.Web.Components;
-using SpreadsheetUtility.UI.Web.Services;
+using SpreadsheetUtility.UI.Web.Endpoints;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
-// Add Data Protection services for secure cookie storage
 builder.Services.AddDataProtection();
+builder.Services.AddMemoryCache();
 
-// Add services to the container.
 builder.Services.AddRazorComponents(options =>
         options.DetailedErrors = builder.Environment.IsDevelopment()
     )
@@ -30,69 +21,20 @@ builder.Services.AddLogging(logging =>
     logging.AddConsole();
 });
 
-//add GanttChartProcessor to middleware services:
-builder.Services.AddScoped<IGanttChartProcessor, GanttChartProcessor>();
-builder.Services.AddScoped<IGanttChartDataManager, GanttChartDataManager>();
-builder.Services.AddScoped<IDateTimeProvider, DateTimeProvider>();
-builder.Services.AddScoped<IGanttChartMapper, GanttChartMapper>();
-builder.Services.AddScoped<IHolidayProvider, HolidayProvider>();
-builder.Services.AddScoped<ITaskAssignmentStrategyFactory, TaskAssignmentStrategyFactory>();
-builder.Services.AddScoped<ITaskSortingStrategyFactory, TaskSortingStrategyFactory>();
-builder.Services.AddScoped<DefaultTaskAssignmentStrategy>();
-builder.Services.AddScoped<DefaultTaskSortingStrategy>();
-builder.Services.AddScoped<TaskSortingStrategyEffortBased>();
-// Register the generalized ListGenerator implementations
-builder.Services.AddScoped<IListGenerator<GanttTask, Project>, GanttTaskProjectListGenerator>();
-builder.Services.AddScoped<IListGenerator<GanttTask, GanttTask>, GanttTaskListGenerator>();
-builder.Services.AddScoped<IListGenerator<Developer, List<GanttTask>>, DeveloperTaskListGenerator>();
-
-builder.Services.AddScoped<IDateCalculator, DateCalculator>();
-builder.Services.AddScoped<IDeveloperHoursCalculator, DeveloperHoursCalculator>();
-builder.Services.AddScoped<ICalculatorFacade, CalculatorFacade>();
-builder.Services.AddScoped<LoggingInvoker>();
-builder.Services.AddScoped<GroupProjectsByProjectGroupQuery>();
+builder.Services.AddSpreadsheetUtilities();
 builder.Services.AddScoped<SessionService>();
 
-// Add example files service for downloading sample spreadsheets
-builder.Services.AddScoped<IExampleFileProvider, FolderExampleFileProvider>();
+builder.Services.AddScoped<GanttGeneratorViewModel>();
 
-
+builder.Host.UseDefaultServiceProvider((context, options) =>
+{
+    options.ValidateScopes = context.HostingEnvironment.IsDevelopment();
+    options.ValidateOnBuild = context.HostingEnvironment.IsDevelopment();
+});
 
 var app = builder.Build();
 
 app.MapDefaultEndpoints();
-
-// Validate all scoped services (optional manual step)
-using (var scope = app.Services.CreateScope())
-{
-    var servicesToValidate = new Type[]
-    {
-        typeof(IGanttChartProcessor),
-        typeof(IGanttChartDataManager),
-        typeof(IDateTimeProvider),
-        typeof(IGanttChartMapper),
-        typeof(IDateCalculator),
-        typeof(IHolidayProvider),
-        typeof(ITaskAssignmentStrategyFactory),
-        typeof(ITaskSortingStrategyFactory),
-        typeof(DefaultTaskAssignmentStrategy),
-        typeof(DefaultTaskSortingStrategy),
-        typeof(TaskSortingStrategyEffortBased),
-        typeof(IListGenerator<GanttTask, Project>),
-        typeof(IListGenerator<GanttTask, GanttTask>),
-        typeof(IListGenerator<Developer, List<GanttTask>>),
-        typeof(IDeveloperHoursCalculator),
-        typeof(ICalculatorFacade),
-        typeof(LoggingInvoker),
-        typeof(GroupProjectsByProjectGroupQuery),
-        
-    };
-
-    foreach (var serviceType in servicesToValidate)
-    {
-        scope.ServiceProvider.GetRequiredService(serviceType); // Throws if not registered
-    }
-}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -106,6 +48,8 @@ app.UseHttpsRedirection();
 
 app.UseStaticFiles();
 app.UseAntiforgery();
+
+app.MapExampleFilesEndpoints();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();

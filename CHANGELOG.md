@@ -4,8 +4,13 @@
 
 ### Bug Fixes
 
-- Fixed a timing bug where Gantt chart JS interop (`renderGanttTasks`, `renderGanttProjects`, `renderDeveloperGanttTasks`) ran before the DOM containers existed, causing "Cannot set properties of null (setting 'innerHTML')".
-  Moved the three JS calls from `LoadGanttChartTasks` (via fragile `Task.Delay(100)`) into `OnAfterRenderAsync` with a `_pendingGanttRender` flag, guaranteeing the DOM is updated before JS executes.
+- Fixed `Cannot set properties of null (setting 'innerHTML')` in Gantt chart generation.
+  Root cause: JS interop was called from the parent component before the child
+  (`GanttResultsComponent`) had its DOM containers rendered.
+  Fix: Moved JS interop calls into `GanttResultsComponent.OnAfterRenderAsync`, which
+  guarantees the target `<div>` elements exist. Also replaced `setTimeout` polling
+  in `gantt.js` with `MutationObserver` for DOM-ready detection and added a
+  cache-busting query parameter (`v=2`) to the script tag.
   Tests: 71 pass, 0 failures.
 
 ### Architecture
@@ -152,6 +157,8 @@
 ### Architecture
 
 - 11 design patterns implemented in SpreadsheetUtility.Library (Strategy, Factory, Template Method, Builder, Facade, Mapper/Adapter, Observer, Command, Dependency Injection, Provider, Generic List Generator)
+
+
 
 
 

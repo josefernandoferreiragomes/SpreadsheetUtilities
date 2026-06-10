@@ -1,4 +1,5 @@
 ﻿@inject GanttGeneratorViewModel ViewModel
+@inject IJSRuntime JS
 
 @if (ViewModel.GanttTaskListOutput?.Count() > 0)
 {
@@ -80,3 +81,27 @@
         </div>
     </div>
 }
+@code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (ViewModel.GanttTaskListOutput?.Any() != true)
+        {
+            return;
+        }
+
+        try
+        {
+            var jsonOptions = new System.Text.Json.JsonSerializerOptions { WriteIndented = true };
+            await JS.InvokeVoidAsync("renderGanttTasks", System.Text.Json.JsonSerializer.Serialize(ViewModel.GanttTaskListOutput, jsonOptions), ViewModel.ChartMode.ToString(), "true");
+            await JS.InvokeVoidAsync("renderGanttProjects", System.Text.Json.JsonSerializer.Serialize(ViewModel.GanttProjectListOutput, jsonOptions), ViewModel.ChartMode.ToString(), "true");
+            await JS.InvokeVoidAsync("renderDeveloperGanttTasks", System.Text.Json.JsonSerializer.Serialize(ViewModel.DeveloperGanttTaskListOutput, jsonOptions), ViewModel.ChartMode.ToString(), "true");
+        }
+        catch (Exception ex)
+        {
+            await JS.InvokeVoidAsync("console.error", $"Error loading Gantt chart tasks: {ex.Message}");
+        }
+    }
+}
+

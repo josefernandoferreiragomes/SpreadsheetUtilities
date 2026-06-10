@@ -31,9 +31,35 @@
 }
 
 @code {
+    private bool _pendingGanttRender = false;
+
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (!_pendingGanttRender)
+        {
+            return;
+        }
+
+        _pendingGanttRender = false;
+
+        try
+        {
+            var jsonOptions = new System.Text.Json.JsonSerializerOptions { WriteIndented = true };
+            await JS.InvokeVoidAsync("renderGanttTasks", System.Text.Json.JsonSerializer.Serialize(ViewModel.GanttTaskListOutput, jsonOptions), ViewModel.ChartMode.ToString(), "true");
+            await JS.InvokeVoidAsync("renderGanttProjects", System.Text.Json.JsonSerializer.Serialize(ViewModel.GanttProjectListOutput, jsonOptions), ViewModel.ChartMode.ToString(), "true");
+            await JS.InvokeVoidAsync("renderDeveloperGanttTasks", System.Text.Json.JsonSerializer.Serialize(ViewModel.DeveloperGanttTaskListOutput, jsonOptions), ViewModel.ChartMode.ToString(), "true");
+        }
+        catch (Exception ex)
+        {
+            await JS.InvokeVoidAsync("console.error", $"Error loading Gantt chart tasks: {ex.Message}");
+        }
     }
 
     private async Task HandleSessionInitialized()
@@ -94,12 +120,8 @@
             GanttColorHelper.SetupProjectColor(ViewModel.GanttProjectListOutput, ViewModel.GanttTaskListOutput);
             GanttColorHelper.SetupDeveloperColor(ViewModel.DeveloperListOutput, ViewModel.DeveloperGanttTaskListOutput);
 
+            _pendingGanttRender = true;
             StateHasChanged();
-            await Task.Delay(100);
-
-            await JS.InvokeVoidAsync("renderGanttTasks", System.Text.Json.JsonSerializer.Serialize(ViewModel.GanttTaskListOutput, new System.Text.Json.JsonSerializerOptions { WriteIndented = true }), ViewModel.ChartMode.ToString(), "true");
-            await JS.InvokeVoidAsync("renderGanttProjects", System.Text.Json.JsonSerializer.Serialize(ViewModel.GanttProjectListOutput, new System.Text.Json.JsonSerializerOptions { WriteIndented = true }), ViewModel.ChartMode.ToString(), "true");
-            await JS.InvokeVoidAsync("renderDeveloperGanttTasks", System.Text.Json.JsonSerializer.Serialize(ViewModel.DeveloperGanttTaskListOutput, new System.Text.Json.JsonSerializerOptions { WriteIndented = true }), ViewModel.ChartMode.ToString(), "true");
         }
         catch (Exception ex)
         {

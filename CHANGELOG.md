@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+### Bug Fixes
+
+- Fixed a timing bug where Gantt chart JS interop (`renderGanttTasks`, `renderGanttProjects`, `renderDeveloperGanttTasks`) ran before the DOM containers existed, causing "Cannot set properties of null (setting 'innerHTML')".
+  Moved the three JS calls from `LoadGanttChartTasks` (via fragile `Task.Delay(100)`) into `OnAfterRenderAsync` with a `_pendingGanttRender` flag, guaranteeing the DOM is updated before JS executes.
+  Tests: 71 pass, 0 failures.
+
 ### Architecture
 
 - Phase 6 testing restructure: reorganized test project into ApplicationTests/, InfrastructureTests/, DomainTests/ folders
@@ -146,6 +152,8 @@
 ### Architecture
 
 - 11 design patterns implemented in SpreadsheetUtility.Library (Strategy, Factory, Template Method, Builder, Facade, Mapper/Adapter, Observer, Command, Dependency Injection, Provider, Generic List Generator)
+
+
 
 
 

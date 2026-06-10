@@ -3,10 +3,15 @@ window.renderGanttTasks = (taskDataJson, viewMode, namedLanes) => {
     if (viewMode === undefined) {
         viewMode = 'Week';
     }
+    const container = document.getElementById("gantt-chart-tasks");
+    if (!container) {
+        setTimeout(() => window.renderGanttTasks(taskDataJson, viewMode, namedLanes), 50);
+        return;
+    }
     const prettyJson = JSON.stringify(JSON.parse(taskDataJson), null, 2);
     //console.log("Received Data: ", prettyJson); // Debug in browser console
     let tasks = JSON.parse(taskDataJson);
-    document.getElementById("gantt-chart-tasks").innerHTML = ""; // Clear previous chart
+    container.innerHTML = ""; // Clear previous chart
 
     //holidays are not customizable
 
@@ -34,10 +39,15 @@ window.renderGanttProjects = (taskDataJson, viewMode, namedLanes) => {
     if (viewMode === undefined) {
         viewMode = 'Week';
     }
+    const container = document.getElementById("gantt-chart-projects");
+    if (!container) {
+        setTimeout(() => window.renderGanttProjects(taskDataJson, viewMode, namedLanes), 50);
+        return;
+    }
     const prettyJson = JSON.stringify(JSON.parse(taskDataJson), null, 2);
     //console.log("Received Data: ", prettyJson); // Debug in browser console
     let tasks = JSON.parse(taskDataJson);
-    document.getElementById("gantt-chart-projects").innerHTML = ""; // Clear previous chart
+    container.innerHTML = ""; // Clear previous chart
 
     //holidays are not customizable
 
@@ -65,10 +75,15 @@ window.renderDeveloperGanttTasks = (developerTaskDataJson, viewMode, namedLanes)
     if (viewMode === undefined) {
         viewMode = 'Week';
     }
+    const container = document.getElementById("developer-gantt-chart-tasks");
+    if (!container) {
+        setTimeout(() => window.renderDeveloperGanttTasks(developerTaskDataJson, viewMode, namedLanes), 50);
+        return;
+    }
     const prettyJson = JSON.stringify(JSON.parse(developerTaskDataJson), null, 2);
     //console.log("Received Data: ", prettyJson); // Debug in browser console
     let tasks = JSON.parse(developerTaskDataJson);
-    document.getElementById("developer-gantt-chart-tasks").innerHTML = ""; // Clear previous chart
+    container.innerHTML = ""; // Clear previous chart
 
     //holidays are not customizable
 

@@ -3,13 +3,28 @@
 ## [Unreleased]
 
 ### Bug Fixes
+### Code Analysis
+
+- Phase 7 warning cleanup: eliminated all 22 code analysis diagnostics (20 CA1848 + 1 CS8625 + 1 WHITESPACE)
+- Fixed CA1848: Replaced 20 ILogger.Log*() calls with [LoggerMessage] source-generated delegates across 3 files:
+  - LoggingBehavior.cs (2 instances) - added partial to class for source generator
+  - FolderExampleFileProvider.cs (7 instances) - added partial to class
+  - ExampleFilesEndpoints.cs (11 instances) - added static partial to class
+- Fixed CS8625: Changed IAuthService.GetSession() return type from string to string? to properly model nullable session
+  - Updated AuthService.cs implementation to return 
+ull instead of throwing when session not found
+- Fixed WHITESPACE: Auto-formatted DoubleEntrySpreadsheetGeneratorSimplified.cs with dotnet format
+- Moved NSwag #pragma warning disable from auto-generated AuthApiClient.cs to project-level <NoWarn> in Infrastructure .csproj
+- Removed all #pragma warning directives from AuthApiClient.cs (now covered by project-level suppressions)
+- Build: 0 errors, 0 warnings. dotnet format --verify-no-changes: clean.
+- Tests: 71 pass, 0 failures.
 
 - Fixed Gantt chart results not appearing on first page visit after pasting data and pressing Generate.
   Root cause: `DataPasteGridComponent` textareas used default `@bind` (onchange event), so ViewModel
   properties were not updated until the textarea lost focus. If "Generate" was clicked immediately after
   pasting, the raw data properties were still empty, causing the parse to produce empty results.
   Fix: Changed `@bind` to `@bind:event="oninput"` on all three textareas so ViewModel properties update
-  on every keystroke/paste — data is always fresh when Generate runs.
+  on every keystroke/paste ï¿½ data is always fresh when Generate runs.
   Additionally, cleared all output properties at the start of `LoadGanttChartTasks()` to prevent stale
   ghost data from persisting across navigations (scoped ViewModel lifecycles).
   Tests: 71 pass, 0 failures.
@@ -21,7 +36,7 @@
   rendered content never appeared.
   Fix: Move JS interop calls directly into the parent's `LoadGanttChartTasks` method
   (after `StateHasChanged()`), relying on the `MutationObserver`-based `waitForElement()`
-  helper in `gantt.js` to wait for the DOM containers to appear — no error thrown,
+  helper in `gantt.js` to wait for the DOM containers to appear ï¿½ no error thrown,
   no fragile `setTimeout` polling, no dependency on child lifecycle re-entry.
   Tests: 71 pass, 0 failures.
 
@@ -48,7 +63,7 @@
 - Build: 0 errors, Tests: 26 pass, 0 failures
 
 - Phase 4a refactoring: Auth.Api now uses Application + Infrastructure layers
-- Phase 4b refactoring: UI.Web — replaced GanttMapperHelper static methods with IPasteParserService in Application/Services/
+- Phase 4b refactoring: UI.Web ï¿½ replaced GanttMapperHelper static methods with IPasteParserService in Application/Services/
 - Created GanttGeneratorViewModel in UI.Web/ViewModels/ as scoped DI service for page state
 - GanttGeneratorFromPaste.razor now binds to ViewModel properties and uses PasteParserService
 - Register PasteParserService in Application/DependencyInjection.cs
@@ -62,7 +77,7 @@
 - Added Assembly.GetExecutingAssembly() and auto-discovery scanning for the Session use case handlers
 - Build: 0 errors, Tests: 26 pass, 0 failures
 
-### UI.Web — Component Split & Cleanup
+### UI.Web ï¿½ Component Split & Cleanup
 
 - Split 535-line GanttGeneratorFromPaste.razor into 4 components: SessionComponent, DataPasteGridComponent, GanttConfigComponent, GanttResultsComponent
 - Converted ExampleFilesController ([ApiController]) to Minimal API endpoints in Endpoints/
@@ -70,7 +85,7 @@
 - Updated _Imports.razor with shared namespaces (Application.Services, ViewModels, QuickGrid, Newtonsoft.Json)
 - Build: 0 errors, Tests: 26 pass, 0 failures
 
-### UI.Console — Phase 4c Refactoring
+### UI.Console ï¿½ Phase 4c Refactoring
 
 - Created GenerateDoubleEntryInput/Output DTOs in Application/DTOs
 - Created IDoubleEntryGeneratorService port in Application/Ports

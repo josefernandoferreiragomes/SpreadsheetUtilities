@@ -5,7 +5,7 @@ using SpreadsheetUtility.Infrastructure.Models;
 
 namespace SpreadsheetUtility.Infrastructure.Services;
 
-public class FolderExampleFileProvider : IExampleFileProvider
+public partial class FolderExampleFileProvider : IExampleFileProvider
 {
     private readonly IWebHostEnvironment _hostEnvironment;
     private readonly ILogger<FolderExampleFileProvider> _logger;
@@ -27,7 +27,7 @@ public class FolderExampleFileProvider : IExampleFileProvider
         {
             if (!Directory.Exists(_exampleFilesPath))
             {
-                _logger.LogWarning("Example files directory not found: {Path}", _exampleFilesPath);
+                Log.DirectoryNotFound(_logger, _exampleFilesPath);
                 return Enumerable.Empty<ExampleFileInfo>();
             }
 
@@ -48,7 +48,7 @@ public class FolderExampleFileProvider : IExampleFileProvider
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving available files from {Path}", _exampleFilesPath);
+            Log.ListError(_logger, _exampleFilesPath, ex);
             throw;
         }
     }
@@ -63,14 +63,14 @@ public class FolderExampleFileProvider : IExampleFileProvider
 
             if (!File.Exists(filePath))
             {
-                _logger.LogWarning("Example file not found: {FileName}", fileName);
+                Log.FileNotFound(_logger, fileName);
                 throw new FileNotFoundException($"File not found: {fileName}");
             }
 
             var fileInfo = new FileInfo(filePath);
             var content = await File.ReadAllBytesAsync(filePath);
 
-            _logger.LogInformation("Retrieved example file: {FileName} ({SizeBytes} bytes)", fileName, fileInfo.Length);
+            Log.FileRetrieved(_logger, fileName, fileInfo.Length);
 
             return new FileDownloadDto
             {
@@ -86,7 +86,7 @@ public class FolderExampleFileProvider : IExampleFileProvider
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error reading file: {FileName}", fileName);
+            Log.ReadError(_logger, fileName, ex);
             throw;
         }
     }
@@ -101,7 +101,7 @@ public class FolderExampleFileProvider : IExampleFileProvider
 
             if (!File.Exists(filePath))
             {
-                _logger.LogDebug("Example file not found: {FileName}", fileName);
+                Log.FileInfoNotFound(_logger, fileName);
                 return null;
             }
 
@@ -117,7 +117,7 @@ public class FolderExampleFileProvider : IExampleFileProvider
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting file info: {FileName}", fileName);
+            Log.InfoError(_logger, fileName, ex);
             return null;
         }
     }
@@ -143,5 +143,29 @@ public class FolderExampleFileProvider : IExampleFileProvider
         {
             _ => "Example spreadsheet for Gantt chart generation"
         };
+    }
+
+    private static partial class Log
+    {
+        [LoggerMessage(EventId = 1, Level = LogLevel.Warning, Message = "Example files directory not found: {Path}")]
+        public static partial void DirectoryNotFound(ILogger logger, string path);
+
+        [LoggerMessage(EventId = 2, Level = LogLevel.Error, Message = "Error retrieving available files from {Path}")]
+        public static partial void ListError(ILogger logger, string path, Exception exception);
+
+        [LoggerMessage(EventId = 3, Level = LogLevel.Warning, Message = "Example file not found: {FileName}")]
+        public static partial void FileNotFound(ILogger logger, string fileName);
+
+        [LoggerMessage(EventId = 4, Level = LogLevel.Information, Message = "Retrieved example file: {FileName} ({SizeBytes} bytes)")]
+        public static partial void FileRetrieved(ILogger logger, string fileName, long sizeBytes);
+
+        [LoggerMessage(EventId = 5, Level = LogLevel.Error, Message = "Error reading file: {FileName}")]
+        public static partial void ReadError(ILogger logger, string fileName, Exception exception);
+
+        [LoggerMessage(EventId = 6, Level = LogLevel.Debug, Message = "Example file not found: {FileName}")]
+        public static partial void FileInfoNotFound(ILogger logger, string fileName);
+
+        [LoggerMessage(EventId = 7, Level = LogLevel.Error, Message = "Error getting file info: {FileName}")]
+        public static partial void InfoError(ILogger logger, string fileName, Exception exception);
     }
 }

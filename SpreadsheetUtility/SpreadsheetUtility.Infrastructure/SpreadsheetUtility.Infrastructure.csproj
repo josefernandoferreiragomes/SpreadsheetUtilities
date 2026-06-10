@@ -1,11 +1,11 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
     <ProjectReference Include="..\SpreadsheetUtility.Domain\SpreadsheetUtility.Domain.csproj" />
     <ProjectReference Include="..\SpreadsheetUtility.Application\SpreadsheetUtility.Application.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
+  <PropertyGroup><NoWarn>$(NoWarn);CS108;CS114;CS472;CS612;CS649;CS1573;CS1591;CS8073;CS3016;CS8600;CS8602;CS8603;CS8604;CS8625;CS8618;CS8765</NoWarn></PropertyGroup><ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 

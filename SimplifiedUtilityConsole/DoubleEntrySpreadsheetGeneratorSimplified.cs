@@ -22,7 +22,7 @@ public class DoubleEntrySpreadsheetGeneratorSimplified
         _valuesColumnID = valuesColumnID;
         _outputFilePath = outputFilePath;
         _headersRow = headersRow ?? string.Empty;
-        _worksheetIndex = worksheetIndex ?? string.Empty;        
+        _worksheetIndex = worksheetIndex ?? string.Empty;
         _worksheetIndexInt = int.TryParse(_worksheetIndex, out _worksheetIndexInt) ? _worksheetIndexInt : WORKSHEET_INDEX_COUNT_DEFAULT;
         _headersRowInt = int.TryParse(_headersRow, out _headersRowInt) ? _headersRowInt : HEADER_ROW_INDEX_DEFAULT;
     }

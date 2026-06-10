@@ -86,7 +86,9 @@
     {
         await base.OnAfterRenderAsync(firstRender);
 
-        if (ViewModel.GanttTaskListOutput?.Any() != true)
+        var dataExists = ViewModel.GanttTaskListOutput?.Any() == true;
+        await JS.InvokeVoidAsync("console.log", $"GanttResultsComponent.OnAfterRenderAsync: dataExists={dataExists}, ganttCount={ViewModel.GanttTaskListOutput?.Count()}");
+        if (!dataExists)
         {
             return;
         }
@@ -104,4 +106,5 @@
         }
     }
 }
+
 

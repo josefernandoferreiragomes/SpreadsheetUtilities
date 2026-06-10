@@ -94,6 +94,8 @@
             GanttColorHelper.SetupProjectColor(ViewModel.GanttProjectListOutput, ViewModel.GanttTaskListOutput);
             GanttColorHelper.SetupDeveloperColor(ViewModel.DeveloperListOutput, ViewModel.DeveloperGanttTaskListOutput);
 
+            await JS.InvokeVoidAsync("console.log", $"DEBUG LoadGanttChartTasks: GanttTaskListOutput.Count={ViewModel.GanttTaskListOutput?.Count()}, ProjectListOutput.Count={ViewModel.ProjectListOutput?.Count()}, DeveloperGanttTaskListOutput.Count={ViewModel.DeveloperGanttTaskListOutput?.Count()}");
+
             StateHasChanged();
         }
         catch (Exception ex)
@@ -102,3 +104,4 @@
         }
     }
 }
+

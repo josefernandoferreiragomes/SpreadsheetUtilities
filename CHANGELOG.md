@@ -2,29 +2,35 @@
 
 ## [Unreleased]
 
-### Bug Fixes
-### Code Analysis
+### Fixed
 
-- Phase 7 warning cleanup: eliminated all 22 code analysis diagnostics (20 CA1848 + 1 CS8625 + 1 WHITESPACE)
-- Fixed CA1848: Replaced 20 ILogger.Log*() calls with [LoggerMessage] source-generated delegates across 3 files:
-  - LoggingBehavior.cs (2 instances) - added partial to class for source generator
-  - FolderExampleFileProvider.cs (7 instances) - added partial to class
-  - ExampleFilesEndpoints.cs (11 instances) - added static partial to class
-- Fixed CS8625: Changed IAuthService.GetSession() return type from string to string? to properly model nullable session
-  - Updated AuthService.cs implementation to return 
-ull instead of throwing when session not found
-- Fixed WHITESPACE: Auto-formatted DoubleEntrySpreadsheetGeneratorSimplified.cs with dotnet format
-- Moved NSwag #pragma warning disable from auto-generated AuthApiClient.cs to project-level <NoWarn> in Infrastructure .csproj
-- Removed all #pragma warning directives from AuthApiClient.cs (now covered by project-level suppressions)
-- Build: 0 errors, 0 warnings. dotnet format --verify-no-changes: clean.
-- Tests: 71 pass, 0 failures.
+- Fixed "Developer Tasks Gantt Chart" timeline showing wider date range than other charts.
+  Root cause: Vacation entries in `DeveloperTaskListGenerator` set their `Start` to the full vacation
+  start date, even when that date was before `_projectStartDate`. The Frappe Gantt library auto-scales
+  the timeline to fit all bars, so a vacation starting before the project start pulled the timeline
+  leftward.
+  Fix: Clamped the vacation `Start` to `_projectStartDate` so overlapping vacations are still shown
+  but don't extend the timeline backward beyond the project boundary.
+  Tests: 71 pass, 0 failures.
+
+- Fixed data grids (Project/Task/Developer) showing empty after chart generation until page
+  navigation out and back in.
+  Root cause: `GanttResultsComponent` had no `[Parameter]` properties — only injected the ViewModel.
+  When the parent called `StateHasChanged()` after populating data, Blazor's render tree diff found
+  no parameter changes and skipped re-rendering the child component. QuickGrid never received the
+  updated data.
+  Fix: Added a `_ganttDataVersion` counter in the parent page, incremented in `LoadGanttChartTasks()`,
+  and used as `@key` on `<GanttResultsComponent @key="_ganttDataVersion" />`. When the key changes,
+  Blazor destroys and recreates the child with current ViewModel data. Also added null-guard `@if`
+  blocks around each data grid with helpful placeholder messages.
+  Tests: 71 pass, 0 failures.
 
 - Fixed Gantt chart results not appearing on first page visit after pasting data and pressing Generate.
   Root cause: `DataPasteGridComponent` textareas used default `@bind` (onchange event), so ViewModel
   properties were not updated until the textarea lost focus. If "Generate" was clicked immediately after
   pasting, the raw data properties were still empty, causing the parse to produce empty results.
   Fix: Changed `@bind` to `@bind:event="oninput"` on all three textareas so ViewModel properties update
-  on every keystroke/paste ï¿½ data is always fresh when Generate runs.
+  on every keystroke/paste — data is always fresh when Generate runs.
   Additionally, cleared all output properties at the start of `LoadGanttChartTasks()` to prevent stale
   ghost data from persisting across navigations (scoped ViewModel lifecycles).
   Tests: 71 pass, 0 failures.
@@ -36,9 +42,23 @@ ull instead of throwing when session not found
   rendered content never appeared.
   Fix: Move JS interop calls directly into the parent's `LoadGanttChartTasks` method
   (after `StateHasChanged()`), relying on the `MutationObserver`-based `waitForElement()`
-  helper in `gantt.js` to wait for the DOM containers to appear ï¿½ no error thrown,
+  helper in `gantt.js` to wait for the DOM containers to appear — no error thrown,
   no fragile `setTimeout` polling, no dependency on child lifecycle re-entry.
   Tests: 71 pass, 0 failures.
+
+### Code Analysis
+
+- Phase 7 warning cleanup: eliminated all 22 code analysis diagnostics (20 CA1848 + 1 CS8625 + 1 WHITESPACE)
+- Fixed CA1848: Replaced 20 ILogger.Log*() calls with [LoggerMessage] source-generated delegates across 3 files:
+  - LoggingBehavior.cs (2 instances) - added partial to class for source generator
+  - FolderExampleFileProvider.cs (7 instances) - added partial to class
+  - ExampleFilesEndpoints.cs (11 instances) - added static partial to class
+- Fixed CS8625: Changed IAuthService.GetSession() return type from string to string? to properly model nullable session
+- Fixed WHITESPACE: Auto-formatted DoubleEntrySpreadsheetGeneratorSimplified.cs with dotnet format
+- Moved NSwag #pragma warning disable from auto-generated AuthApiClient.cs to project-level <NoWarn> in Infrastructure .csproj
+- Removed all #pragma warning directives from AuthApiClient.cs (now covered by project-level suppressions)
+- Build: 0 errors, 0 warnings. dotnet format --verify-no-changes: clean.
+- Tests: 71 pass, 0 failures.
 
 ### Architecture
 
@@ -63,7 +83,7 @@ ull instead of throwing when session not found
 - Build: 0 errors, Tests: 26 pass, 0 failures
 
 - Phase 4a refactoring: Auth.Api now uses Application + Infrastructure layers
-- Phase 4b refactoring: UI.Web ï¿½ replaced GanttMapperHelper static methods with IPasteParserService in Application/Services/
+- Phase 4b refactoring: UI.Web — replaced GanttMapperHelper static methods with IPasteParserService in Application/Services/
 - Created GanttGeneratorViewModel in UI.Web/ViewModels/ as scoped DI service for page state
 - GanttGeneratorFromPaste.razor now binds to ViewModel properties and uses PasteParserService
 - Register PasteParserService in Application/DependencyInjection.cs
@@ -77,7 +97,7 @@ ull instead of throwing when session not found
 - Added Assembly.GetExecutingAssembly() and auto-discovery scanning for the Session use case handlers
 - Build: 0 errors, Tests: 26 pass, 0 failures
 
-### UI.Web ï¿½ Component Split & Cleanup
+### UI.Web — Component Split & Cleanup
 
 - Split 535-line GanttGeneratorFromPaste.razor into 4 components: SessionComponent, DataPasteGridComponent, GanttConfigComponent, GanttResultsComponent
 - Converted ExampleFilesController ([ApiController]) to Minimal API endpoints in Endpoints/
@@ -85,7 +105,7 @@ ull instead of throwing when session not found
 - Updated _Imports.razor with shared namespaces (Application.Services, ViewModels, QuickGrid, Newtonsoft.Json)
 - Build: 0 errors, Tests: 26 pass, 0 failures
 
-### UI.Console ï¿½ Phase 4c Refactoring
+### UI.Console — Phase 4c Refactoring
 
 - Created GenerateDoubleEntryInput/Output DTOs in Application/DTOs
 - Created IDoubleEntryGeneratorService port in Application/Ports
@@ -175,12 +195,3 @@ ull instead of throwing when session not found
 ### Architecture
 
 - 11 design patterns implemented in SpreadsheetUtility.Library (Strategy, Factory, Template Method, Builder, Facade, Mapper/Adapter, Observer, Command, Dependency Injection, Provider, Generic List Generator)
-
-
-
-
-
-
-
-
-

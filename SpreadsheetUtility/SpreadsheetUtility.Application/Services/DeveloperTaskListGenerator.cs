@@ -45,7 +45,7 @@ public class DeveloperTaskListGenerator : ListGenerator<Developer, List<GanttTas
             {
                 Id = $"vacation-{developer.Name}-{vacationId}",
                 TaskName = $"{developer.Name} - Vacation {vacationId}",
-                Start = vacation.Value.Start.ToString("yyyy-MM-dd"),
+                Start = (vacation.Value.Start < _projectStartDate ? _projectStartDate : vacation.Value.Start).ToString("yyyy-MM-dd"),
                 End = vacation.Value.End.ToString("yyyy-MM-dd"),
                 CustomClass = "task",
                 Resource = developer.Name,

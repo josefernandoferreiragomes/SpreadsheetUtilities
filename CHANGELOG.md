@@ -4,15 +4,16 @@
 
 ### Bug Fixes
 
-- Fixed `Cannot set properties of null (setting 'innerHTML')` in Gantt chart generation.
-  Root cause: JS interop was called from the parent component before the child
-  (`GanttResultsComponent`) had its DOM containers rendered.
-  Fix: Moved JS interop calls into `GanttResultsComponent.OnAfterRenderAsync`, which
-  guarantees the target `<div>` elements exist. Also replaced `setTimeout` polling
-  in `gantt.js` with `MutationObserver` for DOM-ready detection and added a
-  cache-busting query parameter (`v=2`) to the script tag.
+- Fixed Gantt chart `Cannot set properties of null (setting 'innerHTML')` and charts/grids not showing.
+  Root cause: JS interop calls (`renderGanttTasks`, etc.) were placed in the child
+  component's `OnAfterRenderAsync`, but Blazor's renderer skipped the child's re-render
+  (no parameter changes detected), so the JS was never invoked and the conditionally-
+  rendered content never appeared.
+  Fix: Move JS interop calls directly into the parent's `LoadGanttChartTasks` method
+  (after `StateHasChanged()`), relying on the `MutationObserver`-based `waitForElement()`
+  helper in `gantt.js` to wait for the DOM containers to appear — no error thrown,
+  no fragile `setTimeout` polling, no dependency on child lifecycle re-entry.
   Tests: 71 pass, 0 failures.
-
 ### Architecture
 
 - Phase 6 testing restructure: reorganized test project into ApplicationTests/, InfrastructureTests/, DomainTests/ folders
@@ -157,6 +158,7 @@
 ### Architecture
 
 - 11 design patterns implemented in SpreadsheetUtility.Library (Strategy, Factory, Template Method, Builder, Facade, Mapper/Adapter, Observer, Command, Dependency Injection, Provider, Generic List Generator)
+
 
 
 

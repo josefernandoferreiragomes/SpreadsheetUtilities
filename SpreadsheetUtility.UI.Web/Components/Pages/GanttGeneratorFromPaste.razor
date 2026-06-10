@@ -94,9 +94,12 @@
             GanttColorHelper.SetupProjectColor(ViewModel.GanttProjectListOutput, ViewModel.GanttTaskListOutput);
             GanttColorHelper.SetupDeveloperColor(ViewModel.DeveloperListOutput, ViewModel.DeveloperGanttTaskListOutput);
 
-            await JS.InvokeVoidAsync("console.log", $"DEBUG LoadGanttChartTasks: GanttTaskListOutput.Count={ViewModel.GanttTaskListOutput?.Count()}, ProjectListOutput.Count={ViewModel.ProjectListOutput?.Count()}, DeveloperGanttTaskListOutput.Count={ViewModel.DeveloperGanttTaskListOutput?.Count()}");
-
             StateHasChanged();
+
+            var jsonOptions = new System.Text.Json.JsonSerializerOptions { WriteIndented = true };
+            await JS.InvokeVoidAsync("renderGanttTasks", System.Text.Json.JsonSerializer.Serialize(ViewModel.GanttTaskListOutput, jsonOptions), ViewModel.ChartMode.ToString(), "true");
+            await JS.InvokeVoidAsync("renderGanttProjects", System.Text.Json.JsonSerializer.Serialize(ViewModel.GanttProjectListOutput, jsonOptions), ViewModel.ChartMode.ToString(), "true");
+            await JS.InvokeVoidAsync("renderDeveloperGanttTasks", System.Text.Json.JsonSerializer.Serialize(ViewModel.DeveloperGanttTaskListOutput, jsonOptions), ViewModel.ChartMode.ToString(), "true");
         }
         catch (Exception ex)
         {
@@ -104,4 +107,3 @@
         }
     }
 }
-

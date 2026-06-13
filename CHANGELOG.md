@@ -1,4 +1,4 @@
-﻿# Changelog
+# Changelog
 
 ## [Unreleased]
 
@@ -20,11 +20,13 @@
   so `GetAllSessions()` correctly returns `SessionData` for freshly created sessions (previously always null)
 - `AuthService.InitiateSession()` now rejects duplicate emails with `InvalidOperationException`
   instead of silently overwriting the existing session
-- `SessionAdmin.razor` now routes through `IMediator` → `ListSessionsQuery` → `IAuthService` instead of
-  directly depending on `SessionService` (local cache), fixing Clean Architecture layering and ensuring
-  the admin page shows all system-wide sessions tracked by Auth.Api
+- `SessionAdmin.razor` now calls Auth.Api via HTTP (`SessionService.FetchAllSessionsFromApiAsync()`)
+  instead of using local `IMediator`/`IAuthService` (UI.Web and Auth.Api are separate
+  processes with separate caches - only HTTP calls reach the real session store)
 - `SessionInfoDto` converted from mutable `class` to `record` with `{ get; init; }` properties
   for consistency with other session DTOs
+- `ListSessionsAsync()` added to `SpreadsheetUtilitiesAuthApiClient` NSwag partial class
+  to call Auth.Api's `/listSessions` endpoint via HTTP
 
 ### Code Analysis
 
@@ -63,7 +65,7 @@
 - Build: 0 errors, Tests: 26 pass, 0 failures
 
 - Phase 4a refactoring: Auth.Api now uses Application + Infrastructure layers
-- Phase 4b refactoring: UI.Web — replaced GanttMapperHelper static methods with IPasteParserService in Application/Services/
+- Phase 4b refactoring: UI.Web � replaced GanttMapperHelper static methods with IPasteParserService in Application/Services/
 - Created GanttGeneratorViewModel in UI.Web/ViewModels/ as scoped DI service for page state
 - GanttGeneratorFromPaste.razor now binds to ViewModel properties and uses PasteParserService
 - Register PasteParserService in Application/DependencyInjection.cs
@@ -77,7 +79,7 @@
 - Added Assembly.GetExecutingAssembly() and auto-discovery scanning for the Session use case handlers
 - Build: 0 errors, Tests: 26 pass, 0 failures
 
-### UI.Web — Component Split & Cleanup
+### UI.Web � Component Split & Cleanup
 
 - Split 535-line GanttGeneratorFromPaste.razor into 4 components: SessionComponent, DataPasteGridComponent, GanttConfigComponent, GanttResultsComponent
 - Converted ExampleFilesController ([ApiController]) to Minimal API endpoints in Endpoints/
@@ -85,7 +87,7 @@
 - Updated _Imports.razor with shared namespaces (Application.Services, ViewModels, QuickGrid, Newtonsoft.Json)
 - Build: 0 errors, Tests: 26 pass, 0 failures
 
-### UI.Console — Phase 4c Refactoring
+### UI.Console � Phase 4c Refactoring
 
 - Created GenerateDoubleEntryInput/Output DTOs in Application/DTOs
 - Created IDoubleEntryGeneratorService port in Application/Ports

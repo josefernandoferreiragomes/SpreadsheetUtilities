@@ -1,7 +1,9 @@
-using SpreadsheetUtility.Infrastructure.ApiClients;
+﻿using SpreadsheetUtility.Infrastructure.ApiClients;
 using SpreadsheetUtility.Infrastructure.Models;
 using System.Text;
 using Microsoft.AspNetCore.DataProtection;
+using SpreadsheetUtility.Application.DTOs.Session;
+using Newtonsoft.Json;
 
 namespace SpreadsheetUtility.Infrastructure.Services
 {
@@ -179,5 +181,15 @@ namespace SpreadsheetUtility.Infrastructure.Services
                 return _sessionCache.Values.ToList().AsReadOnly();
             }
         }
+        public async System.Threading.Tasks.Task<List<SessionInfoDto>> FetchAllSessionsFromApiAsync()
+        {
+            using (var http = new HttpClient())
+            {
+                var authApiClient = new SpreadsheetUtilitiesAuthApiClient(http);
+                var json = await authApiClient.ListSessionsAsync();
+                return JsonConvert.DeserializeObject<List<SessionInfoDto>>(json) ?? new List<SessionInfoDto>();
+            }
+        }
+
     }
 }

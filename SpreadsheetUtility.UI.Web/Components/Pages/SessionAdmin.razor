@@ -1,11 +1,9 @@
 ﻿@page "/admin/sessions"
 @rendermode InteractiveServer
-@inject IMediator Mediator
+@inject SpreadsheetUtility.Infrastructure.Services.SessionService SessionService
 @inject IJSRuntime JS
-@using MediatR
 @using Newtonsoft.Json
 @using SpreadsheetUtility.Application.DTOs.Session
-@using SpreadsheetUtility.Application.UseCases.Session
 
 <h3>Session Management</h3>
 
@@ -79,8 +77,7 @@ else
     {
         try
         {
-            var response = await Mediator.Send(new ListSessionsQuery());
-            sessions = response.Sessions.ToList();
+            sessions = await SessionService.FetchAllSessionsFromApiAsync();
         }
         catch (Exception ex)
         {

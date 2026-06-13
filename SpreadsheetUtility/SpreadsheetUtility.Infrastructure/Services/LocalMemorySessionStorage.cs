@@ -95,4 +95,25 @@ public class LocalMemorySessionStorage : ISessionStorage
             };
         }).ToList().AsReadOnly();
     }
+
+    public SessionInfoDto? TryFindSessionByEmail(string email)
+    {
+        var index = GetOrCreateSessionIndex();
+
+        if (index.TryGetValue(email, out var entry))
+        {
+            var guidKey = entry.SessionId.ToString();
+            _memoryCache.TryGetValue<string>(guidKey, out var sessionData);
+            return new SessionInfoDto
+            {
+                Email = email,
+                SessionId = entry.SessionId,
+                CreatedAt = entry.CreatedAt,
+                LastModifiedAt = entry.LastModifiedAt,
+                SessionData = sessionData
+            };
+        }
+
+        return null;
+    }
 }

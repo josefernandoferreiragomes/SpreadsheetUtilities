@@ -1,6 +1,7 @@
 @page "/ganttGeneratorFromPaste"
 @inject MediatR.IMediator Mediator
 @inject SpreadsheetUtility.Infrastructure.Services.SessionService SessionService
+@inject SpreadsheetUtility.Application.Ports.ISessionCookieService SessionCookieService
 @inject IPasteParserService PasteParser
 @inject GanttGeneratorViewModel ViewModel
 @using Newtonsoft.Json
@@ -56,7 +57,7 @@
 
         var sessionIdentifier = (System.Guid)ViewModel.SessionIdentifierGuid;
         var result = SessionService.UpdateSession(ViewModel.Email, sessionIdentifier, ViewModel.SessionContent);
-        SessionService.StoreSessionContentInCookie(ViewModel.SessionContent);
+        SessionCookieService.Protect(ViewModel.SessionContent);
 
         await JS.InvokeVoidAsync("console.log", $"Session Updated initiated with email: {ViewModel.Email} | guid: {ViewModel.SessionIdentifierGuid} | sessionContent: {result}");
     }

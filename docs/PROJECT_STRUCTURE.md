@@ -110,3 +110,4 @@ Shared:
 | `Infrastructure/Excel/DoubleEntryGeneratorService.cs` | ClosedXML-based implementation of `IDoubleEntryGeneratorService` |
 | `Infrastructure/Services/AuthService.cs` | IAuthService implementation using IMemoryCache |
 | `UI.Web/ViewModels/GanttGeneratorViewModel.cs` | Page state holder for GanttGeneratorFromPaste.razor |
+

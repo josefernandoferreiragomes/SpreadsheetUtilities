@@ -1,4 +1,5 @@
-﻿using SpreadsheetUtility.Bootstrapper;
+﻿using SpreadsheetUtility.Application.Ports;
+using SpreadsheetUtility.Bootstrapper;
 using SpreadsheetUtility.Infrastructure.Services;
 using SpreadsheetUtility.UI.Web.ViewModels;
 using SpreadsheetUtility.UI.Web.Components;
@@ -22,7 +23,9 @@ builder.Services.AddLogging(logging =>
 });
 
 builder.Services.AddSpreadsheetUtilities();
+builder.Services.AddScoped<SessionCacheService>();
 builder.Services.AddScoped<SessionService>();
+builder.Services.AddScoped<ISessionCookieService, SessionCookieService>();
 builder.Services.AddScoped<AuthApiSessionStorage>();
 builder.Services.AddScoped<LocalMemorySessionStorage>();
 builder.Services.AddScoped<RedisSessionStorage>();

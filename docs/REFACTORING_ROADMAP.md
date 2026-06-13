@@ -303,3 +303,26 @@ shared/
 | **8.8** | Add storage location selector UI card to SessionAdmin.razor (label, dropdown, select button, status messages) | ? Done |
 | **8.9** | Register all new services (AuthApiSessionStorage, LocalMemorySessionStorage, RedisSessionStorage, SessionStorageSelector) in UI.Web Program.cs | ? Done |
 | **8.10** | dotnet build / dotnet test � green | ? Build: 0 errors, Tests: 74 pass, 0 failures |
+
+---
+
+## Phase 9 — Session Service SOLID Refactoring ✅
+
+**Scope:** Application + Infrastructure + Presentation (UI.Web)
+**Goal:** Split SessionService into single-responsibility services, fix "session already exists" cache-miss bug
+**Status:** ✅ Complete (2026-06-13)
+
+| # | Step | Result |
+|---|---|---|
+| **9.1** | Add TryFindSessionByEmail to ISessionStorage port interface | ✅ Added — returns SessionInfoDto? when email found, null otherwise |
+| **9.2** | Implement TryFindSessionByEmail in LocalMemorySessionStorage | ✅ Checks in-memory index, retrieves cache data |
+| **9.3** | Implement TryFindSessionByEmail in AuthApiSessionStorage | ✅ Delegates to GetAllSessions() with client-side email filter |
+| **9.4** | Implement TryFindSessionByEmail stub in RedisSessionStorage | ✅ Throws NotImplementedException (matching existing pattern) |
+| **9.5** | Extract ISessionCookieService / SessionCookieService | ✅ Cookie encryption/decryption moved to dedicated service with interface in Application/Ports |
+| **9.6** | Extract SessionCacheService | ✅ In-memory Dictionary<string, SessionState> with thread-safe lock operations extracted from SessionService |
+| **9.7** | Refactor SessionService to delegate to extracted services | ✅ Removed _sessionCache, _cacheLock, IDataProtectionProvider; now depends on SessionCacheService, ISessionCookieService, SessionStorageSelector |
+| **9.8** | Fix GetSessionState cache-miss bug | ✅ Now checks cache first, then falls back to TryFindSessionByEmail on backend — resolves "A session already exists" error |
+| **9.9** | Update GanttGeneratorFromPaste.razor to use SessionCookieService | ✅ Replaced SessionService.StoreSessionContentInCookie() with SessionCookieService.Protect() |
+| **9.10** | Update DI registrations in Program.cs | ✅ Registered SessionCacheService and ISessionCookieService/SessionCookieService |
+| **9.11** | dotnet build / dotnet test — green | ✅ Build: 0 errors. Tests: **74 pass**, 0 failures |
+| **9.12** | Smoke test — all 3 projects | ✅ UI.Web, Auth.Api, UI.Console all pass health checks |

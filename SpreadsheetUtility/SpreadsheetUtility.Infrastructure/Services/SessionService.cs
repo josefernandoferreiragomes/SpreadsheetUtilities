@@ -1,7 +1,5 @@
 ﻿using SpreadsheetUtility.Application.Ports;
 using SpreadsheetUtility.Infrastructure.Models;
-using System.Text;
-using Microsoft.AspNetCore.DataProtection;
 using SpreadsheetUtility.Application.DTOs.Session;
 using SpreadsheetUtility.Application.Configuration;
 
@@ -9,17 +7,15 @@ namespace SpreadsheetUtility.Infrastructure.Services
 {
     public class SessionService
     {
-        private readonly IDataProtectionProvider _dataProtectionProvider;
         private readonly SessionStorageSelector _storageSelector;
-        private const string CookieProtectionPurpose = "SpreadsheetUtility.SessionCookie";
+        private readonly SessionCacheService _cacheService;
+        private readonly ISessionCookieService _cookieService;
 
-        private readonly Dictionary<string, SessionState> _sessionCache = new();
-        private readonly object _cacheLock = new();
-
-        public SessionService(IDataProtectionProvider dataProtectionProvider, SessionStorageSelector storageSelector)
+        public SessionService(SessionStorageSelector storageSelector, SessionCacheService cacheService, ISessionCookieService cookieService)
         {
-            _dataProtectionProvider = dataProtectionProvider;
             _storageSelector = storageSelector;
+            _cacheService = cacheService;
+            _cookieService = cookieService;
         }
 
         public string InitiateSession(string email)
@@ -27,28 +23,41 @@ namespace SpreadsheetUtility.Infrastructure.Services
             var activeStorage = _storageSelector.GetActiveStorage();
             var sessionId = activeStorage.InitiateSession(email);
 
-            lock (_cacheLock)
+            _cacheService.Set(email, new SessionState
             {
-                _sessionCache[email] = new SessionState
-                {
-                    Email = email,
-                    SessionId = Guid.Parse(sessionId),
-                    IsInitialized = true
-                };
-            }
+                Email = email,
+                SessionId = Guid.Parse(sessionId),
+                IsInitialized = true
+            });
 
             return sessionId;
         }
 
         public SessionState? GetSessionState(string email)
         {
-            lock (_cacheLock)
+            // 1. Check cache first
+            var cached = _cacheService.TryGet(email);
+            if (cached != null)
+                return cached;
+
+            // 2. Fall back to storage backend
+            var activeStorage = _storageSelector.GetActiveStorage();
+            var found = activeStorage.TryFindSessionByEmail(email);
+            if (found != null)
             {
-                if (_sessionCache.TryGetValue(email, out var sessionState))
+                // 3. Hydrate cache so subsequent calls find it
+                var hydrated = new SessionState
                 {
-                    return sessionState;
-                }
+                    Email = found.Email,
+                    SessionId = found.SessionId,
+                    IsInitialized = true,
+                    CreatedAt = found.CreatedAt,
+                    LastModifiedAt = found.LastModifiedAt
+                };
+                _cacheService.Set(email, hydrated);
+                return hydrated;
             }
+
             return null;
         }
 
@@ -63,114 +72,42 @@ namespace SpreadsheetUtility.Infrastructure.Services
             var activeStorage = _storageSelector.GetActiveStorage();
             var result = activeStorage.UpdateSession(email, sessionId, serializedObject);
 
-            lock (_cacheLock)
-            {
-                if (_sessionCache.TryGetValue(email, out var sessionState))
-                {
-                    sessionState.LastModifiedAt = DateTime.UtcNow;
-                }
-            }
+            _cacheService.UpdateLastModified(email);
 
             return result;
         }
 
         public void SaveProjectData(string email, Guid sessionId, string projectData)
         {
-            lock (_cacheLock)
-            {
-                if (_sessionCache.TryGetValue(email, out var sessionState))
-                {
-                    sessionState.ProjectData = projectData;
-                    sessionState.LastModifiedAt = DateTime.UtcNow;
-                }
-            }
+            _cacheService.UpdateProjectData(email, projectData);
             UpdateSession(email, sessionId, projectData);
         }
 
         public void SaveTaskData(string email, Guid sessionId, string taskData)
         {
-            lock (_cacheLock)
-            {
-                if (_sessionCache.TryGetValue(email, out var sessionState))
-                {
-                    sessionState.TaskData = taskData;
-                    sessionState.LastModifiedAt = DateTime.UtcNow;
-                }
-            }
+            _cacheService.UpdateTaskData(email, taskData);
             UpdateSession(email, sessionId, taskData);
         }
 
         public void SaveTeamData(string email, Guid sessionId, string teamData)
         {
-            lock (_cacheLock)
-            {
-                if (_sessionCache.TryGetValue(email, out var sessionState))
-                {
-                    sessionState.TeamData = teamData;
-                    sessionState.LastModifiedAt = DateTime.UtcNow;
-                }
-            }
+            _cacheService.UpdateTeamData(email, teamData);
             UpdateSession(email, sessionId, teamData);
         }
 
         public SessionState? LoadCachedSessionData(string email)
         {
-            lock (_cacheLock)
-            {
-                if (_sessionCache.TryGetValue(email, out var sessionState))
-                {
-                    return sessionState;
-                }
-            }
-            return null;
-        }
-
-        public string StoreSessionContentInCookie(string sessionContent)
-        {
-            try
-            {
-                var protector = _dataProtectionProvider.CreateProtector(CookieProtectionPurpose);
-                var contentBytes = Encoding.UTF8.GetBytes(sessionContent);
-                var encryptedBytes = protector.Protect(contentBytes);
-                var encryptedContent = Convert.ToBase64String(encryptedBytes);
-                return encryptedContent;
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException("Failed to encrypt session content for cookie storage.", ex);
-            }
-        }
-
-        public string RetrieveSessionContentFromCookie(string encryptedContent)
-        {
-            try
-            {
-                var protector = _dataProtectionProvider.CreateProtector(CookieProtectionPurpose);
-                var encryptedBytes = Convert.FromBase64String(encryptedContent);
-                var decryptedBytes = protector.Unprotect(encryptedBytes);
-                var sessionContent = Encoding.UTF8.GetString(decryptedBytes);
-                return sessionContent;
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException("Failed to decrypt session content from cookie.", ex);
-            }
+            return _cacheService.TryGet(email);
         }
 
         public void ClearSession(string email)
         {
-            lock (_cacheLock)
-            {
-                _sessionCache.Remove(email);
-            }
+            _cacheService.Remove(email);
         }
 
         public IReadOnlyCollection<SessionState> GetAllSessions()
         {
-            lock (_cacheLock)
-            {
-                return _sessionCache.Values.ToList().AsReadOnly();
-            }
+            return _cacheService.GetAll();
         }
 
         public async System.Threading.Tasks.Task<List<SessionInfoDto>> FetchAllSessionsFromApiAsync()

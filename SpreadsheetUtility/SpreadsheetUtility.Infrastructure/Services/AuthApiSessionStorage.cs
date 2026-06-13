@@ -28,4 +28,10 @@ public class AuthApiSessionStorage : ISessionStorage
         var json = _client.ListSessionsAsync().Result;
         return JsonConvert.DeserializeObject<List<SessionInfoDto>>(json) ?? new List<SessionInfoDto>();
     }
+
+    public SessionInfoDto? TryFindSessionByEmail(string email)
+    {
+        var allSessions = GetAllSessions();
+        return allSessions.FirstOrDefault(s => s.Email == email);
+    }
 }

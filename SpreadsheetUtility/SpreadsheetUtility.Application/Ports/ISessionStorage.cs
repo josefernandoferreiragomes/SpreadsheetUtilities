@@ -8,4 +8,5 @@ public interface ISessionStorage
     string? GetSession(string email, Guid sessionId);
     string UpdateSession(string email, Guid sessionId, string newValue);
     IReadOnlyCollection<SessionInfoDto> GetAllSessions();
+    SessionInfoDto? TryFindSessionByEmail(string email);
 }

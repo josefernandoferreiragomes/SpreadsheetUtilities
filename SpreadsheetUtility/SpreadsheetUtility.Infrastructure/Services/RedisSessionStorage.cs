@@ -16,4 +16,7 @@ public class RedisSessionStorage : ISessionStorage
 
     public IReadOnlyCollection<SessionInfoDto> GetAllSessions()
         => throw new NotImplementedException("Redis cache is under development.");
+
+    public SessionInfoDto? TryFindSessionByEmail(string email)
+        => throw new NotImplementedException("Redis cache is under development.");
 }

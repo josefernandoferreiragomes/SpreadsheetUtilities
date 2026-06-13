@@ -1,4 +1,5 @@
-﻿using SpreadsheetUtility.Application.Ports;
+﻿using System.Text.Json;
+using SpreadsheetUtility.Application.Ports;
 using SpreadsheetUtility.Infrastructure.Models;
 using SpreadsheetUtility.Application.DTOs.Session;
 using SpreadsheetUtility.Application.Configuration;
@@ -54,6 +55,27 @@ namespace SpreadsheetUtility.Infrastructure.Services
                     CreatedAt = found.CreatedAt,
                     LastModifiedAt = found.LastModifiedAt
                 };
+
+                // 4. Restore data fields from the combined JSON in SessionData
+                if (found.SessionData != null)
+                {
+                    try
+                    {
+                        var combined = JsonSerializer.Deserialize<CombinedSessionData>(found.SessionData);
+                        if (combined != null)
+                        {
+                            hydrated.ProjectData = combined.ProjectData;
+                            hydrated.TaskData = combined.TaskData;
+                            hydrated.TeamData = combined.TeamData;
+                        }
+                    }
+                    catch (JsonException)
+                    {
+                        // Legacy format: SessionData contains a plain project data string
+                        hydrated.ProjectData = found.SessionData;
+                    }
+                }
+
                 _cacheService.Set(email, hydrated);
                 return hydrated;
             }
@@ -80,19 +102,22 @@ namespace SpreadsheetUtility.Infrastructure.Services
         public void SaveProjectData(string email, Guid sessionId, string projectData)
         {
             _cacheService.UpdateProjectData(email, projectData);
-            UpdateSession(email, sessionId, projectData);
+            var combined = BuildCombinedSessionData(email);
+            UpdateSession(email, sessionId, JsonSerializer.Serialize(combined));
         }
 
         public void SaveTaskData(string email, Guid sessionId, string taskData)
         {
             _cacheService.UpdateTaskData(email, taskData);
-            UpdateSession(email, sessionId, taskData);
+            var combined = BuildCombinedSessionData(email);
+            UpdateSession(email, sessionId, JsonSerializer.Serialize(combined));
         }
 
         public void SaveTeamData(string email, Guid sessionId, string teamData)
         {
             _cacheService.UpdateTeamData(email, teamData);
-            UpdateSession(email, sessionId, teamData);
+            var combined = BuildCombinedSessionData(email);
+            UpdateSession(email, sessionId, JsonSerializer.Serialize(combined));
         }
 
         public SessionState? LoadCachedSessionData(string email)
@@ -120,6 +145,17 @@ namespace SpreadsheetUtility.Infrastructure.Services
         {
             var storage = _storageSelector.GetStorage(location);
             return storage.GetAllSessions().ToList();
+        }
+
+        private CombinedSessionData BuildCombinedSessionData(string email)
+        {
+            var cached = _cacheService.TryGet(email);
+            return new CombinedSessionData
+            {
+                ProjectData = cached?.ProjectData,
+                TaskData = cached?.TaskData,
+                TeamData = cached?.TeamData
+            };
         }
     }
 }

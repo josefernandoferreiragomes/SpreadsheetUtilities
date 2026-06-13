@@ -63,6 +63,13 @@
 - Build: 0 errors, 0 warnings. dotnet format --verify-no-changes: clean.
 - Tests: 71 pass, 0 failures.
 
+
+### Fixed
+
+- **Bug: Stale ViewModel state on navigation** — GanttGeneratorFromPaste page now calls ViewModel.Reset() in OnInitializedAsync(), clearing all session-related state (email, session ID, project/task/team data) when the user navigates to the page. Previously the Scoped ViewModel retained stale data across page navigations.
+- **Bug: Session data lost after storage location switch** — GetSessionState now deserializes the combined JSON from SessionData to restore all three data fields (ProjectData, TaskData, TeamData) when hydrating from the backend. SaveProjectData/SaveTaskData/SaveTeamData now persist a combined JSON snapshot of all three fields, preventing data overwrites. Legacy plain-string data is supported via fallback.
+- Created CombinedSessionData record in Infrastructure/Models/ to store all three data fields as a single JSON object
+- Build: 0 errors, Tests: 74 pass, 0 failures
 ### Architecture
 
 - Phase 6 testing restructure: reorganized test project into ApplicationTests/, InfrastructureTests/, DomainTests/ folders
@@ -128,6 +135,13 @@
 
 - Fixed DI resolution error in HolidayRepository by switching from concrete HolidayFileProvider dependency to IHolidayProvider interface
 
+
+### Fixed
+
+- **Bug: Stale ViewModel state on navigation** — GanttGeneratorFromPaste page now calls ViewModel.Reset() in OnInitializedAsync(), clearing all session-related state (email, session ID, project/task/team data) when the user navigates to the page. Previously the Scoped ViewModel retained stale data across page navigations.
+- **Bug: Session data lost after storage location switch** — GetSessionState now deserializes the combined JSON from SessionData to restore all three data fields (ProjectData, TaskData, TeamData) when hydrating from the backend. SaveProjectData/SaveTaskData/SaveTeamData now persist a combined JSON snapshot of all three fields, preventing data overwrites. Legacy plain-string data is supported via fallback.
+- Created CombinedSessionData record in Infrastructure/Models/ to store all three data fields as a single JSON object
+- Build: 0 errors, Tests: 74 pass, 0 failures
 ### Architecture
 
 - Phase 2 refactoring: extracted SpreadsheetUtility.Application project with MediatR, FluentValidation
@@ -214,7 +228,15 @@
 - Base64 encoding for safe cookie transport
 - lock-based thread-safe cache operations
 
+
+### Fixed
+
+- **Bug: Stale ViewModel state on navigation** — GanttGeneratorFromPaste page now calls ViewModel.Reset() in OnInitializedAsync(), clearing all session-related state (email, session ID, project/task/team data) when the user navigates to the page. Previously the Scoped ViewModel retained stale data across page navigations.
+- **Bug: Session data lost after storage location switch** — GetSessionState now deserializes the combined JSON from SessionData to restore all three data fields (ProjectData, TaskData, TeamData) when hydrating from the backend. SaveProjectData/SaveTaskData/SaveTeamData now persist a combined JSON snapshot of all three fields, preventing data overwrites. Legacy plain-string data is supported via fallback.
+- Created CombinedSessionData record in Infrastructure/Models/ to store all three data fields as a single JSON object
+- Build: 0 errors, Tests: 74 pass, 0 failures
 ### Architecture
 
 - 11 design patterns implemented in SpreadsheetUtility.Library (Strategy, Factory, Template Method, Builder, Facade, Mapper/Adapter, Observer, Command, Dependency Injection, Provider, Generic List Generator)
+
 

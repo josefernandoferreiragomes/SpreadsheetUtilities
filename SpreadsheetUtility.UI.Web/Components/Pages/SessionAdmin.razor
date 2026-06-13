@@ -3,6 +3,7 @@
 @inject SpreadsheetUtility.Infrastructure.Services.SessionService SessionService
 @inject IJSRuntime JS
 @using Newtonsoft.Json
+@using Newtonsoft.Json.Linq
 @using SpreadsheetUtility.Application.DTOs.Session
 
 <h3>Session Management</h3>
@@ -93,10 +94,23 @@ else
 
     private string FormatSessionDetail(SessionInfoDto session)
     {
-        var json = JsonConvert.SerializeObject(session, Formatting.Indented);
-        return json
-            .Replace("\\t", "    ")
-            .Replace("\\n", "\n");
+        var json = JObject.FromObject(session);
+
+        if (session.SessionData is not null)
+        {
+            try
+            {
+                var parsed = JToken.Parse(session.SessionData);
+                json["SessionData"] = parsed;
+            }
+            catch (Newtonsoft.Json.JsonReaderException)
+            {
+                json["SessionData"] = session.SessionData
+                    .Replace("\t", "    ");
+            }
+        }
+
+        return JsonConvert.SerializeObject(json, Formatting.Indented);
     }
 
     private void CloseDetail()

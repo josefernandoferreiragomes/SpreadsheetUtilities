@@ -1,45 +1,42 @@
-﻿using SpreadsheetUtility.Infrastructure.ApiClients;
+﻿using SpreadsheetUtility.Application.Ports;
 using SpreadsheetUtility.Infrastructure.Models;
 using System.Text;
 using Microsoft.AspNetCore.DataProtection;
 using SpreadsheetUtility.Application.DTOs.Session;
-using Newtonsoft.Json;
 
 namespace SpreadsheetUtility.Infrastructure.Services
 {
     public class SessionService
     {
         private readonly IDataProtectionProvider _dataProtectionProvider;
+        private readonly SessionStorageSelector _storageSelector;
         private const string CookieProtectionPurpose = "SpreadsheetUtility.SessionCookie";
 
         private readonly Dictionary<string, SessionState> _sessionCache = new();
         private readonly object _cacheLock = new();
 
-        public SessionService(IDataProtectionProvider dataProtectionProvider)
+        public SessionService(IDataProtectionProvider dataProtectionProvider, SessionStorageSelector storageSelector)
         {
             _dataProtectionProvider = dataProtectionProvider;
+            _storageSelector = storageSelector;
         }
 
         public string InitiateSession(string email)
         {
-            using (var http = new HttpClient())
+            var activeStorage = _storageSelector.GetActiveStorage();
+            var sessionId = activeStorage.InitiateSession(email);
+
+            lock (_cacheLock)
             {
-                var authApiClient = new SpreadsheetUtilitiesAuthApiClient(http);
-                var result = authApiClient.InitiateSessionAsync(email, null);
-                var sessionId = result.Result;
-
-                lock (_cacheLock)
+                _sessionCache[email] = new SessionState
                 {
-                    _sessionCache[email] = new SessionState
-                    {
-                        Email = email,
-                        SessionId = Guid.Parse(sessionId),
-                        IsInitialized = true
-                    };
-                }
-
-                return sessionId;
+                    Email = email,
+                    SessionId = Guid.Parse(sessionId),
+                    IsInitialized = true
+                };
             }
+
+            return sessionId;
         }
 
         public SessionState? GetSessionState(string email)
@@ -56,31 +53,24 @@ namespace SpreadsheetUtility.Infrastructure.Services
 
         public string GetSession(string email, Guid sessionId)
         {
-            using (var http = new HttpClient())
-            {
-                var authApiClient = new SpreadsheetUtilitiesAuthApiClient(http);
-                var result = authApiClient.GetSessionAsync(email, sessionId);
-                return result.Result;
-            }
+            var activeStorage = _storageSelector.GetActiveStorage();
+            return activeStorage.GetSession(email, sessionId) ?? string.Empty;
         }
 
         public string UpdateSession(string email, Guid sessionId, string serializedObject)
         {
-            using (var http = new HttpClient())
+            var activeStorage = _storageSelector.GetActiveStorage();
+            var result = activeStorage.UpdateSession(email, sessionId, serializedObject);
+
+            lock (_cacheLock)
             {
-                var authApiClient = new SpreadsheetUtilitiesAuthApiClient(http);
-                var result = authApiClient.UpdateSessionAsync(email, sessionId, serializedObject);
-
-                lock (_cacheLock)
+                if (_sessionCache.TryGetValue(email, out var sessionState))
                 {
-                    if (_sessionCache.TryGetValue(email, out var sessionState))
-                    {
-                        sessionState.LastModifiedAt = DateTime.UtcNow;
-                    }
+                    sessionState.LastModifiedAt = DateTime.UtcNow;
                 }
-
-                return result.Result;
             }
+
+            return result;
         }
 
         public void SaveProjectData(string email, Guid sessionId, string projectData)
@@ -181,15 +171,11 @@ namespace SpreadsheetUtility.Infrastructure.Services
                 return _sessionCache.Values.ToList().AsReadOnly();
             }
         }
+
         public async System.Threading.Tasks.Task<List<SessionInfoDto>> FetchAllSessionsFromApiAsync()
         {
-            using (var http = new HttpClient())
-            {
-                var authApiClient = new SpreadsheetUtilitiesAuthApiClient(http);
-                var json = await authApiClient.ListSessionsAsync();
-                return JsonConvert.DeserializeObject<List<SessionInfoDto>>(json) ?? new List<SessionInfoDto>();
-            }
+            var activeStorage = _storageSelector.GetActiveStorage();
+            return activeStorage.GetAllSessions().ToList();
         }
-
     }
 }

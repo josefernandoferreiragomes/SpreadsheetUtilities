@@ -1,12 +1,41 @@
 @page "/admin/sessions"
 @rendermode InteractiveServer
 @inject SpreadsheetUtility.Infrastructure.Services.SessionService SessionService
+@inject SpreadsheetUtility.Infrastructure.Services.SessionStorageSelector StorageSelector
 @inject IJSRuntime JS
 @using Newtonsoft.Json
 @using Newtonsoft.Json.Linq
 @using SpreadsheetUtility.Application.DTOs.Session
+@using SpreadsheetUtility.Application.Configuration
 
 <h3>Session Management</h3>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <h5 class="card-title">Session Storage Location</h5>
+        <p class="mb-2">
+            <strong>Current:</strong> @GetLocationDisplayName(StorageSelector.GetCurrentLocation())
+        </p>
+        <div class="row g-2 align-items-end">
+            <div class="col-auto">
+                <select class="form-select" @bind="selectedLocation">
+                    <option value="@SessionStorageLocation.AuthApiMemoryCache">SpreadsheetUtilities.Auth.Api memorycache</option>
+                    <option value="@SessionStorageLocation.UiWebMemoryCache">SpreadsheetUtility.UI.Web memorycache</option>
+                    <option value="@SessionStorageLocation.RedisCache">Redis cache [under development]</option>
+                </select>
+            </div>
+            <div class="col-auto">
+                <button class="btn btn-primary" @onclick="ApplyStorageLocation" disabled="@isApplying">
+                    @(isApplying ? "Applying..." : "Select")
+                </button>
+            </div>
+        </div>
+        @if (!string.IsNullOrEmpty(statusMessage))
+        {
+            <div class="mt-2 text-@(statusIsError ? "danger" : "success")">@statusMessage</div>
+        }
+    </div>
+</div>
 
 @if (sessions is null)
 {
@@ -68,9 +97,14 @@ else
 @code {
     private List<SessionInfoDto>? sessions;
     private SessionInfoDto? selectedSession;
+    private SessionStorageLocation selectedLocation = SessionStorageLocation.AuthApiMemoryCache;
+    private bool isApplying;
+    private string? statusMessage;
+    private bool statusIsError;
 
     protected override async Task OnInitializedAsync()
     {
+        selectedLocation = StorageSelector.GetCurrentLocation();
         await LoadSessions();
     }
 
@@ -85,6 +119,56 @@ else
             await JS.InvokeVoidAsync("console.error", "Error loading sessions: " + ex.Message);
             sessions = new List<SessionInfoDto>();
         }
+    }
+
+    private async Task ApplyStorageLocation()
+    {
+        isApplying = true;
+        statusMessage = null;
+        statusIsError = false;
+
+        try
+        {
+            var currentLocation = StorageSelector.GetCurrentLocation();
+            if (selectedLocation == SessionStorageLocation.RedisCache)
+            {
+                statusMessage = "Redis cache is under development and cannot be selected yet.";
+                statusIsError = true;
+                return;
+            }
+
+            if (selectedLocation == currentLocation)
+            {
+                statusMessage = $"Storage location is already set to {GetLocationDisplayName(selectedLocation)}.";
+                return;
+            }
+
+            StorageSelector.SetLocation(selectedLocation);
+            statusMessage = $"Storage location changed to {GetLocationDisplayName(selectedLocation)}.";
+            
+            // Reload sessions from the new storage
+            await LoadSessions();
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Error: {ex.Message}";
+            statusIsError = true;
+        }
+        finally
+        {
+            isApplying = false;
+        }
+    }
+
+    private static string GetLocationDisplayName(SessionStorageLocation location)
+    {
+        return location switch
+        {
+            SessionStorageLocation.UiWebMemoryCache => "SpreadsheetUtility.UI.Web memorycache",
+            SessionStorageLocation.AuthApiMemoryCache => "SpreadsheetUtilities.Auth.Api memorycache",
+            SessionStorageLocation.RedisCache => "Redis cache [under development]",
+            _ => location.ToString()
+        };
     }
 
     private void ShowDetail(SessionInfoDto session)

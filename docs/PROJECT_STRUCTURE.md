@@ -60,7 +60,8 @@ Shared:
 | Path | Description |
 |------|-------------|
 | `Application/DTOs/` | 9 DTOs: `TaskDto`, `ProjectDto`, `DeveloperDto`, `CalculateGanttChartAllocationInput/Output`, `DeveloperAvailability`, `ListGeneratorInput`, `GenerateDoubleEntryInput/Output` |
-| `Application/Ports/` | Abstractions: `IDateTimeProvider`, `IHolidayProvider`, `IExcelWorkbook`, `IExcelWorksheet`, `IDoubleEntryGeneratorService`, `IAuthService` |
+| `Application/Ports/` | Abstractions: `IDateTimeProvider`, `IHolidayProvider`, `IExcelWorkbook`, `IExcelWorksheet`, `IDoubleEntryGeneratorService`, `IAuthService`, `ISessionStorage` |
+| `Application/Configuration/` | Enums: `SessionStorageLocation` |
 | `Application/Mappers/` | `IGanttChartMapper` / `GanttChartMapper` (DTO ↔ Domain) |
 | `Application/Validation/` | 7 FluentValidation validators: CalculateGanttChartAllocation, GenerateDoubleEntry, LoadTasks, ParseExcelData, InitiateSession, UpdateSession, GetSession |
 | `Application/Services/` | Calculators, strategies, factories, list generators, builders, PasteParserService |
@@ -72,7 +73,7 @@ Shared:
 | Path | Description |
 |------|-------------|
 | `Infrastructure/Excel/` | ClosedXML implementations: `IExcelDocument`/`ExcelDocument`, `DoubleEntryGeneratorService` |
-| `Infrastructure/Services/` | `AuthService`, `SessionService`, `FolderExampleFileProvider` |
+| `Infrastructure/Services/` | `AuthService`, `SessionService`, `FolderExampleFileProvider`, `AuthApiSessionStorage`, `LocalMemorySessionStorage`, `RedisSessionStorage`, `SessionStorageSelector` |
 | `Infrastructure/Providers/` | `DateTimeProvider`, `HolidayFileProvider` |
 | `Infrastructure/Repositories/` | `HolidayRepository`, `DeveloperRepository` |
 | `Infrastructure/ApiClients/` | NSwag-generated `AuthApiClient` |

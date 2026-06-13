@@ -2,10 +2,25 @@
 
 ## [Unreleased]
 
+### Added
+
+- Session Storage Location Selector feature with runtime-switchable backends:
+  - New `ISessionStorage` port interface in Application/Ports
+  - New `SessionStorageLocation` enum in Application/Configuration
+  - `AuthApiSessionStorage` — delegates to Auth.Api via NSwag client
+  - `LocalMemorySessionStorage` — local IMemoryCache (same pattern as AuthService)
+  - `RedisSessionStorage` — stub (throws NotImplementedException)
+  - `SessionStorageSelector` — runtime resolver that caches the current location choice in IMemoryCache
+- SessionService refactored to use `SessionStorageSelector` instead of creating HttpClient directly
+- Session Admin page (`/admin/sessions`) now has a storage location selector card above the session table
+- Session Admin page injects `SessionStorageSelector` and allows switching between Auth API, UI.Web memory, and Redis (stub) at runtime
+- Tests: 74 pass, 0 failures
+
 ### Changed
 
 - Session Admin page: `SessionData` field now renders with real newlines and spaces
   instead of JSON-escaped `\t` `\n` sequences for readability
+- `SessionService` now depends on `SessionStorageSelector` instead of direct `HttpClient`/`SpreadsheetUtilitiesAuthApiClient`
 
 ### Added
 

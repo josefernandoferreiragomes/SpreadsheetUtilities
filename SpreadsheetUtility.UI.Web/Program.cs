@@ -23,6 +23,10 @@ builder.Services.AddLogging(logging =>
 
 builder.Services.AddSpreadsheetUtilities();
 builder.Services.AddScoped<SessionService>();
+builder.Services.AddScoped<AuthApiSessionStorage>();
+builder.Services.AddScoped<LocalMemorySessionStorage>();
+builder.Services.AddScoped<RedisSessionStorage>();
+builder.Services.AddScoped<SessionStorageSelector>();
 
 builder.Services.AddScoped<GanttGeneratorViewModel>();
 

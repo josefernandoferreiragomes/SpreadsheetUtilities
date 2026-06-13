@@ -16,6 +16,10 @@
 
 ### Fixed
 
+- `AuthService._sessionIndex` moved from instance field to `IMemoryCache` (key `__SessionIndex`)
+  so `GetAllSessions()` works across HTTP requests — previously the index was lost
+  because `AuthService` is registered as scoped and each request got a new empty index
+
 - `AuthService.InitiateSession()` now stores an initial value under the session GUID key in `IMemoryCache`,
   so `GetAllSessions()` correctly returns `SessionData` for freshly created sessions (previously always null)
 - `AuthService.InitiateSession()` now rejects duplicate emails with `InvalidOperationException`
@@ -100,6 +104,10 @@
 - Build: 0 errors, Tests: 26 pass, 0 failures
 
 ### Fixed
+
+- AuthService._sessionIndex moved from instance field to IMemoryCache (key __SessionIndex)
+  so GetAllSessions() works across HTTP requests — previously the index was lost
+  because AuthService is registered as scoped and each request got a new empty index
 
 - Fixed DI resolution error in HolidayRepository by switching from concrete HolidayFileProvider dependency to IHolidayProvider interface
 

@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using Microsoft.Extensions.Caching.Memory;
 using SpreadsheetUtility.Application.DTOs.Session;
 using SpreadsheetUtility.Application.Ports;
@@ -7,27 +7,40 @@ namespace SpreadsheetUtility.Infrastructure.Services;
 
 public class AuthService : IAuthService
 {
+    private const string SessionIndexCacheKey = "__SessionIndex";
     private readonly IMemoryCache _memoryCache;
-    private readonly ConcurrentDictionary<string, (Guid SessionId, DateTime CreatedAt, DateTime LastModifiedAt)> _sessionIndex = new();
 
     public AuthService(IMemoryCache memoryCache)
     {
         _memoryCache = memoryCache;
     }
 
+    private ConcurrentDictionary<string, (Guid SessionId, DateTime CreatedAt, DateTime LastModifiedAt)> GetOrCreateSessionIndex()
+    {
+        if (_memoryCache.TryGetValue<ConcurrentDictionary<string, (Guid, DateTime, DateTime)>>(SessionIndexCacheKey, out var index))
+        {
+            return index!;
+        }
+
+        var newIndex = new ConcurrentDictionary<string, (Guid SessionId, DateTime CreatedAt, DateTime LastModifiedAt)>();
+        _memoryCache.Set(SessionIndexCacheKey, newIndex);
+        return newIndex;
+    }
+
     public string InitiateSession(string email)
     {
-        if (_sessionIndex.ContainsKey(email))
+        var index = GetOrCreateSessionIndex();
+
+        if (index.ContainsKey(email))
         {
             throw new InvalidOperationException($"A session already exists for email '{email}'.");
         }
 
         var guid = Guid.NewGuid();
-        var emailCacheKey = email;
         var cacheValue = guid.ToString();
-        _memoryCache.Set(emailCacheKey, cacheValue);
+        _memoryCache.Set(email, cacheValue);
         _memoryCache.Set(guid.ToString(), string.Empty);
-        _sessionIndex[email] = (guid, DateTime.UtcNow, DateTime.UtcNow);
+        index[email] = (guid, DateTime.UtcNow, DateTime.UtcNow);
         return cacheValue;
     }
 
@@ -65,9 +78,10 @@ public class AuthService : IAuthService
             {
                 var guidCacheKey = sessionId.ToString();
                 _memoryCache.Set(guidCacheKey, newValue);
-                if (_sessionIndex.TryGetValue(email, out var entry))
+                var index = GetOrCreateSessionIndex();
+                if (index.TryGetValue(email, out var entry))
                 {
-                    _sessionIndex[email] = (entry.SessionId, entry.CreatedAt, DateTime.UtcNow);
+                    index[email] = (entry.SessionId, entry.CreatedAt, DateTime.UtcNow);
                 }
                 return newValue;
             }
@@ -77,7 +91,9 @@ public class AuthService : IAuthService
 
     public IReadOnlyCollection<SessionInfoDto> GetAllSessions()
     {
-        return _sessionIndex.Select(kvp =>
+        var index = GetOrCreateSessionIndex();
+
+        return index.Select(kvp =>
         {
             var guidKey = kvp.Value.SessionId.ToString();
             _memoryCache.TryGetValue<string>(guidKey, out var sessionData);

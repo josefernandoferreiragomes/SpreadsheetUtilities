@@ -31,9 +31,8 @@ public class SessionStorageSelector
         _memoryCache.Set(LocationCacheKey, location);
     }
 
-    public ISessionStorage GetActiveStorage()
+    public ISessionStorage GetStorage(SessionStorageLocation location)
     {
-        var location = GetCurrentLocation();
         return location switch
         {
             SessionStorageLocation.UiWebMemoryCache => _serviceProvider.GetRequiredService<LocalMemorySessionStorage>(),
@@ -41,5 +40,10 @@ public class SessionStorageSelector
             SessionStorageLocation.RedisCache => _serviceProvider.GetRequiredService<RedisSessionStorage>(),
             _ => _serviceProvider.GetRequiredService<AuthApiSessionStorage>()
         };
+    }
+
+    public ISessionStorage GetActiveStorage()
+    {
+        return GetStorage(GetCurrentLocation());
     }
 }

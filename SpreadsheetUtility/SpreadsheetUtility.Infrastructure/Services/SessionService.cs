@@ -3,6 +3,7 @@ using SpreadsheetUtility.Infrastructure.Models;
 using System.Text;
 using Microsoft.AspNetCore.DataProtection;
 using SpreadsheetUtility.Application.DTOs.Session;
+using SpreadsheetUtility.Application.Configuration;
 
 namespace SpreadsheetUtility.Infrastructure.Services
 {
@@ -176,6 +177,12 @@ namespace SpreadsheetUtility.Infrastructure.Services
         {
             var activeStorage = _storageSelector.GetActiveStorage();
             return activeStorage.GetAllSessions().ToList();
+        }
+
+        public async System.Threading.Tasks.Task<List<SessionInfoDto>> FetchSessionsFromLocationAsync(SessionStorageLocation location)
+        {
+            var storage = _storageSelector.GetStorage(location);
+            return storage.GetAllSessions().ToList();
         }
     }
 }

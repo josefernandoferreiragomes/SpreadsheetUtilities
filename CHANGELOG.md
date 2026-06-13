@@ -1,56 +1,53 @@
-# Changelog
+﻿# Changelog
 
 ## [Unreleased]
 
 ### Added
 
-- Session Storage Location Selector feature with runtime-switchable backends:
-  - New `ISessionStorage` port interface in Application/Ports
-  - New `SessionStorageLocation` enum in Application/Configuration
-  - `AuthApiSessionStorage` — delegates to Auth.Api via NSwag client
-  - `LocalMemorySessionStorage` — local IMemoryCache (same pattern as AuthService)
-  - `RedisSessionStorage` — stub (throws NotImplementedException)
-  - `SessionStorageSelector` — runtime resolver that caches the current location choice in IMemoryCache
-- SessionService refactored to use `SessionStorageSelector` instead of creating HttpClient directly
-- Session Admin page (`/admin/sessions`) now has a storage location selector card above the session table
-- Session Admin page injects `SessionStorageSelector` and allows switching between Auth API, UI.Web memory, and Redis (stub) at runtime
+- Session Admin page: Added "Session List Source" selector card with dropdown and "Get" button to load sessions from a chosen storage location independently of the save location
+- SessionStorageSelector.GetStorage(SessionStorageLocation) — new public method resolving any location to its ISessionStorage implementation
+- SessionService.FetchSessionsFromLocationAsync(SessionStorageLocation) — fetches sessions from a specified storage location
 - Tests: 74 pass, 0 failures
 
 ### Changed
 
-- Session Admin page: `SessionData` field now renders with real newlines and spaces
-  instead of JSON-escaped `\t` `\n` sequences for readability
-- `SessionService` now depends on `SessionStorageSelector` instead of direct `HttpClient`/`SpreadsheetUtilitiesAuthApiClient`
+- Session Admin page "Storage Location" selector now only affects where new sessions are saved (no longer reloads the session list)
+- Session Admin page initial load uses FetchSessionsFromLocationAsync with the current storage location
+- Session Admin page: SessionData field now renders with real newlines and spaces
+  instead of JSON-escaped \t \n sequences for readability
+- SessionService now depends on SessionStorageSelector instead of direct HttpClient/SpreadsheetUtilitiesAuthApiClient
 
 ### Added
 
-- Session Management Admin page (`/admin/sessions`) with Blazor UI listing all active sessions
-- New `ListSessionsQuery` + `ListSessionsQueryHandler` MediatR use case in Application layer
-- `SessionInfoDto` (record) DTO and `ListSessionsResponse` record in Application/DTOs/Session/
-- `GetAllSessions()` method on `IAuthService` port and `AuthService` implementation with `ConcurrentDictionary` index
-- `GetAllSessions()` method on `SessionService` for local cache enumeration
-- `/listSessions` Minimal API endpoint in Auth.Api returning all tracked sessions
-- NavMenu link to Session Admin page under `/admin/sessions`
-- Unit tests for `ListSessionsQueryHandler` (3 tests: returns sessions, returns empty, null guard)
-- Tests: 74 pass, 0 failures (up from 71)
+- Session Storage Location Selector feature with runtime-switchable backends:
+  - New ISessionStorage port interface in Application/Ports
+  - New SessionStorageLocation enum in Application/Configuration
+  - AuthApiSessionStorage — delegates to Auth.Api via NSwag client
+  - LocalMemorySessionStorage — local IMemoryCache (same pattern as AuthService)
+  - RedisSessionStorage — stub (throws NotImplementedException)
+  - SessionStorageSelector — runtime resolver that caches the current location choice in IMemoryCache
+- SessionService refactored to use SessionStorageSelector instead of creating HttpClient directly
+- Session Admin page (/admin/sessions) now has a storage location selector card above the session table
+- Session Admin page injects SessionStorageSelector and allows switching between Auth API, UI.Web memory, and Redis (stub) at runtime
+- Tests: 74 pass, 0 failures
 
 ### Fixed
 
-- `AuthService._sessionIndex` moved from instance field to `IMemoryCache` (key `__SessionIndex`)
-  so `GetAllSessions()` works across HTTP requests — previously the index was lost
-  because `AuthService` is registered as scoped and each request got a new empty index
+- AuthService._sessionIndex moved from instance field to IMemoryCache (key __SessionIndex)
+  so GetAllSessions() works across HTTP requests — previously the index was lost
+  because AuthService is registered as scoped and each request got a new empty index
 
-- `AuthService.InitiateSession()` now stores an initial value under the session GUID key in `IMemoryCache`,
-  so `GetAllSessions()` correctly returns `SessionData` for freshly created sessions (previously always null)
-- `AuthService.InitiateSession()` now rejects duplicate emails with `InvalidOperationException`
+- AuthService.InitiateSession() now stores an initial value under the session GUID key in IMemoryCache,
+  so GetAllSessions() correctly returns SessionData for freshly created sessions (previously always null)
+- AuthService.InitiateSession() now rejects duplicate emails with InvalidOperationException
   instead of silently overwriting the existing session
-- `SessionAdmin.razor` now calls Auth.Api via HTTP (`SessionService.FetchAllSessionsFromApiAsync()`)
-  instead of using local `IMediator`/`IAuthService` (UI.Web and Auth.Api are separate
+- SessionAdmin.razor now calls Auth.Api via HTTP (SessionService.FetchAllSessionsFromApiAsync())
+  instead of using local IMediator/IAuthService (UI.Web and Auth.Api are separate
   processes with separate caches - only HTTP calls reach the real session store)
-- `SessionInfoDto` converted from mutable `class` to `record` with `{ get; init; }` properties
+- SessionInfoDto converted from mutable class to ecord with { get; init; } properties
   for consistency with other session DTOs
-- `ListSessionsAsync()` added to `SpreadsheetUtilitiesAuthApiClient` NSwag partial class
-  to call Auth.Api's `/listSessions` endpoint via HTTP
+- ListSessionsAsync() added to SpreadsheetUtilitiesAuthApiClient NSwag partial class
+  to call Auth.Api's /listSessions endpoint via HTTP
 
 ### Code Analysis
 
@@ -89,7 +86,7 @@
 - Build: 0 errors, Tests: 26 pass, 0 failures
 
 - Phase 4a refactoring: Auth.Api now uses Application + Infrastructure layers
-- Phase 4b refactoring: UI.Web � replaced GanttMapperHelper static methods with IPasteParserService in Application/Services/
+- Phase 4b refactoring: UI.Web replaced GanttMapperHelper static methods with IPasteParserService in Application/Services/
 - Created GanttGeneratorViewModel in UI.Web/ViewModels/ as scoped DI service for page state
 - GanttGeneratorFromPaste.razor now binds to ViewModel properties and uses PasteParserService
 - Register PasteParserService in Application/DependencyInjection.cs
@@ -103,7 +100,7 @@
 - Added Assembly.GetExecutingAssembly() and auto-discovery scanning for the Session use case handlers
 - Build: 0 errors, Tests: 26 pass, 0 failures
 
-### UI.Web � Component Split & Cleanup
+### UI.Web Component Split & Cleanup
 
 - Split 535-line GanttGeneratorFromPaste.razor into 4 components: SessionComponent, DataPasteGridComponent, GanttConfigComponent, GanttResultsComponent
 - Converted ExampleFilesController ([ApiController]) to Minimal API endpoints in Endpoints/
@@ -111,7 +108,7 @@
 - Updated _Imports.razor with shared namespaces (Application.Services, ViewModels, QuickGrid, Newtonsoft.Json)
 - Build: 0 errors, Tests: 26 pass, 0 failures
 
-### UI.Console � Phase 4c Refactoring
+### UI.Console Phase 4c Refactoring
 
 - Created GenerateDoubleEntryInput/Output DTOs in Application/DTOs
 - Created IDoubleEntryGeneratorService port in Application/Ports
@@ -126,7 +123,7 @@
 ### Fixed
 
 - AuthService._sessionIndex moved from instance field to IMemoryCache (key __SessionIndex)
-  so GetAllSessions() works across HTTP requests — previously the index was lost
+  so GetAllSessions() works across HTTP requests previously the index was lost
   because AuthService is registered as scoped and each request got a new empty index
 
 - Fixed DI resolution error in HolidayRepository by switching from concrete HolidayFileProvider dependency to IHolidayProvider interface

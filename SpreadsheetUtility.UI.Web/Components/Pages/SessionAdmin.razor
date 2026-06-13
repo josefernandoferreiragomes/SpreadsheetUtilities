@@ -37,6 +37,33 @@
     </div>
 </div>
 
+<div class="card mb-4">
+    <div class="card-body">
+        <h5 class="card-title">Session List Source</h5>
+        <p class="mb-2">
+            <strong>List loaded from:</strong> @GetLocationDisplayName(listSourceLocation)
+        </p>
+        <div class="row g-2 align-items-end">
+            <div class="col-auto">
+                <select class="form-select" @bind="listSourceLocation">
+                    <option value="@SessionStorageLocation.AuthApiMemoryCache">SpreadsheetUtilities.Auth.Api memorycache</option>
+                    <option value="@SessionStorageLocation.UiWebMemoryCache">SpreadsheetUtility.UI.Web memorycache</option>
+                    <option value="@SessionStorageLocation.RedisCache">Redis cache [under development]</option>
+                </select>
+            </div>
+            <div class="col-auto">
+                <button class="btn btn-secondary" @onclick="RefreshSessionList" disabled="@isRefreshing">
+                    @(isRefreshing ? "Loading..." : "Get")
+                </button>
+            </div>
+        </div>
+        @if (!string.IsNullOrEmpty(listStatusMessage))
+        {
+            <div class="mt-2 text-@(listStatusIsError ? "danger" : "success")">@listStatusMessage</div>
+        }
+    </div>
+</div>
+
 @if (sessions is null)
 {
     <p>Loading sessions...</p>
@@ -101,10 +128,15 @@ else
     private bool isApplying;
     private string? statusMessage;
     private bool statusIsError;
+    private SessionStorageLocation listSourceLocation = SessionStorageLocation.AuthApiMemoryCache;
+    private bool isRefreshing;
+    private string? listStatusMessage;
+    private bool listStatusIsError;
 
     protected override async Task OnInitializedAsync()
     {
         selectedLocation = StorageSelector.GetCurrentLocation();
+        listSourceLocation = StorageSelector.GetCurrentLocation();
         await LoadSessions();
     }
 
@@ -112,7 +144,7 @@ else
     {
         try
         {
-            sessions = await SessionService.FetchAllSessionsFromApiAsync();
+            sessions = await SessionService.FetchSessionsFromLocationAsync(listSourceLocation);
         }
         catch (Exception ex)
         {
@@ -145,9 +177,6 @@ else
 
             StorageSelector.SetLocation(selectedLocation);
             statusMessage = $"Storage location changed to {GetLocationDisplayName(selectedLocation)}.";
-            
-            // Reload sessions from the new storage
-            await LoadSessions();
         }
         catch (Exception ex)
         {
@@ -157,6 +186,35 @@ else
         finally
         {
             isApplying = false;
+        }
+    }
+
+    private async Task RefreshSessionList()
+    {
+        isRefreshing = true;
+        listStatusMessage = null;
+        listStatusIsError = false;
+
+        try
+        {
+            if (listSourceLocation == SessionStorageLocation.RedisCache)
+            {
+                listStatusMessage = "Redis cache is under development and cannot be queried yet.";
+                listStatusIsError = true;
+                return;
+            }
+
+            sessions = await SessionService.FetchSessionsFromLocationAsync(listSourceLocation);
+            listStatusMessage = $"Session list loaded from {GetLocationDisplayName(listSourceLocation)}.";
+        }
+        catch (Exception ex)
+        {
+            listStatusMessage = $"Error: {ex.Message}";
+            listStatusIsError = true;
+        }
+        finally
+        {
+            isRefreshing = false;
         }
     }
 

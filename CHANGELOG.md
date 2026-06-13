@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Changed
+
+- Session Admin page: `SessionData` field now renders with real newlines and spaces
+  instead of JSON-escaped `\t` `\n` sequences for readability
+
 ### Added
 
 - Session Management Admin page (`/admin/sessions`) with Blazor UI listing all active sessions
@@ -130,6 +135,11 @@
 - Added repository interfaces: IHolidayRepository, IDeveloperRepository
 - Updated all imports across Library, Tests, and Web UI to reference SpreadsheetUtility.Domain.Models
 
+### Changed
+
+- Session Admin page: SessionData field now renders with real newlines and spaces
+  instead of JSON-escaped \t \n sequences for readability
+
 ### Added
 
 - opencode AI assistant configuration (AGENTS.md)
@@ -148,6 +158,11 @@
 
 ## [1.1.0] - 2024-01-15
 
+### Changed
+
+- Session Admin page: SessionData field now renders with real newlines and spaces
+  instead of JSON-escaped \t \n sequences for readability
+
 ### Added
 
 - Example Files Download feature: browse and download example .xlsx files from the Gantt Generator UI
@@ -165,6 +180,11 @@
 - Null character validation
 
 ## [1.0.0] - 2024-01-01
+
+### Changed
+
+- Session Admin page: SessionData field now renders with real newlines and spaces
+  instead of JSON-escaped \t \n sequences for readability
 
 ### Added
 

@@ -1,4 +1,4 @@
-﻿@page "/admin/sessions"
+@page "/admin/sessions"
 @rendermode InteractiveServer
 @inject SpreadsheetUtility.Infrastructure.Services.SessionService SessionService
 @inject IJSRuntime JS
@@ -54,7 +54,7 @@ else
                     <button type="button" class="btn-close" @onclick="CloseDetail"></button>
                 </div>
                 <div class="modal-body">
-                    <pre><code>@JsonConvert.SerializeObject(selectedSession, Formatting.Indented)</code></pre>
+                    <pre><code>@FormatSessionDetail(selectedSession)</code></pre>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" @onclick="CloseDetail">Close</button>
@@ -89,6 +89,14 @@ else
     private void ShowDetail(SessionInfoDto session)
     {
         selectedSession = session;
+    }
+
+    private string FormatSessionDetail(SessionInfoDto session)
+    {
+        var json = JsonConvert.SerializeObject(session, Formatting.Indented);
+        return json
+            .Replace("\\t", "    ")
+            .Replace("\\n", "\n");
     }
 
     private void CloseDetail()

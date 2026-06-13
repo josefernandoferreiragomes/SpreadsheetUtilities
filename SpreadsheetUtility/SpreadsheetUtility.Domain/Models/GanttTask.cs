@@ -39,7 +39,7 @@ public class GanttTask
     public string? ProjectDependency { get; set; }
     public string? AssignedDeveloper { get; set; }
     public string? AssignedDeveloperId { get; set; }
-    internal bool DependencyUpdated { get; set; } = false;
+    internal bool DependencyUpdated { get; set; }
     public string? TaskEndWeekDescriptionDescription { get; set; }
 
     public string? ActualStart { get; set; }

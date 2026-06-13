@@ -18,7 +18,7 @@ public class CalculateGanttChartAllocationQueryHandler : IRequestHandler<Calcula
     private List<GanttTask> _ganttTaskList;
     private List<Developer> _developerList;
     private List<Holiday> _projectHolidayList;
-    private int _currentMaximumTaskID = 0;
+    private int _currentMaximumTaskID;
     private DateTime _projectStartDate;
     private readonly ITaskAssignmentStrategyFactory _taskAssignmentStrategyFactory;
     private readonly ITaskSortingStrategyFactory _taskSortingStrategyFactory;
@@ -57,6 +57,7 @@ public class CalculateGanttChartAllocationQueryHandler : IRequestHandler<Calcula
         _developerTaskListGenerator = developerTaskListGenerator;
         _calculatorFacade = calculatorFacade;
         _groupProjectsQuery = groupProjectsQuery;
+        _currentMaximumTaskID = 0;
     }
 
     public Task<CalculateGanttChartAllocationOutput> Handle(CalculateGanttChartAllocationQuery request, CancellationToken cancellationToken)

@@ -19,8 +19,8 @@ public class GanttTaskListGenerator : ListGenerator<GanttTask, GanttTask>
             Progress = (int)(items.Sum(t => (t.Progress * (t.EffortHours / totalEffortHours)))),
             StartDate = items.Min(t => t.StartDate),
             EndDate = items.Max(t => t.EndDate),
-            Start = items.Min(t => t.StartDate).ToString("yyyy-MM-dd"),
-            End = items.Max(t => t.EndDate).ToString("yyyy-MM-dd"),
+            Start = items.Min(t => t.StartDate).ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture),
+            End = items.Max(t => t.EndDate).ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture),
             ProjectName = groupKey,
             ProjectID = items.First().ProjectID ?? "",
         };

@@ -1,4 +1,5 @@
 using SpreadsheetUtility.Domain.Models;
+using System.Globalization;
 
 namespace SpreadsheetUtility.Application.Services;
 
@@ -45,8 +46,8 @@ public class DeveloperTaskListGenerator : ListGenerator<Developer, List<GanttTas
             {
                 Id = $"vacation-{developer.Name}-{vacationId}",
                 TaskName = $"{developer.Name} - Vacation {vacationId}",
-                Start = (vacation.Value.Start < _projectStartDate ? _projectStartDate : vacation.Value.Start).ToString("yyyy-MM-dd"),
-                End = vacation.Value.End.ToString("yyyy-MM-dd"),
+                Start = (vacation.Value.Start < _projectStartDate ? _projectStartDate : vacation.Value.Start).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+                End = vacation.Value.End.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
                 CustomClass = "task",
                 Resource = developer.Name,
                 StartDate = vacation.Value.Start,

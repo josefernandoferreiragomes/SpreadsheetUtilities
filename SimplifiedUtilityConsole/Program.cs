@@ -1,6 +1,8 @@
 ﻿// See https://aka.ms/new-console-template for more information
 // Display help if arguments are missing
 
+using SimplifiedUtility.Console;
+
 Console.WriteLine("Double Entry Spreadsheet Generator is about to start...");
 
 if (args.Length < 1)

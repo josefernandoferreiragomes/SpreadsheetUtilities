@@ -10,8 +10,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="ClosedXML" Version="0.104.2" />
-    <PackageReference Include="newtonsoft.json" Version="13.0.3" />
+    <PackageReference Include="ClosedXML" Version="0.105.0" />
+    <PackageReference Include="newtonsoft.json" Version="13.0.4" />
   </ItemGroup>
 
   <ItemGroup>

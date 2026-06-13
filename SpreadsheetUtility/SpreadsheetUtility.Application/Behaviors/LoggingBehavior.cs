@@ -17,6 +17,12 @@ public partial class LoggingBehavior<TRequest, TResponse>(ILogger<LoggingBehavio
         var response = await next();
 
         stopwatch.Stop();
+
+        if (response is null)
+        {
+            Log.HandlingRequest(logger, requestName, "Response is null");
+            throw new InvalidOperationException($"Response for {requestName} is null.");
+        }
         Log.HandledRequest(logger, requestName, stopwatch.ElapsedMilliseconds, response);
 
         return response;

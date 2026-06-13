@@ -451,6 +451,11 @@ namespace SpreadsheetUtility.Infrastructure.ApiClients
         public ApiException(string message, int statusCode, string response, System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IEnumerable<string>> headers, System.Exception innerException)
             : base(message + "\n\nStatus: " + statusCode + "\nResponse: \n" + ((response == null) ? "(null)" : response.Substring(0, response.Length >= 512 ? 512 : response.Length)), innerException)
         {
+            if(response == null)
+            {
+                throw new System.ArgumentException("Response content is null. This may indicate an issue with the API response or the deserialization process.", nameof(response));
+            }
+
             StatusCode = statusCode;
             Response = response;
             Headers = headers;

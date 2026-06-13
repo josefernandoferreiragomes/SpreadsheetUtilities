@@ -4,6 +4,6 @@ namespace SpreadsheetUtility.Domain.Services;
 
 public interface IDateCalculationService
 {
-    DateTime GetNextWorkingDay(DateTime date);
+    DateTime GetNextWorkingDay(DateTime dayDate);
     DateTime CalculateNextAvailableDate(Developer developer, DateTime fromDate);
 }

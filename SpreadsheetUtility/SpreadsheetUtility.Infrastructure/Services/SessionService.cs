@@ -171,5 +171,13 @@ namespace SpreadsheetUtility.Infrastructure.Services
                 _sessionCache.Remove(email);
             }
         }
+
+        public IReadOnlyCollection<SessionState> GetAllSessions()
+        {
+            lock (_cacheLock)
+            {
+                return _sessionCache.Values.ToList().AsReadOnly();
+            }
+        }
     }
 }

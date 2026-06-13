@@ -44,4 +44,11 @@ app.MapPost("/updateSession", async (IMediator mediator, string eMail, Guid guid
 })
 .WithName("UpdateSession");
 
+app.MapGet("/listSessions", async (IMediator mediator) =>
+{
+    var result = await mediator.Send(new ListSessionsQuery());
+    return result.Sessions;
+})
+.WithName("ListSessions");
+
 app.Run();

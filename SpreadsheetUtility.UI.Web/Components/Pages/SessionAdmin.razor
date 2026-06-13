@@ -1,0 +1,101 @@
+﻿@page "/admin/sessions"
+@rendermode InteractiveServer
+@inject IMediator Mediator
+@inject IJSRuntime JS
+@using MediatR
+@using Newtonsoft.Json
+@using SpreadsheetUtility.Application.DTOs.Session
+@using SpreadsheetUtility.Application.UseCases.Session
+
+<h3>Session Management</h3>
+
+@if (sessions is null)
+{
+    <p>Loading sessions...</p>
+}
+else if (sessions.Count == 0)
+{
+    <p>No active sessions.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Email</th>
+                <th>Session ID</th>
+                <th>Created</th>
+                <th>Last Modified</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var session in sessions)
+            {
+                <tr>
+                    <td>@session.Email</td>
+                    <td><code>@session.SessionId</code></td>
+                    <td>@session.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                    <td>@session.LastModifiedAt.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                    <td>
+                        <button class="btn btn-sm btn-info" @onclick="() => ShowDetail(session)">Detail</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@if (selectedSession is not null)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);" @onclick="CloseDetail">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable" @onclick:stopPropagation="true">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Session Detail - @selectedSession.Email</h5>
+                    <button type="button" class="btn-close" @onclick="CloseDetail"></button>
+                </div>
+                <div class="modal-body">
+                    <pre><code>@JsonConvert.SerializeObject(selectedSession, Formatting.Indented)</code></pre>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CloseDetail">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<SessionInfoDto>? sessions;
+    private SessionInfoDto? selectedSession;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSessions();
+    }
+
+    private async Task LoadSessions()
+    {
+        try
+        {
+            var response = await Mediator.Send(new ListSessionsQuery());
+            sessions = response.Sessions.ToList();
+        }
+        catch (Exception ex)
+        {
+            await JS.InvokeVoidAsync("console.error", "Error loading sessions: " + ex.Message);
+            sessions = new List<SessionInfoDto>();
+        }
+    }
+
+    private void ShowDetail(SessionInfoDto session)
+    {
+        selectedSession = session;
+    }
+
+    private void CloseDetail()
+    {
+        selectedSession = null;
+    }
+}

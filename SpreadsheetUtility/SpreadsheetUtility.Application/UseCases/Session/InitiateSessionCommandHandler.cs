@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using SpreadsheetUtility.Application.DTOs.Session;
 using SpreadsheetUtility.Application.Ports;
 
@@ -15,8 +15,8 @@ public class InitiateSessionCommandHandler : IRequestHandler<InitiateSessionComm
 
     public Task<InitiateSessionResponse> Handle(InitiateSessionCommand request, CancellationToken cancellationToken)
     {
-        var authService = _factory.GetService(request.cache);
-        var sessionId = authService.InitiateSession(request.Email);
+        var sessionStore = _factory.GetService(request.cache);
+        var sessionId = sessionStore.InitiateSession(request.Email);
         return Task.FromResult(new InitiateSessionResponse(sessionId));
     }
 }

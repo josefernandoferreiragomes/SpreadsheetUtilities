@@ -1,4 +1,4 @@
-using System.Security.Authentication;
+﻿using System.Security.Authentication;
 using System.Text.Json;
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
@@ -9,7 +9,7 @@ using SpreadsheetUtility.Infrastructure.Options;
 namespace SpreadsheetUtility.Infrastructure.Services;
 
 /// <summary>
-/// Redis-backed implementation of IAuthService.
+/// Redis-backed implementation of ISessionStore.
 ///
 /// KEY LAYOUT IN REDIS
 /// ───────────────────
@@ -29,7 +29,7 @@ namespace SpreadsheetUtility.Infrastructure.Services;
 /// on session deletion. This mirrors the original in-memory design where the index was
 /// never evicted independently.
 /// </summary>
-public sealed class RedisAuthService : IAuthService
+public sealed class RedisAuthService : ISessionStore
 {
     private readonly IConnectionMultiplexer _redis;
     private readonly RedisOptions _options;
@@ -51,7 +51,7 @@ public sealed class RedisAuthService : IAuthService
         _options  = options.Value;
     }
 
-    // ── IAuthService ─────────────────────────────────────────────────────────
+    // ── ISessionStore ────────────────────────────────────────────────────────
 
     /// <summary>
     /// Creates a new session for the given email.
@@ -195,6 +195,33 @@ public sealed class RedisAuthService : IAuthService
         }
 
         return result.AsReadOnly();
+    }
+
+    /// <summary>
+    /// Looks up a single session by email.
+    /// Returns null if no session exists for the given email.
+    /// </summary>
+    public SessionInfoDto? TryFindSessionByEmail(string email)
+    {
+        var db = _redis.GetDatabase();
+        var raw = (string?)db.HashGet(IndexKey(), email);
+        if (raw is null)
+            return null;
+
+        var indexEntry = JsonSerializer.Deserialize<SessionIndexEntry>(raw);
+        if (indexEntry is null)
+            return null;
+
+        var payload = (string?)db.StringGet(DataKey(indexEntry.SessionId.ToString()));
+
+        return new SessionInfoDto
+        {
+            Email          = email,
+            SessionId      = indexEntry.SessionId,
+            CreatedAt      = indexEntry.CreatedAt,
+            LastModifiedAt = indexEntry.LastModifiedAt,
+            SessionData    = payload
+        };
     }
 
     // ── Private types ────────────────────────────────────────────────────────

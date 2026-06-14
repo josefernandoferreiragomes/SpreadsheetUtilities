@@ -1,4 +1,4 @@
-using Microsoft.Extensions.Caching.Memory;
+﻿using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using SpreadsheetUtility.Application.Configuration;
 using SpreadsheetUtility.Application.Ports;
@@ -31,7 +31,7 @@ public class SessionStorageSelector
         _memoryCache.Set(LocationCacheKey, location);
     }
 
-    public ISessionStorage GetStorage(SessionStorageLocation location)
+    public ISessionStore GetStorage(SessionStorageLocation location)
     {
         return location switch
         {
@@ -42,8 +42,10 @@ public class SessionStorageSelector
         };
     }
 
-    public ISessionStorage GetActiveStorage()
+    public ISessionStore GetActiveStorage()
     {
         return GetStorage(GetCurrentLocation());
     }
 }
+
+

@@ -1,21 +1,22 @@
-﻿using SpreadsheetUtility.Application.Ports;
+﻿using Microsoft.Extensions.DependencyInjection;
+using SpreadsheetUtility.Application.Ports;
 
 namespace SpreadsheetUtility.Infrastructure.Services;
 
 public sealed class AuthServiceFactory : IAuthServiceFactory
 {
     private readonly AuthService _memory;
-    private readonly RedisAuthService _redis;
+    private readonly IServiceProvider _serviceProvider;
 
-    public AuthServiceFactory(AuthService memory, RedisAuthService redis)
+    public AuthServiceFactory(AuthService memory, IServiceProvider serviceProvider)
     {
         _memory = memory;
-        _redis = redis;
+        _serviceProvider = serviceProvider;
     }
 
-    public IAuthService GetService(CacheBackend backend) => backend switch
+    public ISessionStore GetService(CacheBackend backend) => backend switch
     {
-        CacheBackend.Redis => _redis,
+        CacheBackend.Redis => _serviceProvider.GetRequiredService<RedisAuthService>(),
         CacheBackend.Memory => _memory,
         _ => _memory
     };

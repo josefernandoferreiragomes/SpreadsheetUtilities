@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 
 namespace SpreadsheetUtility.Infrastructure.Services;
 
-public class AuthApiSessionStorage : ISessionStorage
+public class AuthApiSessionStorage : ISessionStore
 {
     private readonly SpreadsheetUtilitiesAuthApiClient _client;
 
@@ -35,3 +35,5 @@ public class AuthApiSessionStorage : ISessionStorage
         return allSessions.FirstOrDefault(s => s.Email == email);
     }
 }
+
+

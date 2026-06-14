@@ -7,27 +7,29 @@ namespace SpreadsheetUtility.Test.ApplicationTests.UseCases;
 
 public class InitiateSessionCommandHandlerTests
 {
-    private readonly Mock<IAuthService> _authServiceMock;
+    private readonly Mock<IAuthServiceFactory> _factoryMock;
+    private readonly Mock<ISessionStore> _sessionStoreMock;
     private readonly InitiateSessionCommandHandler _handler;
 
-    //TODO: update tests after refactoring to use IAuthServiceFactory instead of IAuthService directly
+    public InitiateSessionCommandHandlerTests()
+    {
+        _sessionStoreMock = new Mock<ISessionStore>();
+        _factoryMock = new Mock<IAuthServiceFactory>();
+        _factoryMock.Setup(f => f.GetService(It.IsAny<CacheBackend>())).Returns(_sessionStoreMock.Object);
+        _handler = new InitiateSessionCommandHandler(_factoryMock.Object);
+    }
 
-    //public InitiateSessionCommandHandlerTests()
-    //{
-    //    _authServiceMock = new Mock<IAuthService>();
-    //    _handler = new InitiateSessionCommandHandler(_authServiceMock.Object);
-    //}
+    [Fact]
+    public async Task Handle_Should_Call_InitiateSession_And_Return_SessionId()
+    {
+        var email = "user@example.com";
+        var expectedSessionId = Guid.NewGuid().ToString();
+        _sessionStoreMock.Setup(s => s.InitiateSession(email)).Returns(expectedSessionId);
 
-    //[Fact]
-    //public async Task Handle_Should_Call_InitiateSession_And_Return_SessionId()
-    //{
-    //    var email = "user@example.com";
-    //    var expectedSessionId = Guid.NewGuid().ToString();
-    //    _authServiceMock.Setup(a => a.InitiateSession(email)).Returns(expectedSessionId);
+        var result = await _handler.Handle(new InitiateSessionCommand(email, null, CacheBackend.Memory), CancellationToken.None);
 
-    //    var result = await _handler.Handle(new InitiateSessionCommand(email), CancellationToken.None);
-
-    //    Assert.Equal(expectedSessionId, result.SessionId);
-    //    _authServiceMock.Verify(a => a.InitiateSession(email), Times.Once);
-    //}
+        Assert.Equal(expectedSessionId, result.SessionId);
+        _sessionStoreMock.Verify(s => s.InitiateSession(email), Times.Once);
+        _factoryMock.Verify(f => f.GetService(CacheBackend.Memory), Times.Once);
+    }
 }

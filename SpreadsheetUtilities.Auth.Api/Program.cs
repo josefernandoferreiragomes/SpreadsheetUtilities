@@ -17,7 +17,6 @@ builder.Services.AddMemoryCache();
 builder.AddRedis();
 
 builder.Services.AddSpreadsheetUtilities();
-builder.Services.AddScoped<IAuthServiceFactory, AuthServiceFactory>();
 
 var app = builder.Build();
 
@@ -40,26 +39,25 @@ app.MapGet("/initiateSession", async (
 })
 .WithName("InitiateSession");
 
-app.MapGet("/getSession", async (IMediator mediator, string eMail, Guid guid) =>
+app.MapGet("/getSession", async (IMediator mediator, string eMail, Guid guid, CacheBackend cache = CacheBackend.Memory) =>
 {
-    var result = await mediator.Send(new GetSessionQuery(eMail, guid));
+    var result = await mediator.Send(new GetSessionQuery(eMail, guid, cache));
     return result.SessionValue;
 })
 .WithName("GetSession");
 
-app.MapPost("/updateSession", async (IMediator mediator, string eMail, Guid guid, [FromBody] string newValue) =>
+app.MapPost("/updateSession", async (IMediator mediator, string eMail, Guid guid, [FromBody] string newValue, CacheBackend cache = CacheBackend.Memory) =>
 {
-    var result = await mediator.Send(new UpdateSessionCommand(eMail, guid, newValue));
+    var result = await mediator.Send(new UpdateSessionCommand(eMail, guid, newValue, cache));
     return result.UpdatedValue;
 })
 .WithName("UpdateSession");
 
-app.MapGet("/listSessions", async (IMediator mediator) =>
+app.MapGet("/listSessions", async (IMediator mediator, CacheBackend cache = CacheBackend.Memory) =>
 {
-    var result = await mediator.Send(new ListSessionsQuery());
+    var result = await mediator.Send(new ListSessionsQuery(cache));
     return result.Sessions;
 })
 .WithName("ListSessions");
 
 app.Run();
-

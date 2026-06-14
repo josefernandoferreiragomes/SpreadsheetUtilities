@@ -285,7 +285,7 @@ shared/
 | Format enforcement | dotnet format runs as part of build pipeline |
 ---
 
-## Phase 8 � Configurable Session Storage 
+## Phase 8 � Configurable Session Storage 
 
 **Scope:** Application, Infrastructure, UI.Web  
 **Goal:** Introduce ISessionStorage abstraction with runtime-switchable backends (Auth API, local memory, Redis stub)  
@@ -295,14 +295,14 @@ shared/
 |---|---|---|
 | **8.1** | Create ISessionStorage port in Application/Ports with InitiateSession, GetSession, UpdateSession, GetAllSessions | ? Done |
 | **8.2** | Create SessionStorageLocation enum in Application/Configuration with UiWebMemoryCache, AuthApiMemoryCache, RedisCache | ? Done |
-| **8.3** | Create AuthApiSessionStorage � delegates to Auth.Api via NSwag SpreadsheetUtilitiesAuthApiClient | ? Done |
-| **8.4** | Create LocalMemorySessionStorage � stores sessions in local IMemoryCache (same pattern as AuthService) | ? Done |
-| **8.5** | Create RedisSessionStorage � stub throwing NotImplementedException("Redis cache is under development.") | ? Done |
-| **8.6** | Create SessionStorageSelector � runtime resolver that caches current location in IMemoryCache and resolves correct ISessionStorage from DI | ? Done |
+| **8.3** | Create AuthApiSessionStorage � delegates to Auth.Api via NSwag SpreadsheetUtilitiesAuthApiClient | ? Done |
+| **8.4** | Create LocalMemorySessionStorage � stores sessions in local IMemoryCache (same pattern as AuthService) | ? Done |
+| **8.5** | Create RedisSessionStorage � stub throwing NotImplementedException("Redis cache is under development.") | ? Done |
+| **8.6** | Create SessionStorageSelector � runtime resolver that caches current location in IMemoryCache and resolves correct ISessionStorage from DI | ? Done |
 | **8.7** | Refactor SessionService to use SessionStorageSelector instead of direct HttpClient/SpreadsheetUtilitiesAuthApiClient | ? Done |
 | **8.8** | Add storage location selector UI card to SessionAdmin.razor (label, dropdown, select button, status messages) | ? Done |
 | **8.9** | Register all new services (AuthApiSessionStorage, LocalMemorySessionStorage, RedisSessionStorage, SessionStorageSelector) in UI.Web Program.cs | ? Done |
-| **8.10** | dotnet build / dotnet test � green | ? Build: 0 errors, Tests: 74 pass, 0 failures |
+| **8.10** | dotnet build / dotnet test � green | ? Build: 0 errors, Tests: 74 pass, 0 failures |
 
 ---
 
@@ -326,3 +326,24 @@ shared/
 | **9.10** | Update DI registrations in Program.cs | ✅ Registered SessionCacheService and ISessionCookieService/SessionCookieService |
 | **9.11** | dotnet build / dotnet test — green | ✅ Build: 0 errors. Tests: **74 pass**, 0 failures |
 | **9.12** | Smoke test — all 3 projects | ✅ UI.Web, Auth.Api, UI.Console all pass health checks |
+
+---
+
+## Phase 10 — Unified Session Store Interface & Redis HTTP Proxy ✅
+
+**Scope:** Application + Infrastructure + UI.Web + Auth.Api
+**Goal:** Merge two parallel session storage interfaces (`IAuthService` + `ISessionStorage`) into one unified `ISessionStore` port; implement `RedisSessionStorage` as a real HTTP proxy to Auth.Api with `CacheBackend.Redis`
+**Status:** ✅ Complete (2026-06-14)
+
+| # | Step | Result |
+|---|---|---|
+| **10.1** | Move `StackExchange.Redis` NuGet from `Application.csproj` to `Infrastructure.csproj` | ✅ Redis dependency stays in Infrastructure layer only |
+| **10.2** | Create unified `ISessionStore` interface in `Application/Ports/` with 5 methods | ✅ Merges `IAuthService` + `ISessionStorage` into single port |
+| **10.3** | Update all 5 implementations to implement `ISessionStore`; add missing `TryFindSessionByEmail` to `AuthService` and `RedisAuthService` | ✅ All implementations updated |
+| **10.4** | Update consumers: `AuthServiceFactory`, `SessionStorageSelector`, `SessionService`, DI registrations, MediatR handlers | ✅ 12+ files updated |
+| **10.5** | Implement `RedisSessionStorage` as real HTTP proxy → Auth.Api with `CacheBackend.Redis` | ✅ Replaced stub with real NSwag client delegate |
+| **10.6** | Add `CacheBackend` parameter support to all 4 Auth.Api endpoints (`/initiateSession`, `/getSession`, `/updateSession`, `/listSessions`) and their MediatR records/handlers | ✅ All endpoints now accept `?cache=Redis` query parameter |
+| **10.7** | Add `CacheBackend` overloads to NSwag client for all 4 methods | ✅ Partial class extensions added |
+| **10.8** | Fix DI: `AuthServiceFactory` uses lazy `IServiceProvider` for `RedisAuthService`; register `IAuthServiceFactory` in shared `AddInfrastructure()` | ✅ UI.Web no longer needs Redis installed |
+| **10.9** | Update tests (GetSession, ListSessions, UpdateSession handlers) to mock `IAuthServiceFactory` | ✅ All 74 tests pass |
+| **10.10** | Smoke test — all 3 projects | ✅ UI.Web, Auth.Api, UI.Console all pass health checks |

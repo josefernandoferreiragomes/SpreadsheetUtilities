@@ -1,11 +1,11 @@
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using Microsoft.Extensions.Caching.Memory;
 using SpreadsheetUtility.Application.DTOs.Session;
 using SpreadsheetUtility.Application.Ports;
 
 namespace SpreadsheetUtility.Infrastructure.Services;
 
-public class LocalMemorySessionStorage : ISessionStorage
+public class LocalMemorySessionStorage : ISessionStore
 {
     private const string SessionIndexCacheKey = "__SessionIndex";
     private readonly IMemoryCache _memoryCache;
@@ -117,3 +117,4 @@ public class LocalMemorySessionStorage : ISessionStorage
         return null;
     }
 }
+

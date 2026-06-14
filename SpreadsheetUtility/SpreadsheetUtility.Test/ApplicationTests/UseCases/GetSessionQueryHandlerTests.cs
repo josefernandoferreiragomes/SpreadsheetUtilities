@@ -7,13 +7,16 @@ namespace SpreadsheetUtility.Test.ApplicationTests.UseCases;
 
 public class GetSessionQueryHandlerTests
 {
-    private readonly Mock<IAuthService> _authServiceMock;
+    private readonly Mock<IAuthServiceFactory> _factoryMock;
+    private readonly Mock<ISessionStore> _sessionStoreMock;
     private readonly GetSessionQueryHandler _handler;
 
     public GetSessionQueryHandlerTests()
     {
-        _authServiceMock = new Mock<IAuthService>();
-        _handler = new GetSessionQueryHandler(_authServiceMock.Object);
+        _factoryMock = new Mock<IAuthServiceFactory>();
+        _sessionStoreMock = new Mock<ISessionStore>();
+        _factoryMock.Setup(f => f.GetService(It.IsAny<CacheBackend>())).Returns(_sessionStoreMock.Object);
+        _handler = new GetSessionQueryHandler(_factoryMock.Object);
     }
 
     [Fact]
@@ -22,12 +25,12 @@ public class GetSessionQueryHandlerTests
         var email = "user@example.com";
         var sessionId = Guid.NewGuid();
         var expectedValue = "session value";
-        _authServiceMock.Setup(a => a.GetSession(email, sessionId)).Returns(expectedValue);
+        _sessionStoreMock.Setup(a => a.GetSession(email, sessionId)).Returns(expectedValue);
 
         var result = await _handler.Handle(new GetSessionQuery(email, sessionId), CancellationToken.None);
 
         Assert.Equal(expectedValue, result.SessionValue);
-        _authServiceMock.Verify(a => a.GetSession(email, sessionId), Times.Once);
+        _sessionStoreMock.Verify(a => a.GetSession(email, sessionId), Times.Once);
     }
 
     [Fact]
@@ -35,7 +38,7 @@ public class GetSessionQueryHandlerTests
     {
         var email = "unknown@example.com";
         var sessionId = Guid.NewGuid();
-        _authServiceMock.Setup(a => a.GetSession(email, sessionId)).Returns((string?)null);
+        _sessionStoreMock.Setup(a => a.GetSession(email, sessionId)).Returns((string?)null);
 
         var result = await _handler.Handle(new GetSessionQuery(email, sessionId), CancellationToken.None);
 

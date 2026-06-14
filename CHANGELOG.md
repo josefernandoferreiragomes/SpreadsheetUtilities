@@ -2,6 +2,29 @@
 
 ## [Unreleased]
 
+### Architecture
+
+- Unified session storage interfaces: merged `IAuthService` + `ISessionStorage` into single `ISessionStore` port in Application/Ports/
+- Moved `StackExchange.Redis` NuGet from Application.csproj to Infrastructure.csproj (Stage 1)
+- Created `ISessionStore` interface with 5 methods (InitiateSession, GetSession, UpdateSession, GetAllSessions, TryFindSessionByEmail) replacing both `IAuthService` and `ISessionStorage`
+- Updated all 5 implementations to implement `ISessionStore`:
+  - `AuthService` (MemoryCache via AuthServiceFactory)
+  - `RedisAuthService` (direct Redis via StackExchange.Redis)
+  - `AuthApiSessionStorage` (HTTP proxy to Auth.Api via NSwag client)
+  - `LocalMemorySessionStorage` (local IMemoryCache)
+  - `RedisSessionStorage` (now real HTTP proxy, was stub)
+- Deleted old `IAuthService.cs` and `ISessionStorage.cs` interface files
+- Implemented `RedisSessionStorage` as HTTP proxy calling Auth.Api via `SpreadsheetUtilitiesAuthApiClient` with `CacheBackend.Redis` (Stage 3)
+- Added partial class extensions to NSwag client for `CacheBackend` parameter support on all 4 endpoint methods (InitiateSession, GetSession, UpdateSession, ListSessions)
+- Propagated `CacheBackend` parameter to all Auth.Api endpoints and MediatR handlers (Stage 4):
+  - `GetSessionQuery`, `UpdateSessionCommand`, `ListSessionsQuery` now accept `CacheBackend cache = CacheBackend.Memory`
+  - All 3 handlers changed from direct `ISessionStore` injection to `IAuthServiceFactory` injection
+- Changed `AuthServiceFactory` to use lazy `IServiceProvider` resolution for `RedisAuthService` — UI.Web no longer requires Redis to be installed
+- Registered `IAuthServiceFactory` in shared `AddInfrastructure()` DI (was only in Auth.Api Program.cs)
+- Removed redundant `IAuthServiceFactory` registration from Auth.Api Program.cs
+- Updated 3 test files (GetSession, ListSessions, UpdateSession) to mock `IAuthServiceFactory` instead of `ISessionStore`
+- Build: 0 errors. Tests: 74 pass, 0 failures. Smoke test: all 3 projects pass health checks.
+
 ### Added
 
 - Session Admin page: Added "Session List Source" selector card with dropdown and "Get" button to load sessions from a chosen storage location independently of the save location

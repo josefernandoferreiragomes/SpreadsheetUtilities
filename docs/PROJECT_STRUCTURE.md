@@ -14,7 +14,7 @@ SpreadsheetUtilities.sln
 ├── SpreadsheetUtility.UI.Console/      # Console app (Presentation)
 ├── SpreadsheetUtilities.Auth.Api/      # Auth Minimal API (Presentation)
 │
-├── SpreadsheetUtility.Test/            # All tests (xUnit) — 71 tests
+├── SpreadsheetUtility.Test/            # All tests (xUnit) — 74 tests
 │
 ├── SpreadsheetUtilities.ServiceDefaults/  # Aspire service defaults
 └── SpreadsheetUtilities.AppHost/          # Aspire orchestrator
@@ -60,7 +60,7 @@ Shared:
 | Path | Description |
 |------|-------------|
 | `Application/DTOs/` | 9 DTOs: `TaskDto`, `ProjectDto`, `DeveloperDto`, `CalculateGanttChartAllocationInput/Output`, `DeveloperAvailability`, `ListGeneratorInput`, `GenerateDoubleEntryInput/Output` |
-| `Application/Ports/` | Abstractions: `IDateTimeProvider`, `IHolidayProvider`, `IExcelWorkbook`, `IExcelWorksheet`, `IDoubleEntryGeneratorService`, `IAuthService`, `ISessionStorage` |
+| `Application/Ports/` | Abstractions: `IDateTimeProvider`, `IHolidayProvider`, `IExcelWorkbook`, `IExcelWorksheet`, `IDoubleEntryGeneratorService`, `ISessionStore`, `IAuthServiceFactory`, `CacheBackend` |
 | `Application/Configuration/` | Enums: `SessionStorageLocation` |
 | `Application/Mappers/` | `IGanttChartMapper` / `GanttChartMapper` (DTO ↔ Domain) |
 | `Application/Validation/` | 7 FluentValidation validators: CalculateGanttChartAllocation, GenerateDoubleEntry, LoadTasks, ParseExcelData, InitiateSession, UpdateSession, GetSession |
@@ -73,7 +73,7 @@ Shared:
 | Path | Description |
 |------|-------------|
 | `Infrastructure/Excel/` | ClosedXML implementations: `IExcelDocument`/`ExcelDocument`, `DoubleEntryGeneratorService` |
-| `Infrastructure/Services/` | `AuthService`, `SessionService`, `FolderExampleFileProvider`, `AuthApiSessionStorage`, `LocalMemorySessionStorage`, `RedisSessionStorage`, `SessionStorageSelector` |
+| `Infrastructure/Services/` | `AuthService`, `RedisAuthService`, `SessionService`, `FolderExampleFileProvider`, `AuthApiSessionStorage`, `LocalMemorySessionStorage`, `RedisSessionStorage`, `SessionStorageSelector`, `AuthServiceFactory` |
 | `Infrastructure/Providers/` | `DateTimeProvider`, `HolidayFileProvider` |
 | `Infrastructure/Repositories/` | `HolidayRepository`, `DeveloperRepository` |
 | `Infrastructure/ApiClients/` | NSwag-generated `AuthApiClient` |

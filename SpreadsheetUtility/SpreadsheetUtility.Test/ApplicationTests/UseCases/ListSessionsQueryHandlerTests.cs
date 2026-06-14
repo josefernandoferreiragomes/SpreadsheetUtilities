@@ -7,13 +7,16 @@ namespace SpreadsheetUtility.Test.ApplicationTests.UseCases;
 
 public class ListSessionsQueryHandlerTests
 {
-    private readonly Mock<IAuthService> _authServiceMock;
+    private readonly Mock<IAuthServiceFactory> _factoryMock;
+    private readonly Mock<ISessionStore> _sessionStoreMock;
     private readonly ListSessionsQueryHandler _handler;
 
     public ListSessionsQueryHandlerTests()
     {
-        _authServiceMock = new Mock<IAuthService>();
-        _handler = new ListSessionsQueryHandler(_authServiceMock.Object);
+        _factoryMock = new Mock<IAuthServiceFactory>();
+        _sessionStoreMock = new Mock<ISessionStore>();
+        _factoryMock.Setup(f => f.GetService(It.IsAny<CacheBackend>())).Returns(_sessionStoreMock.Object);
+        _handler = new ListSessionsQueryHandler(_factoryMock.Object);
     }
 
     [Fact]
@@ -24,18 +27,18 @@ public class ListSessionsQueryHandlerTests
             new() { Email = "user1@example.com", SessionId = Guid.NewGuid(), CreatedAt = DateTime.UtcNow, LastModifiedAt = DateTime.UtcNow },
             new() { Email = "user2@example.com", SessionId = Guid.NewGuid(), CreatedAt = DateTime.UtcNow, LastModifiedAt = DateTime.UtcNow }
         };
-        _authServiceMock.Setup(a => a.GetAllSessions()).Returns(sessions);
+        _sessionStoreMock.Setup(a => a.GetAllSessions()).Returns(sessions);
 
         var result = await _handler.Handle(new ListSessionsQuery(), CancellationToken.None);
 
         Assert.Equal(2, result.Sessions.Count);
-        _authServiceMock.Verify(a => a.GetAllSessions(), Times.Once);
+        _sessionStoreMock.Verify(a => a.GetAllSessions(), Times.Once);
     }
 
     [Fact]
     public async Task Handle_Should_Return_Empty_When_No_Sessions()
     {
-        _authServiceMock.Setup(a => a.GetAllSessions()).Returns(new List<SessionInfoDto>());
+        _sessionStoreMock.Setup(a => a.GetAllSessions()).Returns(new List<SessionInfoDto>());
 
         var result = await _handler.Handle(new ListSessionsQuery(), CancellationToken.None);
 
@@ -45,7 +48,7 @@ public class ListSessionsQueryHandlerTests
     [Fact]
     public async Task Handle_Should_Not_Throw_When_Service_Returns_Null()
     {
-        _authServiceMock.Setup(a => a.GetAllSessions()).Returns((List<SessionInfoDto>)null!);
+        _sessionStoreMock.Setup(a => a.GetAllSessions()).Returns((List<SessionInfoDto>)null!);
 
         var result = await _handler.Handle(new ListSessionsQuery(), CancellationToken.None);
 

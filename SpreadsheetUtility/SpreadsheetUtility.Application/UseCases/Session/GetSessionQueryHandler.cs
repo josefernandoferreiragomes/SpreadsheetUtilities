@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using SpreadsheetUtility.Application.DTOs.Session;
 using SpreadsheetUtility.Application.Ports;
 
@@ -6,16 +6,17 @@ namespace SpreadsheetUtility.Application.UseCases.Session;
 
 public class GetSessionQueryHandler : IRequestHandler<GetSessionQuery, GetSessionResponse>
 {
-    private readonly IAuthService _authService;
+    private readonly IAuthServiceFactory _factory;
 
-    public GetSessionQueryHandler(IAuthService authService)
+    public GetSessionQueryHandler(IAuthServiceFactory factory)
     {
-        _authService = authService;
+        _factory = factory;
     }
 
     public Task<GetSessionResponse> Handle(GetSessionQuery request, CancellationToken cancellationToken)
     {
-        var value = _authService.GetSession(request.Email, request.SessionId);
+        var sessionStore = _factory.GetService(request.cache);
+        var value = sessionStore.GetSession(request.Email, request.SessionId);
         return Task.FromResult(new GetSessionResponse(value));
     }
 }

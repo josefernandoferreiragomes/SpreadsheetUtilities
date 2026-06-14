@@ -1,11 +1,11 @@
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using Microsoft.Extensions.Caching.Memory;
 using SpreadsheetUtility.Application.DTOs.Session;
 using SpreadsheetUtility.Application.Ports;
 
 namespace SpreadsheetUtility.Infrastructure.Services;
 
-public class AuthService : IAuthService
+public class AuthService : ISessionStore
 {
     private const string SessionIndexCacheKey = "__SessionIndex";
     private readonly IMemoryCache _memoryCache;
@@ -106,5 +106,26 @@ public class AuthService : IAuthService
                 SessionData = sessionData
             };
         }).ToList().AsReadOnly();
+    }
+
+    public SessionInfoDto? TryFindSessionByEmail(string email)
+    {
+        var index = GetOrCreateSessionIndex();
+
+        if (index.TryGetValue(email, out var entry))
+        {
+            var guidKey = entry.SessionId.ToString();
+            _memoryCache.TryGetValue<string>(guidKey, out var sessionData);
+            return new SessionInfoDto
+            {
+                Email = email,
+                SessionId = entry.SessionId,
+                CreatedAt = entry.CreatedAt,
+                LastModifiedAt = entry.LastModifiedAt,
+                SessionData = sessionData
+            };
+        }
+
+        return null;
     }
 }

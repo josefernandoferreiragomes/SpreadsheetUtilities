@@ -1,8 +1,11 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Scalar.AspNetCore;
+using SpreadsheetUtility.Application.Ports;
 using SpreadsheetUtility.Application.UseCases.Session;
 using SpreadsheetUtility.Bootstrapper;
+using SpreadsheetUtility.Infrastructure;
+using SpreadsheetUtility.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,7 +14,10 @@ builder.AddServiceDefaults();
 builder.Services.AddOpenApi();
 builder.Services.AddMemoryCache();
 
+builder.AddRedis();
+
 builder.Services.AddSpreadsheetUtilities();
+builder.Services.AddScoped<IAuthServiceFactory, AuthServiceFactory>();
 
 var app = builder.Build();
 
@@ -23,9 +29,13 @@ app.MapScalarApiReference(options =>
     options.Theme = ScalarTheme.Default;
 });
 
-app.MapGet("/initiateSession", async (IMediator mediator, string eMail, Guid? guid = null) =>
+app.MapGet("/initiateSession", async (
+    IMediator mediator, 
+    string eMail, 
+    Guid? guid = null,
+    CacheBackend cache = CacheBackend.Memory) =>
 {
-    var result = await mediator.Send(new InitiateSessionCommand(eMail, guid));
+    var result = await mediator.Send(new InitiateSessionCommand(eMail, guid, cache));
     return result.SessionId;
 })
 .WithName("InitiateSession");
@@ -52,3 +62,4 @@ app.MapGet("/listSessions", async (IMediator mediator) =>
 .WithName("ListSessions");
 
 app.Run();
+

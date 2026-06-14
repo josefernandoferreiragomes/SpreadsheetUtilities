@@ -1,0 +1,108 @@
+# =============================================================================
+# docker-compose.redis.yml
+# Standalone Redis instance for local development via WSL2 + Docker Engine
+# =============================================================================
+#
+# HOW KESTREL CONNECTS TO THIS REDIS INSTANCE
+# ─────────────────────────────────────────────
+# Your Kestrel app runs on the Windows host (http://localhost:<port>).
+# Docker Engine runs inside WSL2.
+#
+# WSL2 automatically bridges the Windows host and the WSL2 network:
+#   - Redis will be reachable from Windows at: localhost:6379
+#   - This works because WSL2 maps published container ports to 127.0.0.1 on Windows
+#
+# So your .NET connection string should be:
+#   "RedisConnection": "localhost:6379"
+#
+# Or with a password (see REDIS_PASSWORD below):
+#   "RedisConnection": "localhost:6379,password=yourpassword"
+#
+# =============================================================================
+
+services:
+  redis:
+    image: redis:7.4-alpine   # Alpine = smaller image; pin a major version for reproducibility
+    container_name: redis-local
+    restart: unless-stopped
+
+    ports:
+      # Publishes container port 6379 to the WSL2 host.
+      # WSL2 forwards this to Windows localhost automatically.
+      # Change the left side (host port) if 6379 is already taken: e.g. "6380:6379"
+      - "6379:6379"
+
+    # Using a YAML list for 'command' is required when passing multiple flags.
+    # A folded scalar ('>') causes Docker Compose to try parsing comments as args — it breaks.
+    command:
+      - redis-server
+      - --requirepass
+      - yourpassword          # Remove this line + password from connection string to disable auth
+      - --maxmemory
+      - 256mb
+      - --maxmemory-policy
+      - allkeys-lru           # Evicts least-recently-used keys when maxmemory is hit — ideal for a cache
+      - --save
+      - ""                    # Disables RDB snapshots  \
+      - --appendonly          #                          }- keeps Redis purely in-memory for local dev
+      - "no"                  # Disables AOF persistence /
+
+    # volumes:
+      # Optional: mount a named volume if you ever want persistence across restarts.
+      # Comment this out (and the top-level 'volumes' block below) to keep it pure in-memory.
+      # - redis-data:/data
+
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "yourpassword", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+    networks:
+      - redis-net
+
+networks:
+  redis-net:
+    driver: bridge
+
+# Uncomment if you re-enable the volume above:
+# volumes:
+#   redis-data:
+
+# =============================================================================
+# USAGE
+# ─────
+# Start:   docker compose -f docker-compose.redis.yml up -d
+# Stop:    docker compose -f docker-compose.redis.yml down
+# Logs:    docker compose -f docker-compose.redis.yml logs -f
+# CLI:     docker exec -it redis-local redis-cli -a yourpassword
+#
+# =============================================================================
+#
+# .NET / KESTREL WIRING (StackExchange.Redis + IDistributedCache)
+# ────────────────────────────────────────────────────────────────
+#
+# 1. Install NuGet packages:
+#      dotnet add package StackExchange.Redis
+#      dotnet add package Microsoft.Extensions.Caching.StackExchangeRedis
+#
+# 2. appsettings.Development.json:
+#      {
+#        "RedisConnection": "localhost:6379,password=yourpassword"
+#      }
+#
+# 3. Program.cs (Minimal API):
+#      builder.Services.AddStackExchangeRedisCache(options =>
+#      {
+#          options.Configuration = builder.Configuration["RedisConnection"];
+#          options.InstanceName = "MyApp:";   // optional key prefix
+#      });
+#
+# 4. Inject IDistributedCache wherever you need it, or register a typed
+#    IConnectionMultiplexer if you need lower-level StackExchange.Redis access:
+#
+#      builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
+#          ConnectionMultiplexer.Connect(builder.Configuration["RedisConnection"]!));
+#
+# =============================================================================

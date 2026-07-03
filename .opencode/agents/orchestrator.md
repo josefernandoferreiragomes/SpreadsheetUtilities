@@ -31,8 +31,7 @@ You take a high-level feature request and drive it through the full development 
 6. **Smoke test** — invoke `smoke-test` skill to boot each app project, verify no startup errors, then stop
 7. **Review** — delegate to `review` agent for code quality check
 8. **Governance** — load `update-governance-docs` skill, then update the three governance docs:
-   - `CHANGELOG.md` — add entry under `[Unreleased]` with category heading, changes, test count
-   - `docs/REFACTORING_ROADMAP.md` — update phase status if a phase boundary was crossed
+   - `CHANGELOG.md` — add entry under `[Unreleased]` with category heading, changes, test count   
    - `docs/PROJECT_STRUCTURE.md` — update if folder structure or dependencies changed
 9. **Commit** — delegate to `git` agent to commit and push (includes governance doc changes)
 10. **Final verify** — run build + test one more time

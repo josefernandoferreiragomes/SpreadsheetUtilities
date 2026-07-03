@@ -1,4 +1,4 @@
-ï»¿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -28,6 +28,19 @@ public static class DependencyInjection
         services.AddScoped<IAuthServiceFactory, AuthServiceFactory>();
         services.AddScoped<IDoubleEntryGeneratorService, DoubleEntryGeneratorService>();
 
+        services.Configure<LlmOptions>(o =>
+        {
+            o.BaseUrl = "http://localhost:1234";
+            o.Model = "qwen2.5-3b-instruct";
+            o.TimeoutSeconds = 60;
+        });
+        services.AddScoped<ILlmTransformerService, LlmTransformerService>();
+        services.AddHttpClient<ILlmTransformerService, LlmTransformerService>(client =>
+        {
+            client.BaseAddress = new Uri("http://localhost:1234");
+            client.Timeout = TimeSpan.FromSeconds(65);
+        });
+
         return services;
     }
 
@@ -37,7 +50,7 @@ public static class DependencyInjection
         builder.Services.Configure<RedisOptions>(
             builder.Configuration.GetSection(RedisOptions.SectionName));
 
-        // Validate options eagerly at startup â€” catches missing/blank ConnectionString
+        // Validate options eagerly at startup — catches missing/blank ConnectionString
         // before the first request hits the app.
         builder.Services.AddOptions<RedisOptions>()
             .Bind(builder.Configuration.GetSection(RedisOptions.SectionName))
@@ -48,7 +61,7 @@ public static class DependencyInjection
             .ValidateOnStart();
 
         // Register IConnectionMultiplexer as a singleton.
-        // ConnectionMultiplexer is thread-safe and designed to be shared â€” one instance
+        // ConnectionMultiplexer is thread-safe and designed to be shared — one instance
         // per process is the StackExchange.Redis recommendation.
         builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
         {
@@ -63,4 +76,3 @@ public static class DependencyInjection
         builder.Services.AddScoped<RedisAuthService>();
     }
 }
-

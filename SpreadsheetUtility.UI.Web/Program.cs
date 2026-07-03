@@ -32,6 +32,7 @@ builder.Services.AddScoped<RedisSessionStorage>();
 builder.Services.AddScoped<SessionStorageSelector>();
 
 builder.Services.AddScoped<GanttGeneratorViewModel>();
+builder.Services.AddScoped<EtlAssistantViewModel>();
 
 builder.Host.UseDefaultServiceProvider((context, options) =>
 {

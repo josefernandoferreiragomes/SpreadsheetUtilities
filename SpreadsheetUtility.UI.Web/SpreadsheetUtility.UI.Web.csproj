@@ -42,6 +42,9 @@
     <Content Update="wwwroot\gantt.js">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Update="wwwroot\file-download-etl.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Update="wwwroot\file-download.js">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

@@ -1,6 +1,24 @@
-ï»¿# Changelog
+# Changelog
 
 ## [Unreleased]
+
+### Added
+
+- **ETL Assistant page** — New Blazor page (`/etl-assistant`) with three independent cards (Projects, Tasks, Team) for transforming arbitrary tabular data into the project's three text formats using a local LLM:
+  - Created `ILlmTransformerService` port in Application/Ports/ with `LlmTransformationResult` record and `TargetFormat` enum
+  - Created `LlmOptions` config class in Infrastructure/Options/
+  - Created `LlmTransformerService` implementation in Infrastructure/Services/ with system prompts for all 3 formats and `IMPOSSIBLE:|` protocol detection
+  - Created `EtlAssistantViewModel` in UI.Web/ViewModels/ (scoped DI, 3 pairs of input/output/error/loading state)
+  - Created `EtlAssistant.razor` Blazor page with side-by-side input/output text areas, Transform/Downloa buttons per card
+  - Created `file-download-etl.js` for JS interop file download
+  - Registered `EtlAssistantViewModel` in UI.Web/Program.cs
+  - Registered `ILlmTransformerService` + typed HttpClient in Infrastructure/DependencyInjection.cs
+  - Configured `Llm` section in appsettings.json (BaseUrl, Model, TimeoutSeconds)
+  - Added ETL Assistant nav link in NavMenu.razor
+  - Created `LlmTransformerServiceTests.cs` with 7 unit tests covering happy paths, empty input, empty response, error responses, and IMPOSSIBLE protocol
+  - Added `file-download-etl.js` script reference in App.razor
+
+- Build: 0 errors, Tests: 81 pass, 0 failures
 
 ### Architecture
 
@@ -19,7 +37,7 @@
 - Propagated `CacheBackend` parameter to all Auth.Api endpoints and MediatR handlers (Stage 4):
   - `GetSessionQuery`, `UpdateSessionCommand`, `ListSessionsQuery` now accept `CacheBackend cache = CacheBackend.Memory`
   - All 3 handlers changed from direct `ISessionStore` injection to `IAuthServiceFactory` injection
-- Changed `AuthServiceFactory` to use lazy `IServiceProvider` resolution for `RedisAuthService` â€” UI.Web no longer requires Redis to be installed
+- Changed `AuthServiceFactory` to use lazy `IServiceProvider` resolution for `RedisAuthService` — UI.Web no longer requires Redis to be installed
 - Registered `IAuthServiceFactory` in shared `AddInfrastructure()` DI (was only in Auth.Api Program.cs)
 - Removed redundant `IAuthServiceFactory` registration from Auth.Api Program.cs
 - Updated 3 test files (GetSession, ListSessions, UpdateSession) to mock `IAuthServiceFactory` instead of `ISessionStore`
@@ -28,8 +46,8 @@
 ### Added
 
 - Session Admin page: Added "Session List Source" selector card with dropdown and "Get" button to load sessions from a chosen storage location independently of the save location
-- SessionStorageSelector.GetStorage(SessionStorageLocation) â€” new public method resolving any location to its ISessionStorage implementation
-- SessionService.FetchSessionsFromLocationAsync(SessionStorageLocation) â€” fetches sessions from a specified storage location
+- SessionStorageSelector.GetStorage(SessionStorageLocation) — new public method resolving any location to its ISessionStorage implementation
+- SessionService.FetchSessionsFromLocationAsync(SessionStorageLocation) — fetches sessions from a specified storage location
 - Tests: 74 pass, 0 failures
 
 ### Changed
@@ -45,10 +63,10 @@
 - Session Storage Location Selector feature with runtime-switchable backends:
   - New ISessionStorage port interface in Application/Ports
   - New SessionStorageLocation enum in Application/Configuration
-  - AuthApiSessionStorage â€” delegates to Auth.Api via NSwag client
-  - LocalMemorySessionStorage â€” local IMemoryCache (same pattern as AuthService)
-  - RedisSessionStorage â€” stub (throws NotImplementedException)
-  - SessionStorageSelector â€” runtime resolver that caches the current location choice in IMemoryCache
+  - AuthApiSessionStorage — delegates to Auth.Api via NSwag client
+  - LocalMemorySessionStorage — local IMemoryCache (same pattern as AuthService)
+  - RedisSessionStorage — stub (throws NotImplementedException)
+  - SessionStorageSelector — runtime resolver that caches the current location choice in IMemoryCache
 - SessionService refactored to use SessionStorageSelector instead of creating HttpClient directly
 - Session Admin page (/admin/sessions) now has a storage location selector card above the session table
 - Session Admin page injects SessionStorageSelector and allows switching between Auth API, UI.Web memory, and Redis (stub) at runtime
@@ -57,7 +75,7 @@
 ### Fixed
 
 - AuthService._sessionIndex moved from instance field to IMemoryCache (key __SessionIndex)
-  so GetAllSessions() works across HTTP requests â€” previously the index was lost
+  so GetAllSessions() works across HTTP requests — previously the index was lost
   because AuthService is registered as scoped and each request got a new empty index
 
 - AuthService.InitiateSession() now stores an initial value under the session GUID key in IMemoryCache,
@@ -67,7 +85,8 @@
 - SessionAdmin.razor now calls Auth.Api via HTTP (SessionService.FetchAllSessionsFromApiAsync())
   instead of using local IMediator/IAuthService (UI.Web and Auth.Api are separate
   processes with separate caches - only HTTP calls reach the real session store)
-- SessionInfoDto converted from mutable class to ecord with { get; init; } properties
+- SessionInfoDto converted from mutable class to 
+ecord with { get; init; } properties
   for consistency with other session DTOs
 - ListSessionsAsync() added to SpreadsheetUtilitiesAuthApiClient NSwag partial class
   to call Auth.Api's /listSessions endpoint via HTTP
@@ -89,8 +108,8 @@
 
 ### Fixed
 
-- **Bug: Stale ViewModel state on navigation** â€” GanttGeneratorFromPaste page now calls ViewModel.Reset() in OnInitializedAsync(), clearing all session-related state (email, session ID, project/task/team data) when the user navigates to the page. Previously the Scoped ViewModel retained stale data across page navigations.
-- **Bug: Session data lost after storage location switch** â€” GetSessionState now deserializes the combined JSON from SessionData to restore all three data fields (ProjectData, TaskData, TeamData) when hydrating from the backend. SaveProjectData/SaveTaskData/SaveTeamData now persist a combined JSON snapshot of all three fields, preventing data overwrites. Legacy plain-string data is supported via fallback.
+- **Bug: Stale ViewModel state on navigation** — GanttGeneratorFromPaste page now calls ViewModel.Reset() in OnInitializedAsync(), clearing all session-related state (email, session ID, project/task/team data) when the user navigates to the page. Previously the Scoped ViewModel retained stale data across page navigations.
+- **Bug: Session data lost after storage location switch** — GetSessionState now deserializes the combined JSON from SessionData to restore all three data fields (ProjectData, TaskData, TeamData) when hydrating from the backend. SaveProjectData/SaveTaskData/SaveTeamData now persist a combined JSON snapshot of all three fields, preventing data overwrites. Legacy plain-string data is supported via fallback.
 - Created CombinedSessionData record in Infrastructure/Models/ to store all three data fields as a single JSON object
 - Build: 0 errors, Tests: 74 pass, 0 failures
 ### Architecture
@@ -161,8 +180,8 @@
 
 ### Fixed
 
-- **Bug: Stale ViewModel state on navigation** â€” GanttGeneratorFromPaste page now calls ViewModel.Reset() in OnInitializedAsync(), clearing all session-related state (email, session ID, project/task/team data) when the user navigates to the page. Previously the Scoped ViewModel retained stale data across page navigations.
-- **Bug: Session data lost after storage location switch** â€” GetSessionState now deserializes the combined JSON from SessionData to restore all three data fields (ProjectData, TaskData, TeamData) when hydrating from the backend. SaveProjectData/SaveTaskData/SaveTeamData now persist a combined JSON snapshot of all three fields, preventing data overwrites. Legacy plain-string data is supported via fallback.
+- **Bug: Stale ViewModel state on navigation** — GanttGeneratorFromPaste page now calls ViewModel.Reset() in OnInitializedAsync(), clearing all session-related state (email, session ID, project/task/team data) when the user navigates to the page. Previously the Scoped ViewModel retained stale data across page navigations.
+- **Bug: Session data lost after storage location switch** — GetSessionState now deserializes the combined JSON from SessionData to restore all three data fields (ProjectData, TaskData, TeamData) when hydrating from the backend. SaveProjectData/SaveTaskData/SaveTeamData now persist a combined JSON snapshot of all three fields, preventing data overwrites. Legacy plain-string data is supported via fallback.
 - Created CombinedSessionData record in Infrastructure/Models/ to store all three data fields as a single JSON object
 - Build: 0 errors, Tests: 74 pass, 0 failures
 ### Architecture
@@ -254,12 +273,10 @@
 
 ### Fixed
 
-- **Bug: Stale ViewModel state on navigation** â€” GanttGeneratorFromPaste page now calls ViewModel.Reset() in OnInitializedAsync(), clearing all session-related state (email, session ID, project/task/team data) when the user navigates to the page. Previously the Scoped ViewModel retained stale data across page navigations.
-- **Bug: Session data lost after storage location switch** â€” GetSessionState now deserializes the combined JSON from SessionData to restore all three data fields (ProjectData, TaskData, TeamData) when hydrating from the backend. SaveProjectData/SaveTaskData/SaveTeamData now persist a combined JSON snapshot of all three fields, preventing data overwrites. Legacy plain-string data is supported via fallback.
+- **Bug: Stale ViewModel state on navigation** — GanttGeneratorFromPaste page now calls ViewModel.Reset() in OnInitializedAsync(), clearing all session-related state (email, session ID, project/task/team data) when the user navigates to the page. Previously the Scoped ViewModel retained stale data across page navigations.
+- **Bug: Session data lost after storage location switch** — GetSessionState now deserializes the combined JSON from SessionData to restore all three data fields (ProjectData, TaskData, TeamData) when hydrating from the backend. SaveProjectData/SaveTaskData/SaveTeamData now persist a combined JSON snapshot of all three fields, preventing data overwrites. Legacy plain-string data is supported via fallback.
 - Created CombinedSessionData record in Infrastructure/Models/ to store all three data fields as a single JSON object
 - Build: 0 errors, Tests: 74 pass, 0 failures
 ### Architecture
 
 - 11 design patterns implemented in SpreadsheetUtility.Library (Strategy, Factory, Template Method, Builder, Facade, Mapper/Adapter, Observer, Command, Dependency Injection, Provider, Generic List Generator)
-
-

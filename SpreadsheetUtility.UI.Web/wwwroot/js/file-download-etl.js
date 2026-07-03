@@ -9,3 +9,9 @@
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 };
+
+window.copyToClipboard = function (text) {
+    navigator.clipboard.writeText(text).catch(function (err) {
+        console.error('Copy failed: ', err);
+    });
+};

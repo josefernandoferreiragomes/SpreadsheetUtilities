@@ -1,6 +1,8 @@
 ﻿@page "/etl-assistant"
 @using SpreadsheetUtility.Application.Ports
+@using SpreadsheetUtility.Infrastructure.Services
 @inject ILlmTransformerService LlmTransformer
+@inject SessionService SessionService
 @inject EtlAssistantViewModel ViewModel
 @inject IJSRuntime JS
 @rendermode InteractiveServer
@@ -12,7 +14,32 @@
 
 <hr />
 
-@* Projects Card *@
+@* ── Session Initialization (F5) ────────────────────────────────── *@
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row align-items-end">
+            <div class="col-auto">
+                <label class="form-label" for="sessionEmail">Email</label>
+                <input id="sessionEmail" type="email" class="form-control"
+                       @bind="ViewModel.Email" @bind:event="oninput"
+                       placeholder="your@email.com" disabled="@ViewModel.IsSessionInitialized" />
+            </div>
+            <div class="col-auto">
+                <button class="btn btn-outline-primary"
+                        disabled="@(string.IsNullOrWhiteSpace(ViewModel.Email) || ViewModel.IsSessionInitialized)"
+                        @onclick="InitializeSession">
+                    &#x1F510; Initialize Session
+                </button>
+            </div>
+        </div>
+        @if (ViewModel.IsSessionInitialized)
+        {
+            <div class="mt-2 text-success">&#x2705; Session initialized</div>
+        }
+    </div>
+</div>
+
+@* ── Projects Card ─────────────────────────────────────────────── *@
 <div class="card mb-4">
     <div class="card-header">
         <h5 class="mb-0">Projects</h5>
@@ -21,18 +48,40 @@
         <div class="etl-grid">
             <div class="etl-input">
                 <label class="form-label">Input (any table format)</label>
-                <textarea class="form-control etl-textarea" @bind="ViewModel.ProjectsInput" placeholder="Paste project data here (CSV, TSV, markdown table, etc.)"></textarea>
+                <textarea class="form-control etl-textarea" @bind="ViewModel.ProjectsInput"
+                          placeholder="Paste project data here (CSV, TSV, markdown table, etc.)"></textarea>
+                @* F3: Sample data loader *@
+                <div class="mt-1">
+                    <button class="btn btn-sm btn-link p-0" @onclick="LoadSampleProjects">
+                        &#x1F4CB; Load sample data
+                    </button>
+                </div>
             </div>
             <div class="etl-output">
                 <label class="form-label">Output (projects.txt format)</label>
                 <textarea class="form-control etl-textarea" readonly value="@ViewModel.ProjectsOutput"></textarea>
+                @* F1: Validation badge *@
+                @if (!string.IsNullOrEmpty(ViewModel.ProjectsOutput) && ViewModel.ProjectsIsSuccess)
+                {
+                    <div class="validation-badge @(ViewModel.ProjectsIsValid ? "valid" : "invalid")">
+                        @ViewModel.ProjectsValidationMessage
+                    </div>
+                }
+                @* F4: Copy + Download buttons *@
                 @if (ViewModel.ProjectsIsSuccess)
                 {
-                    <button class="btn btn-sm btn-outline-secondary mt-2" @onclick="() => DownloadProjects()">&#x1F4E5; Download projects.txt</button>
+                    <div class="btn-group mt-2">
+                        <button class="btn btn-sm btn-outline-secondary" @onclick="() => CopyProjects()">
+                            &#x1F4CB; Copy
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" @onclick="() => DownloadProjects()">
+                            &#x1F4E5; Download
+                        </button>
+                    </div>
                 }
             </div>
         </div>
-        <div class="mt-2">
+        <div class="mt-2 d-flex align-items-center">
             <button class="btn btn-primary" @onclick="TransformProjects" disabled="@ViewModel.ProjectsIsLoading">
                 @if (ViewModel.ProjectsIsLoading)
                 {
@@ -43,15 +92,22 @@
                     <span>&#x1F504; Transform to Projects</span>
                 }
             </button>
+            @* F2: Per-card reset *@
+            @if (ViewModel.ProjectsHasResult || !string.IsNullOrEmpty(ViewModel.ProjectsInput))
+            {
+                <button class="btn btn-sm btn-outline-danger ms-2" @onclick="ResetProjects">
+                    &#x1F5D1; Reset
+                </button>
+            }
             @if (ViewModel.ProjectsError is not null)
             {
-                <div class="alert alert-warning mt-2 mb-0">&#x26A0;&#xFE0F; @ViewModel.ProjectsError</div>
+                <div class="alert alert-warning mt-2 mb-0 ms-2">&#x26A0;&#xFE0F; @ViewModel.ProjectsError</div>
             }
         </div>
     </div>
 </div>
 
-@* Tasks Card *@
+@* ── Tasks Card ────────────────────────────────────────────────── *@
 <div class="card mb-4">
     <div class="card-header">
         <h5 class="mb-0">Tasks</h5>
@@ -60,18 +116,40 @@
         <div class="etl-grid">
             <div class="etl-input">
                 <label class="form-label">Input (any table format)</label>
-                <textarea class="form-control etl-textarea" @bind="ViewModel.TasksInput" placeholder="Paste task data here (CSV, TSV, markdown table, etc.)"></textarea>
+                <textarea class="form-control etl-textarea" @bind="ViewModel.TasksInput"
+                          placeholder="Paste task data here (CSV, TSV, markdown table, etc.)"></textarea>
+                @* F3: Sample data loader *@
+                <div class="mt-1">
+                    <button class="btn btn-sm btn-link p-0" @onclick="LoadSampleTasks">
+                        &#x1F4CB; Load sample data
+                    </button>
+                </div>
             </div>
             <div class="etl-output">
                 <label class="form-label">Output (tasks.txt format)</label>
                 <textarea class="form-control etl-textarea" readonly value="@ViewModel.TasksOutput"></textarea>
+                @* F1: Validation badge *@
+                @if (!string.IsNullOrEmpty(ViewModel.TasksOutput) && ViewModel.TasksIsSuccess)
+                {
+                    <div class="validation-badge @(ViewModel.TasksIsValid ? "valid" : "invalid")">
+                        @ViewModel.TasksValidationMessage
+                    </div>
+                }
+                @* F4: Copy + Download buttons *@
                 @if (ViewModel.TasksIsSuccess)
                 {
-                    <button class="btn btn-sm btn-outline-secondary mt-2" @onclick="() => DownloadTasks()">&#x1F4E5; Download tasks.txt</button>
+                    <div class="btn-group mt-2">
+                        <button class="btn btn-sm btn-outline-secondary" @onclick="() => CopyTasks()">
+                            &#x1F4CB; Copy
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" @onclick="() => DownloadTasks()">
+                            &#x1F4E5; Download
+                        </button>
+                    </div>
                 }
             </div>
         </div>
-        <div class="mt-2">
+        <div class="mt-2 d-flex align-items-center">
             <button class="btn btn-primary" @onclick="TransformTasks" disabled="@ViewModel.TasksIsLoading">
                 @if (ViewModel.TasksIsLoading)
                 {
@@ -82,15 +160,22 @@
                     <span>&#x1F504; Transform to Tasks</span>
                 }
             </button>
+            @* F2: Per-card reset *@
+            @if (ViewModel.TasksHasResult || !string.IsNullOrEmpty(ViewModel.TasksInput))
+            {
+                <button class="btn btn-sm btn-outline-danger ms-2" @onclick="ResetTasks">
+                    &#x1F5D1; Reset
+                </button>
+            }
             @if (ViewModel.TasksError is not null)
             {
-                <div class="alert alert-warning mt-2 mb-0">&#x26A0;&#xFE0F; @ViewModel.TasksError</div>
+                <div class="alert alert-warning mt-2 mb-0 ms-2">&#x26A0;&#xFE0F; @ViewModel.TasksError</div>
             }
         </div>
     </div>
 </div>
 
-@* Team Card *@
+@* ── Team Card ─────────────────────────────────────────────────── *@
 <div class="card mb-4">
     <div class="card-header">
         <h5 class="mb-0">Team</h5>
@@ -99,18 +184,40 @@
         <div class="etl-grid">
             <div class="etl-input">
                 <label class="form-label">Input (any table format)</label>
-                <textarea class="form-control etl-textarea" @bind="ViewModel.TeamInput" placeholder="Paste team/developer data here (CSV, TSV, markdown table, etc.)"></textarea>
+                <textarea class="form-control etl-textarea" @bind="ViewModel.TeamInput"
+                          placeholder="Paste team/developer data here (CSV, TSV, markdown table, etc.)"></textarea>
+                @* F3: Sample data loader *@
+                <div class="mt-1">
+                    <button class="btn btn-sm btn-link p-0" @onclick="LoadSampleTeam">
+                        &#x1F4CB; Load sample data
+                    </button>
+                </div>
             </div>
             <div class="etl-output">
                 <label class="form-label">Output (team.txt format)</label>
                 <textarea class="form-control etl-textarea" readonly value="@ViewModel.TeamOutput"></textarea>
+                @* F1: Validation badge *@
+                @if (!string.IsNullOrEmpty(ViewModel.TeamOutput) && ViewModel.TeamIsSuccess)
+                {
+                    <div class="validation-badge @(ViewModel.TeamIsValid ? "valid" : "invalid")">
+                        @ViewModel.TeamValidationMessage
+                    </div>
+                }
+                @* F4: Copy + Download buttons *@
                 @if (ViewModel.TeamIsSuccess)
                 {
-                    <button class="btn btn-sm btn-outline-secondary mt-2" @onclick="() => DownloadTeam()">&#x1F4E5; Download team.txt</button>
+                    <div class="btn-group mt-2">
+                        <button class="btn btn-sm btn-outline-secondary" @onclick="() => CopyTeam()">
+                            &#x1F4CB; Copy
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" @onclick="() => DownloadTeam()">
+                            &#x1F4E5; Download
+                        </button>
+                    </div>
                 }
             </div>
         </div>
-        <div class="mt-2">
+        <div class="mt-2 d-flex align-items-center">
             <button class="btn btn-primary" @onclick="TransformTeam" disabled="@ViewModel.TeamIsLoading">
                 @if (ViewModel.TeamIsLoading)
                 {
@@ -121,13 +228,33 @@
                     <span>&#x1F504; Transform to Team</span>
                 }
             </button>
+            @* F2: Per-card reset *@
+            @if (ViewModel.TeamHasResult || !string.IsNullOrEmpty(ViewModel.TeamInput))
+            {
+                <button class="btn btn-sm btn-outline-danger ms-2" @onclick="ResetTeam">
+                    &#x1F5D1; Reset
+                </button>
+            }
             @if (ViewModel.TeamError is not null)
             {
-                <div class="alert alert-warning mt-2 mb-0">&#x26A0;&#xFE0F; @ViewModel.TeamError</div>
+                <div class="alert alert-warning mt-2 mb-0 ms-2">&#x26A0;&#xFE0F; @ViewModel.TeamError</div>
             }
         </div>
     </div>
 </div>
+
+@* ── Save All to Session (F5) ──────────────────────────────────── *@
+<div class="d-flex justify-content-end mt-4 mb-4">
+    <button class="btn btn-success btn-lg"
+            disabled="@(!ViewModel.CanSaveAll)"
+            @onclick="SaveAllToSession">
+        &#x1F4BE; Save All to Session
+    </button>
+</div>
+@if (ViewModel.SessionMessage is not null)
+{
+    <div class="alert alert-success mt-2">@ViewModel.SessionMessage</div>
+}
 
 <style>
     .etl-grid {
@@ -145,6 +272,22 @@
     .etl-output .etl-textarea {
         width: 100%;
     }
+    .validation-badge {
+        padding: 4px 10px;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        margin-top: 6px;
+    }
+    .validation-badge.valid {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+    .validation-badge.invalid {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
     @@media (max-width: 768px) {
         .etl-grid {
             grid-template-columns: 1fr;
@@ -158,6 +301,7 @@
         ViewModel.Reset();
     }
 
+    // ── Transform ─────────────────────────────────────────────
     private async Task TransformProjects()
     {
         await ViewModel.TransformProjectsAsync(LlmTransformer);
@@ -173,6 +317,7 @@
         await ViewModel.TransformTeamAsync(LlmTransformer);
     }
 
+    // ── Download ──────────────────────────────────────────────
     private async Task DownloadProjects()
     {
         await JS.InvokeVoidAsync("downloadTextFile", ViewModel.ProjectsOutput, "projects.txt");
@@ -186,5 +331,64 @@
     private async Task DownloadTeam()
     {
         await JS.InvokeVoidAsync("downloadTextFile", ViewModel.TeamOutput, "team.txt");
+    }
+
+    // ── Copy to clipboard (F4) ────────────────────────────────
+    private async Task CopyProjects()
+    {
+        await JS.InvokeVoidAsync("copyToClipboard", ViewModel.ProjectsOutput);
+    }
+
+    private async Task CopyTasks()
+    {
+        await JS.InvokeVoidAsync("copyToClipboard", ViewModel.TasksOutput);
+    }
+
+    private async Task CopyTeam()
+    {
+        await JS.InvokeVoidAsync("copyToClipboard", ViewModel.TeamOutput);
+    }
+
+    // ── Reset per card (F2) ───────────────────────────────────
+    private void ResetProjects()
+    {
+        ViewModel.ResetProjects();
+    }
+
+    private void ResetTasks()
+    {
+        ViewModel.ResetTasks();
+    }
+
+    private void ResetTeam()
+    {
+        ViewModel.ResetTeam();
+    }
+
+    // ── Sample data (F3) ──────────────────────────────────────
+    private void LoadSampleProjects()
+    {
+        ViewModel.LoadSampleProjects();
+    }
+
+    private void LoadSampleTasks()
+    {
+        ViewModel.LoadSampleTasks();
+    }
+
+    private void LoadSampleTeam()
+    {
+        ViewModel.LoadSampleTeam();
+    }
+
+    // ── Session (F5) ──────────────────────────────────────────
+    private async Task InitializeSession()
+    {
+        await ViewModel.InitializeSessionAsync(SessionService);
+    }
+
+    private void SaveAllToSession()
+    {
+        ViewModel.SaveAllToSession(SessionService);
     }
 }

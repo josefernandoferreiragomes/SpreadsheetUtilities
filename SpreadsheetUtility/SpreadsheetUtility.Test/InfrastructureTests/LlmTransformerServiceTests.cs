@@ -1,4 +1,4 @@
-ï»¿using System.Net;
+using System.Net;
 using System.Text.Json;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -29,10 +29,13 @@ public class LlmTransformerServiceTests
     [Fact]
     public async Task TransformAsync_Projects_ReturnsTransformedData()
     {
-        // Arrange
+        // Arrange — LM Studio returns output as an array of { type, content } objects
         var llmResponse = new
         {
-            output = "ProjectID\tProject Name\tProject Group Id\tTeam Id\n1\tProject A\t1\t1\n2\tProject B\t1\t2"
+            output = new[]
+            {
+                new { type = "message", content = "ProjectID\tProject Name\tProject Group Id\tTeam Id\n1\tProject A\t1\t1\n2\tProject B\t1\t2" }
+            }
         };
         var httpClient = CreateMockHttpClient(llmResponse);
 
@@ -54,7 +57,10 @@ public class LlmTransformerServiceTests
         // Arrange
         var llmResponse = new
         {
-            output = "ID\tProject Id\tProjectName\tTaskName\tEstimatedEffortHours\tDependencies\tProgress\tInternalID\n1\t1\tProject A\tDesign UI\t100\t\t50\t1234"
+            output = new[]
+            {
+                new { type = "message", content = "ID\tProject Id\tProjectName\tTaskName\tEstimatedEffortHours\tDependencies\tProgress\tInternalID\n1\t1\tProject A\tDesign UI\t100\t\t50\t1234" }
+            }
         };
         var httpClient = CreateMockHttpClient(llmResponse);
 
@@ -76,7 +82,10 @@ public class LlmTransformerServiceTests
         // Arrange
         var llmResponse = new
         {
-            output = "Team ID\tTeam Name\tDeveloper Id\tDeveloper Name\tDeveloper Vacation Date Intervals\tDaily Work Hours\n1\tTeam Alpha\t1\tAlice\t2026-08-10;2026-08-15|\t6"
+            output = new[]
+            {
+                new { type = "message", content = "Team ID\tTeam Name\tDeveloper Id\tDeveloper Name\tDeveloper Vacation Date Intervals\tDaily Work Hours\n1\tTeam Alpha\t1\tAlice\t2026-08-10;2026-08-15|\t6" }
+            }
         };
         var httpClient = CreateMockHttpClient(llmResponse);
 
@@ -98,7 +107,10 @@ public class LlmTransformerServiceTests
         // Arrange
         var llmResponse = new
         {
-            output = "IMPOSSIBLE:|The input data does not contain project-related columns. Expected columns like project ID, project name, etc."
+            output = new[]
+            {
+                new { type = "message", content = "IMPOSSIBLE:|The input data does not contain project-related columns. Expected columns like project ID, project name, etc." }
+            }
         };
         var httpClient = CreateMockHttpClient(llmResponse);
 
@@ -131,8 +143,11 @@ public class LlmTransformerServiceTests
     [Fact]
     public async Task TransformAsync_EmptyLlmResponse_ReturnsError()
     {
-        // Arrange
-        var llmResponse = new { output = "" };
+        // Arrange — empty output array ? no message content
+        var llmResponse = new
+        {
+            output = Array.Empty<object>()
+        };
         var httpClient = CreateMockHttpClient(llmResponse);
 
         var service = new LlmTransformerService(httpClient, _optionsMock.Object);

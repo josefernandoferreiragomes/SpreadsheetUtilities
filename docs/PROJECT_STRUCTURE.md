@@ -1,21 +1,21 @@
-# Project Structure & File Organization
+ï»¿# Project Structure & File Organization
 
 ## Solution Layout
 
 ```
 SpreadsheetUtilities.sln
-¦
+Â¦
 +-- SpreadsheetUtility.Domain/          # Pure domain entities & value objects
 +-- SpreadsheetUtility.Application/     # Use cases, DTOs, mappers, ports, services
 +-- SpreadsheetUtility.Infrastructure/  # All I/O, ClosedXML, repos, providers, API clients
 +-- SpreadsheetUtility.Bootstrapper/    # DI composition root
-¦
+Â¦
 +-- SpreadsheetUtility.UI.Web/          # Blazor Server app (Presentation)
 +-- SpreadsheetUtility.UI.Console/      # Console app (Presentation)
 +-- SpreadsheetUtilities.Auth.Api/      # Auth Minimal API (Presentation)
-¦
-+-- SpreadsheetUtility.Test/            # All tests (xUnit) — 81 tests
-¦
+Â¦
++-- SpreadsheetUtility.Test/            # All tests (xUnit) â€” 91 tests
+Â¦
 +-- SpreadsheetUtilities.ServiceDefaults/  # Aspire service defaults
 +-- SpreadsheetUtilities.AppHost/          # Aspire orchestrator
 ```
@@ -25,13 +25,13 @@ SpreadsheetUtilities.sln
 ```
 SpreadsheetUtility.Test/                  # Single xUnit test project
 +-- ApplicationTests/                     # Handler + validator unit tests
-¦   +-- Validators/                       # 7 FluentValidation test classes (21 methods)
-¦   +-- UseCases/                         # 6 MediatR handler test classes (12 methods)
-¦   +-- MediatorIntegrationTests.cs       # End-to-end handler test (integration)
+Â¦   +-- Validators/                       # 8 test classes (31 methods)
+Â¦   +-- UseCases/                         # 6 MediatR handler test classes (12 methods)
+Â¦   +-- MediatorIntegrationTests.cs       # End-to-end handler test (integration)
 +-- InfrastructureTests/                  # Infrastructure layer tests
-¦   +-- DoubleEntrySpreadsheetGeneratorTests.cs        # Unit tests
-¦   +-- DoubleEntrySpreadsheetGeneratorIntegratedTests.cs  # Integration (Category=Integration)
-¦   +-- LlmTransformerServiceTests.cs                   # 7 unit tests
+Â¦   +-- DoubleEntrySpreadsheetGeneratorTests.cs        # Unit tests
+Â¦   +-- DoubleEntrySpreadsheetGeneratorIntegratedTests.cs  # Integration (Category=Integration)
+Â¦   +-- LlmTransformerServiceTests.cs                   # 7 unit tests
 +-- DomainTests/                          # Domain layer tests
     +-- EntityValueObjectTests.cs          # 10 entity/value object tests
 ```
@@ -65,6 +65,7 @@ Shared:
 | `Application/Configuration/` | Enums: `SessionStorageLocation`, `TargetFormat` |
 | `Application/Mappers/` | `IGanttChartMapper` / `GanttChartMapper` (DTO ? Domain) |
 | `Application/Validation/` | 7 FluentValidation validators: CalculateGanttChartAllocation, GenerateDoubleEntry, LoadTasks, ParseExcelData, InitiateSession, UpdateSession, GetSession |
+| `Application/Validators/` | Static output schema validator: `EtlOutputValidator` |
 | `Application/Services/` | Calculators, strategies, factories, list generators, builders, PasteParserService |
 | `Application/UseCases/` | MediatR queries/commands and handlers (CalculateGanttChartAllocation, LoadTasks, ParseExcelData, Session, GenerateDoubleEntrySpreadsheet) |
 | `Application/Behaviors/` | `LoggingBehavior`, `ValidationBehavior` pipelines |
@@ -115,6 +116,6 @@ Shared:
 | `Infrastructure/Excel/DoubleEntryGeneratorService.cs` | ClosedXML-based implementation of `IDoubleEntryGeneratorService` |
 | `Infrastructure/Services/AuthService.cs` | IAuthService implementation using IMemoryCache |
 | `UI.Web/ViewModels/GanttGeneratorViewModel.cs` | Page state holder for GanttGeneratorFromPaste.razor |
-| `UI.Web/ViewModels/EtlAssistantViewModel.cs` | Page state holder for EtlAssistant.razor (3 pairs of input/output/error/loading) |
+| `UI.Web/ViewModels/EtlAssistantViewModel.cs` | Page state holder for EtlAssistant.razor (3 pairs of input/output/error/loading, output validation, per-card reset, sample data, session init/save) |
 | `UI.Web/Components/Pages/EtlAssistant.razor` | ETL Assistant Blazor page with 3 independent cards for Projects, Tasks, Team transformation |
-| `UI.Web/wwwroot/js/file-download-etl.js` | JavaScript interop helper for downloading transformed text files |
+| `UI.Web/wwwroot/js/file-download-etl.js` | JavaScript interop helpers: `downloadTextFile()` and `copyToClipboard()` |

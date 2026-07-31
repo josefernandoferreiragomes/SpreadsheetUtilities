@@ -1,4 +1,3 @@
-using System.Reflection;
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
@@ -6,7 +5,7 @@ using SpreadsheetUtility.Application.Behaviors;
 using SpreadsheetUtility.Application.Mappers;
 using SpreadsheetUtility.Application.Services;
 using SpreadsheetUtility.Domain.Models;
-
+using System.Reflection;
 namespace SpreadsheetUtility.Application;
 
 public static class DependencyInjection
@@ -39,5 +38,6 @@ public static class DependencyInjection
 
         return services;
     }
+    
 }
 

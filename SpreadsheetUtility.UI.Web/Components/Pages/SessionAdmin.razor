@@ -1,0 +1,262 @@
+@page "/admin/sessions"
+@rendermode InteractiveServer
+@inject SpreadsheetUtility.Infrastructure.Services.SessionService SessionService
+@inject SpreadsheetUtility.Infrastructure.Services.SessionStorageSelector StorageSelector
+@inject IJSRuntime JS
+@using Newtonsoft.Json
+@using Newtonsoft.Json.Linq
+@using SpreadsheetUtility.Application.DTOs.Session
+@using SpreadsheetUtility.Application.Configuration
+
+<h3>Session Management</h3>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <h5 class="card-title">Session Storage Location</h5>
+        <p class="mb-2">
+            <strong>Current:</strong> @GetLocationDisplayName(StorageSelector.GetCurrentLocation())
+        </p>
+        <div class="row g-2 align-items-end">
+            <div class="col-auto">
+                <select class="form-select" @bind="selectedLocation">
+                    <option value="@SessionStorageLocation.AuthApiMemoryCache">SpreadsheetUtilities.Auth.Api memorycache</option>
+                    <option value="@SessionStorageLocation.UiWebMemoryCache">SpreadsheetUtility.UI.Web memorycache</option>
+                    <option value="@SessionStorageLocation.RedisCache">Redis cache [under development]</option>
+                </select>
+            </div>
+            <div class="col-auto">
+                <button class="btn btn-primary" @onclick="ApplyStorageLocation" disabled="@isApplying">
+                    @(isApplying ? "Applying..." : "Select")
+                </button>
+            </div>
+        </div>
+        @if (!string.IsNullOrEmpty(statusMessage))
+        {
+            <div class="mt-2 text-@(statusIsError ? "danger" : "success")">@statusMessage</div>
+        }
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <h5 class="card-title">Session List Source</h5>
+        <p class="mb-2">
+            <strong>List loaded from:</strong> @GetLocationDisplayName(listSourceLocation)
+        </p>
+        <div class="row g-2 align-items-end">
+            <div class="col-auto">
+                <select class="form-select" @bind="listSourceLocation">
+                    <option value="@SessionStorageLocation.AuthApiMemoryCache">SpreadsheetUtilities.Auth.Api memorycache</option>
+                    <option value="@SessionStorageLocation.UiWebMemoryCache">SpreadsheetUtility.UI.Web memorycache</option>
+                    <option value="@SessionStorageLocation.RedisCache">Redis cache [under development]</option>
+                </select>
+            </div>
+            <div class="col-auto">
+                <button class="btn btn-secondary" @onclick="RefreshSessionList" disabled="@isRefreshing">
+                    @(isRefreshing ? "Loading..." : "Get")
+                </button>
+            </div>
+        </div>
+        @if (!string.IsNullOrEmpty(listStatusMessage))
+        {
+            <div class="mt-2 text-@(listStatusIsError ? "danger" : "success")">@listStatusMessage</div>
+        }
+    </div>
+</div>
+
+@if (sessions is null)
+{
+    <p>Loading sessions...</p>
+}
+else if (sessions.Count == 0)
+{
+    <p>No active sessions.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Email</th>
+                <th>Session ID</th>
+                <th>Created</th>
+                <th>Last Modified</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var session in sessions)
+            {
+                <tr>
+                    <td>@session.Email</td>
+                    <td><code>@session.SessionId</code></td>
+                    <td>@session.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                    <td>@session.LastModifiedAt.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                    <td>
+                        <button class="btn btn-sm btn-info" @onclick="() => ShowDetail(session)">Detail</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@if (selectedSession is not null)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);" @onclick="CloseDetail">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable" @onclick:stopPropagation="true">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Session Detail - @selectedSession.Email</h5>
+                    <button type="button" class="btn-close" @onclick="CloseDetail"></button>
+                </div>
+                <div class="modal-body">
+                    <pre><code>@FormatSessionDetail(selectedSession)</code></pre>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CloseDetail">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<SessionInfoDto>? sessions;
+    private SessionInfoDto? selectedSession;
+    private SessionStorageLocation selectedLocation = SessionStorageLocation.AuthApiMemoryCache;
+    private bool isApplying;
+    private string? statusMessage;
+    private bool statusIsError;
+    private SessionStorageLocation listSourceLocation = SessionStorageLocation.AuthApiMemoryCache;
+    private bool isRefreshing;
+    private string? listStatusMessage;
+    private bool listStatusIsError;
+
+    protected override async Task OnInitializedAsync()
+    {
+        selectedLocation = StorageSelector.GetCurrentLocation();
+        listSourceLocation = StorageSelector.GetCurrentLocation();
+        await LoadSessions();
+    }
+
+    private async Task LoadSessions()
+    {
+        try
+        {
+            sessions = await SessionService.FetchSessionsFromLocationAsync(listSourceLocation);
+        }
+        catch (Exception ex)
+        {
+            await JS.InvokeVoidAsync("console.error", "Error loading sessions: " + ex.Message);
+            sessions = new List<SessionInfoDto>();
+        }
+    }
+
+    private async Task ApplyStorageLocation()
+    {
+        isApplying = true;
+        statusMessage = null;
+        statusIsError = false;
+
+        try
+        {
+            var currentLocation = StorageSelector.GetCurrentLocation();
+            if (selectedLocation == SessionStorageLocation.RedisCache)
+            {
+                statusMessage = "Redis cache is under development and cannot be selected yet.";
+                statusIsError = true;
+                return;
+            }
+
+            if (selectedLocation == currentLocation)
+            {
+                statusMessage = $"Storage location is already set to {GetLocationDisplayName(selectedLocation)}.";
+                return;
+            }
+
+            StorageSelector.SetLocation(selectedLocation);
+            statusMessage = $"Storage location changed to {GetLocationDisplayName(selectedLocation)}.";
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Error: {ex.Message}";
+            statusIsError = true;
+        }
+        finally
+        {
+            isApplying = false;
+        }
+    }
+
+    private async Task RefreshSessionList()
+    {
+        isRefreshing = true;
+        listStatusMessage = null;
+        listStatusIsError = false;
+
+        try
+        {
+            if (listSourceLocation == SessionStorageLocation.RedisCache)
+            {
+                listStatusMessage = "Redis cache is under development and cannot be queried yet.";
+                listStatusIsError = true;
+                return;
+            }
+
+            sessions = await SessionService.FetchSessionsFromLocationAsync(listSourceLocation);
+            listStatusMessage = $"Session list loaded from {GetLocationDisplayName(listSourceLocation)}.";
+        }
+        catch (Exception ex)
+        {
+            listStatusMessage = $"Error: {ex.Message}";
+            listStatusIsError = true;
+        }
+        finally
+        {
+            isRefreshing = false;
+        }
+    }
+
+    private static string GetLocationDisplayName(SessionStorageLocation location)
+    {
+        return location switch
+        {
+            SessionStorageLocation.UiWebMemoryCache => "SpreadsheetUtility.UI.Web memorycache",
+            SessionStorageLocation.AuthApiMemoryCache => "SpreadsheetUtilities.Auth.Api memorycache",
+            SessionStorageLocation.RedisCache => "Redis cache [under development]",
+            _ => location.ToString()
+        };
+    }
+
+    private void ShowDetail(SessionInfoDto session)
+    {
+        selectedSession = session;
+    }
+
+    private string FormatSessionDetail(SessionInfoDto session)
+    {
+        var json = JObject.FromObject(session);
+
+        if (session.SessionData is not null)
+        {
+            try
+            {
+                var parsed = JToken.Parse(session.SessionData);
+                json["SessionData"] = parsed;
+            }
+            catch (Newtonsoft.Json.JsonReaderException)
+            {
+                json["SessionData"] = session.SessionData
+                    .Replace("\t", "    ");
+            }
+        }
+
+        return JsonConvert.SerializeObject(json, Formatting.Indented);
+    }
+
+    private void CloseDetail()
+    {
+        selectedSession = null;
+    }
+}

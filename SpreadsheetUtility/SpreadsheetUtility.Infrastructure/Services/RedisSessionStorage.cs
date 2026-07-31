@@ -1,0 +1,37 @@
+﻿using SpreadsheetUtility.Application.DTOs.Session;
+using SpreadsheetUtility.Application.Ports;
+using SpreadsheetUtility.Infrastructure.ApiClients;
+using Newtonsoft.Json;
+
+namespace SpreadsheetUtility.Infrastructure.Services;
+
+public class RedisSessionStorage : ISessionStore
+{
+    private readonly SpreadsheetUtilitiesAuthApiClient _client;
+
+    public RedisSessionStorage()
+    {
+        _client = new SpreadsheetUtilitiesAuthApiClient(new HttpClient());
+    }
+
+    public string InitiateSession(string email)
+        => _client.InitiateSessionAsync(email, null, CacheBackend.Redis).Result;
+
+    public string? GetSession(string email, Guid sessionId)
+        => _client.GetSessionAsync(email, sessionId, CacheBackend.Redis).Result;
+
+    public string UpdateSession(string email, Guid sessionId, string newValue)
+        => _client.UpdateSessionAsync(email, sessionId, newValue, CacheBackend.Redis).Result;
+
+    public IReadOnlyCollection<SessionInfoDto> GetAllSessions()
+    {
+        var json = _client.ListSessionsAsync(CacheBackend.Redis).Result;
+        return JsonConvert.DeserializeObject<List<SessionInfoDto>>(json) ?? new List<SessionInfoDto>();
+    }
+
+    public SessionInfoDto? TryFindSessionByEmail(string email)
+    {
+        var allSessions = GetAllSessions();
+        return allSessions.FirstOrDefault(s => s.Email == email);
+    }
+}

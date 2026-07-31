@@ -1,4 +1,4 @@
-﻿# SpreadsheetUtilities — Agent Instructions
+# SpreadsheetUtilities — Agent Instructions
 
 An ASP.NET Core project with Minimal APIs and Blazor, progressively refactored toward Domain-Driven Design and Clean Architecture.
 
@@ -90,6 +90,19 @@ Three files track the project's state across sessions:
    - When you classify a request, note the category and reasoning in the todo list
    - If you escalate from Tiny Fix to Small Feature mid-work, note why
    - If you fall back from a subagent to direct execution, record the failure reason
+
+
+## Edit Safety Rules
+
+When modifying an existing source file, follow these guards to prevent structural and encoding errors:
+
+1. **Read before write** — Understand the file's layout before inserting or replacing code. Read the relevant section (at minimum the insertion target and its surroundings) before choosing a modification strategy.
+
+2. **Use specific landmarks** — Target a unique, verifiable landmark for the insertion point (e.g., `class Foo` or a specific line of code). Do not match generic patterns like `}` or `<` that could land in the wrong scope.
+
+3. **Verify by re-reading** — After writing, re-read the affected lines and their immediate context to confirm the edit landed in the correct position and is structurally valid (correct class/namespace nesting, no truncated syntax).
+
+These rules apply to both the orchestrator and any subagent performing file edits.
 
 ## Available Skills
 

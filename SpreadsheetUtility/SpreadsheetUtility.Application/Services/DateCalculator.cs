@@ -43,9 +43,9 @@ public class DateCalculator : IDateCalculator
         return startDate;
     }
 
-    public DateTime CalculateEndDate(DateTime start, double workDays, List<(DateTime Start, DateTime End)?>? vacations)
+    public DateTime CalculateEndDate(DateTime startDate, double workDays, List<(DateTime Start, DateTime End)?>? vacations)
     {
-        DateTime end = start;
+        DateTime end = startDate;
         while (workDays > 0)
         {
             if (!IsVacationDay(end, vacations) && !IsWeekendOrHoliday(end)) workDays--;
@@ -54,59 +54,59 @@ public class DateCalculator : IDateCalculator
         return end.AddDays(-1);
     }
 
-    public int CalculateIntervalDays(DateTime start, DateTime end, List<(DateTime Start, DateTime End)?>? vacations)
+    public int CalculateIntervalDays(DateTime startDate, DateTime endDate, List<(DateTime Start, DateTime End)?>? vacations)
     {
         int days = 0;
-        var startDate = start;
-        while (startDate <= end)
+        var startDateCalculated = startDate;
+        while (startDateCalculated <= endDate)
         {
             days++;
-            startDate = startDate.AddDays(1);
+            startDateCalculated = startDateCalculated.AddDays(1);
         }
         return days;
     }
 
-    public int CalculateWorkDays(DateTime start, DateTime end, List<(DateTime Start, DateTime End)?>? vacations)
+    public int CalculateWorkDays(DateTime startDate, DateTime endDate, List<(DateTime Start, DateTime End)?>? vacations)
     {
         int days = 0;
-        var startDate = start;
-        while (startDate <= end)
+        var startDateCalculated = startDate;
+        while (startDateCalculated <= endDate)
         {
-            if (!IsVacationDay(startDate, vacations) && !IsWeekendOrHoliday(startDate))
+            if (!IsVacationDay(startDateCalculated, vacations) && !IsWeekendOrHoliday(startDateCalculated))
             {
                 days++;
             }
-            startDate = startDate.AddDays(1);
+            startDateCalculated = startDateCalculated.AddDays(1);
         }
         return days;
     }
 
-    public int CalculateVacationDays(DateTime start, DateTime end, List<(DateTime Start, DateTime End)?>? vacations)
+    public int CalculateVacationDays(DateTime startDate, DateTime endDate, List<(DateTime Start, DateTime End)?>? vacations)
     {
         int days = 0;
-        var startDate = start;
-        while (startDate <= end)
+        var startDateCalculated = startDate;
+        while (startDateCalculated <= endDate)
         {
-            if (IsVacationDay(startDate, vacations))
+            if (IsVacationDay(startDateCalculated, vacations))
             {
                 days++;
             }
-            startDate = startDate.AddDays(1);
+            startDateCalculated = startDateCalculated.AddDays(1);
         }
         return days;
     }
 
-    public int CalculateNonWorkingDays(DateTime start, DateTime end, List<(DateTime Start, DateTime End)?>? vacations)
+    public int CalculateNonWorkingDays(DateTime startDate, DateTime endDate, List<(DateTime Start, DateTime End)?>? vacations)
     {
         int days = 0;
-        var startDate = start;
-        while (startDate <= end)
+        var startDateCalculated = startDate;
+        while (startDateCalculated <= endDate)
         {
-            if (IsVacationDay(startDate, vacations) || IsWeekendOrHoliday(startDate))
+            if (IsVacationDay(startDateCalculated, vacations) || IsWeekendOrHoliday(startDateCalculated))
             {
                 days++;
             }
-            startDate = startDate.AddDays(1);
+            startDateCalculated = startDateCalculated.AddDays(1);
         }
         return days;
     }
@@ -122,12 +122,12 @@ public class DateCalculator : IDateCalculator
         return isHoliday;
     }
 
-    private bool IsVacationDay(DateTime date, List<(DateTime Start, DateTime End)?>? vacations)
+    private static bool IsVacationDay(DateTime date, List<(DateTime Start, DateTime End)?>? vacations)
         => vacations?.Any(v => v.HasValue && date >= v.Value.Start && date <= v.Value.End) ?? false;
 
     private bool IsWeekendOrHoliday(DateTime date)
         => IsWeekend(date) || IsHoliday(date);
 
-    private bool IsWeekend(DateTime date)
+    private static bool IsWeekend(DateTime date)
         => date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday;
 }

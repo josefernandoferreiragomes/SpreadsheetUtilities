@@ -38,6 +38,29 @@ public class GanttGeneratorViewModel
     public IQueryable<GanttTask>? DeveloperGanttTaskListOutput { get; set; }
     public IQueryable<DeveloperAvailability>? DeveloperListOutput { get; set; }
 
+    public void Reset()
+    {
+        IsSessionInitialized = false;
+        Email = string.Empty;
+        SessionIdentifierGuid = null;
+        ExcelProjectData = string.Empty;
+        ExcelTaskData = string.Empty;
+        ExcelTeamData = string.Empty;
+        SessionContent = string.Empty;
+        ProjectDtoList = new();
+        TaskDtoList = new();
+        DeveloperDtoList = new();
+        ProjectDtoListOutput = null;
+        TaskDtoListOutput = null;
+        TeamDtoListOutput = null;
+        ProjectHolidayList = null;
+        ProjectListOutput = null;
+        GanttTaskListOutput = null;
+        GanttProjectListOutput = null;
+        DeveloperGanttTaskListOutput = null;
+        DeveloperListOutput = null;
+    }
+
     public enum ChartModeType
     {
         Week,

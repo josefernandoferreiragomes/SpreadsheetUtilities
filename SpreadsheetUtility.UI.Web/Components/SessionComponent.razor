@@ -53,6 +53,18 @@
 
         try
         {
+            var existingSession = SessionService.GetSessionState(ViewModel.Email);
+
+            if (existingSession != null)
+            {
+                await JS.InvokeVoidAsync("console.log", $"Existing session found for email: {ViewModel.Email}. Loading cached data.");
+                ViewModel.SessionIdentifierGuid = existingSession.SessionId;
+                ViewModel.IsSessionInitialized = true;
+                await LoadCachedSessionData();
+                await OnSessionInitialized.InvokeAsync();
+                return;
+            }
+
             var sessionIdString = SessionService.InitiateSession(ViewModel.Email);
             ViewModel.SessionIdentifierGuid = Guid.Parse(sessionIdString);
             ViewModel.IsSessionInitialized = true;

@@ -18,7 +18,7 @@ public class ParseExcelDataCommandValidatorTests
             TeamData = null
         };
         var result = _validator.TestValidate(command);
-        result.ShouldHaveAnyValidationError();
+        Assert.NotEmpty(result.Errors);
     }
 
     [Fact]

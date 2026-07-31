@@ -15,7 +15,7 @@ public abstract class ListGenerator<TInput, TOutput> : IListGenerator<TInput, TO
         _projectInputList = listGeneratorInput.projectInputList;
         _projectStartDate = listGeneratorInput.projectStartDate;
 
-        if (input.Count() == 0) return new List<TOutput>();
+        if (!input.Any()) return new List<TOutput>();
 
         return input
             .GroupBy(GetGroupKey)

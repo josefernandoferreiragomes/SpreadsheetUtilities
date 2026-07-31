@@ -1,9 +1,13 @@
 ﻿using ClosedXML.Excel;
+using System.Globalization;
 
+namespace SimplifiedUtility.Console;
 public class DoubleEntrySpreadsheetGeneratorSimplified
 {
     private const int WORKSHEET_INDEX_COUNT_DEFAULT = 1;
     private const int HEADER_ROW_INDEX_DEFAULT = 2;
+    private const char ExpressionNewLine = '\n';
+    private const char ExpressionComma = ',';
     private string _inputFilePath;
     private string _keyColumnID;
     private string _valuesColumnID;
@@ -95,15 +99,15 @@ public class DoubleEntrySpreadsheetGeneratorSimplified
 
                 for (int row = _headersRowInt; row <= rowCount; row++)
                 {
-                    string keyColumn = worksheet.Cell(row, _keyColumnIDint.ToString()).GetString().Trim();
-                    string valuesColumn = worksheet.Cell(row, _valuesColumnIDint.ToString()).GetString().Trim();
+                    string keyColumn = worksheet.Cell(row, _keyColumnIDint.ToString(CultureInfo.InvariantCulture)).GetString().Trim();
+                    string valuesColumn = worksheet.Cell(row, _valuesColumnIDint.ToString(CultureInfo.InvariantCulture)).GetString().Trim();
 
                     if (string.IsNullOrEmpty(keyColumn)) continue;
 
                     if (!serviceMappings.ContainsKey(keyColumn))
                         serviceMappings[keyColumn] = new HashSet<string>();
 
-                    foreach (var thirdPartyService in valuesColumn.Split(new[] { '\n', ',' }, StringSplitOptions.RemoveEmptyEntries))
+                    foreach (var thirdPartyService in valuesColumn.Split(new[] { ExpressionNewLine, ExpressionComma }, StringSplitOptions.RemoveEmptyEntries))
                     {
                         string service = thirdPartyService.Trim();
                         if (!string.IsNullOrEmpty(service))
@@ -117,7 +121,7 @@ public class DoubleEntrySpreadsheetGeneratorSimplified
         return serviceMappings;
     }
 
-    private HashSet<string> GetUniqueThirdPartyServices(Dictionary<string, HashSet<string>> serviceMappings)
+    private static HashSet<string> GetUniqueThirdPartyServices(Dictionary<string, HashSet<string>> serviceMappings)
     {
         var uniqueThirdPartyServices = new HashSet<string>();
 

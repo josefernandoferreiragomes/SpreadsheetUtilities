@@ -1,50 +1,111 @@
-# Changelog
+﻿# Changelog
 
 ## [Unreleased]
+### Fixed
+
+- **LLM response format mismatch** — LM Studio returns output as an array of { type, content } objects; changed LlmResponse.Output from string? to List<LlmOutputMessage>? with fallback to esponse field. Added JsonException catch block.
+- **Prompt header-mapping drift** — LLM produced wrong column names (e.g., Name instead of Project Name, GroupId instead of Project Group Id); added column mapping tables, exact-header mandates, and worked examples to all 3 system prompts.
+
+### Added
+
+- **Post-transform validation (F1)** — New EtlOutputValidator in Application/Validators/ validates tab-separated output against expected schemas (header exactness, column count). Green/red validation badge shown below each output card.
+- **Per-card reset button (F2)** — Individual Reset buttons per card clear only that card's input, output, and validation state.
+- **Sample data loader (F3)** — "Load sample data" links fill each input textarea with realistic test data for all 3 formats.
+- **Copy-to-clipboard button (F4)** — Copy button alongside Download using 
+avigator.clipboard.writeText() via JS interop, added to ile-download-etl.js.
+- **Save All to Session (F5)** — New session initialization section (email + "Initialize Session" button) at top of ETL Assistant page. "Save All to Session" button enables only when all 3 cards have valid output, saving validated data to the app's session infrastructure via SessionService.SaveProjectData/TaskData/TeamData.
+- Added 10 unit tests for EtlOutputValidator covering valid/invalid schemas for all 3 formats.
+- Build: 0 errors, Tests: 91 pass, 0 failures
+
+
+### Added
+
+- **ETL Assistant page** — New Blazor page (`/etl-assistant`) with three independent cards (Projects, Tasks, Team) for transforming arbitrary tabular data into the project's three text formats using a local LLM:
+  - Created `ILlmTransformerService` port in Application/Ports/ with `LlmTransformationResult` record and `TargetFormat` enum
+  - Created `LlmOptions` config class in Infrastructure/Options/
+  - Created `LlmTransformerService` implementation in Infrastructure/Services/ with system prompts for all 3 formats and `IMPOSSIBLE:|` protocol detection
+  - Created `EtlAssistantViewModel` in UI.Web/ViewModels/ (scoped DI, 3 pairs of input/output/error/loading state)
+  - Created `EtlAssistant.razor` Blazor page with side-by-side input/output text areas, Transform/Downloa buttons per card
+  - Created `file-download-etl.js` for JS interop file download
+  - Registered `EtlAssistantViewModel` in UI.Web/Program.cs
+  - Registered `ILlmTransformerService` + typed HttpClient in Infrastructure/DependencyInjection.cs
+  - Configured `Llm` section in appsettings.json (BaseUrl, Model, TimeoutSeconds)
+  - Added ETL Assistant nav link in NavMenu.razor
+  - Created `LlmTransformerServiceTests.cs` with 7 unit tests covering happy paths, empty input, empty response, error responses, and IMPOSSIBLE protocol
+  - Added `file-download-etl.js` script reference in App.razor
+
+- Build: 0 errors, Tests: 81 pass, 0 failures
+
+### Architecture
+
+- Unified session storage interfaces: merged `IAuthService` + `ISessionStorage` into single `ISessionStore` port in Application/Ports/
+- Moved `StackExchange.Redis` NuGet from Application.csproj to Infrastructure.csproj (Stage 1)
+- Created `ISessionStore` interface with 5 methods (InitiateSession, GetSession, UpdateSession, GetAllSessions, TryFindSessionByEmail) replacing both `IAuthService` and `ISessionStorage`
+- Updated all 5 implementations to implement `ISessionStore`:
+  - `AuthService` (MemoryCache via AuthServiceFactory)
+  - `RedisAuthService` (direct Redis via StackExchange.Redis)
+  - `AuthApiSessionStorage` (HTTP proxy to Auth.Api via NSwag client)
+  - `LocalMemorySessionStorage` (local IMemoryCache)
+  - `RedisSessionStorage` (now real HTTP proxy, was stub)
+- Deleted old `IAuthService.cs` and `ISessionStorage.cs` interface files
+- Implemented `RedisSessionStorage` as HTTP proxy calling Auth.Api via `SpreadsheetUtilitiesAuthApiClient` with `CacheBackend.Redis` (Stage 3)
+- Added partial class extensions to NSwag client for `CacheBackend` parameter support on all 4 endpoint methods (InitiateSession, GetSession, UpdateSession, ListSessions)
+- Propagated `CacheBackend` parameter to all Auth.Api endpoints and MediatR handlers (Stage 4):
+  - `GetSessionQuery`, `UpdateSessionCommand`, `ListSessionsQuery` now accept `CacheBackend cache = CacheBackend.Memory`
+  - All 3 handlers changed from direct `ISessionStore` injection to `IAuthServiceFactory` injection
+- Changed `AuthServiceFactory` to use lazy `IServiceProvider` resolution for `RedisAuthService` — UI.Web no longer requires Redis to be installed
+- Registered `IAuthServiceFactory` in shared `AddInfrastructure()` DI (was only in Auth.Api Program.cs)
+- Removed redundant `IAuthServiceFactory` registration from Auth.Api Program.cs
+- Updated 3 test files (GetSession, ListSessions, UpdateSession) to mock `IAuthServiceFactory` instead of `ISessionStore`
+- Build: 0 errors. Tests: 74 pass, 0 failures. Smoke test: all 3 projects pass health checks.
+
+### Added
+
+- Session Admin page: Added "Session List Source" selector card with dropdown and "Get" button to load sessions from a chosen storage location independently of the save location
+- SessionStorageSelector.GetStorage(SessionStorageLocation) — new public method resolving any location to its ISessionStorage implementation
+- SessionService.FetchSessionsFromLocationAsync(SessionStorageLocation) — fetches sessions from a specified storage location
+- Tests: 74 pass, 0 failures
+
+### Changed
+
+- Session Admin page "Storage Location" selector now only affects where new sessions are saved (no longer reloads the session list)
+- Session Admin page initial load uses FetchSessionsFromLocationAsync with the current storage location
+- Session Admin page: SessionData field now renders with real newlines and spaces
+  instead of JSON-escaped \t \n sequences for readability
+- SessionService now depends on SessionStorageSelector instead of direct HttpClient/SpreadsheetUtilitiesAuthApiClient
+
+### Added
+
+- Session Storage Location Selector feature with runtime-switchable backends:
+  - New ISessionStorage port interface in Application/Ports
+  - New SessionStorageLocation enum in Application/Configuration
+  - AuthApiSessionStorage — delegates to Auth.Api via NSwag client
+  - LocalMemorySessionStorage — local IMemoryCache (same pattern as AuthService)
+  - RedisSessionStorage — stub (throws NotImplementedException)
+  - SessionStorageSelector — runtime resolver that caches the current location choice in IMemoryCache
+- SessionService refactored to use SessionStorageSelector instead of creating HttpClient directly
+- Session Admin page (/admin/sessions) now has a storage location selector card above the session table
+- Session Admin page injects SessionStorageSelector and allows switching between Auth API, UI.Web memory, and Redis (stub) at runtime
+- Tests: 74 pass, 0 failures
 
 ### Fixed
 
-- Fixed "Developer Tasks Gantt Chart" timeline showing wider date range than other charts.
-  Root cause: Vacation entries in `DeveloperTaskListGenerator` set their `Start` to the full vacation
-  start date, even when that date was before `_projectStartDate`. The Frappe Gantt library auto-scales
-  the timeline to fit all bars, so a vacation starting before the project start pulled the timeline
-  leftward.
-  Fix: Clamped the vacation `Start` to `_projectStartDate` so overlapping vacations are still shown
-  but don't extend the timeline backward beyond the project boundary.
-  Tests: 71 pass, 0 failures.
+- AuthService._sessionIndex moved from instance field to IMemoryCache (key __SessionIndex)
+  so GetAllSessions() works across HTTP requests — previously the index was lost
+  because AuthService is registered as scoped and each request got a new empty index
 
-- Fixed data grids (Project/Task/Developer) showing empty after chart generation until page
-  navigation out and back in.
-  Root cause: `GanttResultsComponent` had no `[Parameter]` properties � only injected the ViewModel.
-  When the parent called `StateHasChanged()` after populating data, Blazor's render tree diff found
-  no parameter changes and skipped re-rendering the child component. QuickGrid never received the
-  updated data.
-  Fix: Added a `_ganttDataVersion` counter in the parent page, incremented in `LoadGanttChartTasks()`,
-  and used as `@key` on `<GanttResultsComponent @key="_ganttDataVersion" />`. When the key changes,
-  Blazor destroys and recreates the child with current ViewModel data. Also added null-guard `@if`
-  blocks around each data grid with helpful placeholder messages.
-  Tests: 71 pass, 0 failures.
-
-- Fixed Gantt chart results not appearing on first page visit after pasting data and pressing Generate.
-  Root cause: `DataPasteGridComponent` textareas used default `@bind` (onchange event), so ViewModel
-  properties were not updated until the textarea lost focus. If "Generate" was clicked immediately after
-  pasting, the raw data properties were still empty, causing the parse to produce empty results.
-  Fix: Changed `@bind` to `@bind:event="oninput"` on all three textareas so ViewModel properties update
-  on every keystroke/paste � data is always fresh when Generate runs.
-  Additionally, cleared all output properties at the start of `LoadGanttChartTasks()` to prevent stale
-  ghost data from persisting across navigations (scoped ViewModel lifecycles).
-  Tests: 71 pass, 0 failures.
-
-- Fixed Gantt chart `Cannot set properties of null (setting 'innerHTML')` and charts/grids not showing.
-  Root cause: JS interop calls (`renderGanttTasks`, etc.) were placed in the child
-  component's `OnAfterRenderAsync`, but Blazor's renderer skipped the child's re-render
-  (no parameter changes detected), so the JS was never invoked and the conditionally-
-  rendered content never appeared.
-  Fix: Move JS interop calls directly into the parent's `LoadGanttChartTasks` method
-  (after `StateHasChanged()`), relying on the `MutationObserver`-based `waitForElement()`
-  helper in `gantt.js` to wait for the DOM containers to appear � no error thrown,
-  no fragile `setTimeout` polling, no dependency on child lifecycle re-entry.
-  Tests: 71 pass, 0 failures.
+- AuthService.InitiateSession() now stores an initial value under the session GUID key in IMemoryCache,
+  so GetAllSessions() correctly returns SessionData for freshly created sessions (previously always null)
+- AuthService.InitiateSession() now rejects duplicate emails with InvalidOperationException
+  instead of silently overwriting the existing session
+- SessionAdmin.razor now calls Auth.Api via HTTP (SessionService.FetchAllSessionsFromApiAsync())
+  instead of using local IMediator/IAuthService (UI.Web and Auth.Api are separate
+  processes with separate caches - only HTTP calls reach the real session store)
+- SessionInfoDto converted from mutable class to 
+ecord with { get; init; } properties
+  for consistency with other session DTOs
+- ListSessionsAsync() added to SpreadsheetUtilitiesAuthApiClient NSwag partial class
+  to call Auth.Api's /listSessions endpoint via HTTP
 
 ### Code Analysis
 
@@ -60,6 +121,13 @@
 - Build: 0 errors, 0 warnings. dotnet format --verify-no-changes: clean.
 - Tests: 71 pass, 0 failures.
 
+
+### Fixed
+
+- **Bug: Stale ViewModel state on navigation** — GanttGeneratorFromPaste page now calls ViewModel.Reset() in OnInitializedAsync(), clearing all session-related state (email, session ID, project/task/team data) when the user navigates to the page. Previously the Scoped ViewModel retained stale data across page navigations.
+- **Bug: Session data lost after storage location switch** — GetSessionState now deserializes the combined JSON from SessionData to restore all three data fields (ProjectData, TaskData, TeamData) when hydrating from the backend. SaveProjectData/SaveTaskData/SaveTeamData now persist a combined JSON snapshot of all three fields, preventing data overwrites. Legacy plain-string data is supported via fallback.
+- Created CombinedSessionData record in Infrastructure/Models/ to store all three data fields as a single JSON object
+- Build: 0 errors, Tests: 74 pass, 0 failures
 ### Architecture
 
 - Phase 6 testing restructure: reorganized test project into ApplicationTests/, InfrastructureTests/, DomainTests/ folders
@@ -83,7 +151,7 @@
 - Build: 0 errors, Tests: 26 pass, 0 failures
 
 - Phase 4a refactoring: Auth.Api now uses Application + Infrastructure layers
-- Phase 4b refactoring: UI.Web � replaced GanttMapperHelper static methods with IPasteParserService in Application/Services/
+- Phase 4b refactoring: UI.Web replaced GanttMapperHelper static methods with IPasteParserService in Application/Services/
 - Created GanttGeneratorViewModel in UI.Web/ViewModels/ as scoped DI service for page state
 - GanttGeneratorFromPaste.razor now binds to ViewModel properties and uses PasteParserService
 - Register PasteParserService in Application/DependencyInjection.cs
@@ -97,7 +165,7 @@
 - Added Assembly.GetExecutingAssembly() and auto-discovery scanning for the Session use case handlers
 - Build: 0 errors, Tests: 26 pass, 0 failures
 
-### UI.Web � Component Split & Cleanup
+### UI.Web Component Split & Cleanup
 
 - Split 535-line GanttGeneratorFromPaste.razor into 4 components: SessionComponent, DataPasteGridComponent, GanttConfigComponent, GanttResultsComponent
 - Converted ExampleFilesController ([ApiController]) to Minimal API endpoints in Endpoints/
@@ -105,7 +173,7 @@
 - Updated _Imports.razor with shared namespaces (Application.Services, ViewModels, QuickGrid, Newtonsoft.Json)
 - Build: 0 errors, Tests: 26 pass, 0 failures
 
-### UI.Console � Phase 4c Refactoring
+### UI.Console Phase 4c Refactoring
 
 - Created GenerateDoubleEntryInput/Output DTOs in Application/DTOs
 - Created IDoubleEntryGeneratorService port in Application/Ports
@@ -119,8 +187,19 @@
 
 ### Fixed
 
+- AuthService._sessionIndex moved from instance field to IMemoryCache (key __SessionIndex)
+  so GetAllSessions() works across HTTP requests previously the index was lost
+  because AuthService is registered as scoped and each request got a new empty index
+
 - Fixed DI resolution error in HolidayRepository by switching from concrete HolidayFileProvider dependency to IHolidayProvider interface
 
+
+### Fixed
+
+- **Bug: Stale ViewModel state on navigation** — GanttGeneratorFromPaste page now calls ViewModel.Reset() in OnInitializedAsync(), clearing all session-related state (email, session ID, project/task/team data) when the user navigates to the page. Previously the Scoped ViewModel retained stale data across page navigations.
+- **Bug: Session data lost after storage location switch** — GetSessionState now deserializes the combined JSON from SessionData to restore all three data fields (ProjectData, TaskData, TeamData) when hydrating from the backend. SaveProjectData/SaveTaskData/SaveTeamData now persist a combined JSON snapshot of all three fields, preventing data overwrites. Legacy plain-string data is supported via fallback.
+- Created CombinedSessionData record in Infrastructure/Models/ to store all three data fields as a single JSON object
+- Build: 0 errors, Tests: 74 pass, 0 failures
 ### Architecture
 
 - Phase 2 refactoring: extracted SpreadsheetUtility.Application project with MediatR, FluentValidation
@@ -140,6 +219,11 @@
 - Added repository interfaces: IHolidayRepository, IDeveloperRepository
 - Updated all imports across Library, Tests, and Web UI to reference SpreadsheetUtility.Domain.Models
 
+### Changed
+
+- Session Admin page: SessionData field now renders with real newlines and spaces
+  instead of JSON-escaped \t \n sequences for readability
+
 ### Added
 
 - opencode AI assistant configuration (AGENTS.md)
@@ -157,6 +241,11 @@
 - dotnet build: 0 errors, dotnet test: 26 pass, 0 failures
 
 ## [1.1.0] - 2024-01-15
+
+### Changed
+
+- Session Admin page: SessionData field now renders with real newlines and spaces
+  instead of JSON-escaped \t \n sequences for readability
 
 ### Added
 
@@ -176,6 +265,11 @@
 
 ## [1.0.0] - 2024-01-01
 
+### Changed
+
+- Session Admin page: SessionData field now renders with real newlines and spaces
+  instead of JSON-escaped \t \n sequences for readability
+
 ### Added
 
 - Session Management System with email-based authentication
@@ -192,6 +286,13 @@
 - Base64 encoding for safe cookie transport
 - lock-based thread-safe cache operations
 
+
+### Fixed
+
+- **Bug: Stale ViewModel state on navigation** — GanttGeneratorFromPaste page now calls ViewModel.Reset() in OnInitializedAsync(), clearing all session-related state (email, session ID, project/task/team data) when the user navigates to the page. Previously the Scoped ViewModel retained stale data across page navigations.
+- **Bug: Session data lost after storage location switch** — GetSessionState now deserializes the combined JSON from SessionData to restore all three data fields (ProjectData, TaskData, TeamData) when hydrating from the backend. SaveProjectData/SaveTaskData/SaveTeamData now persist a combined JSON snapshot of all three fields, preventing data overwrites. Legacy plain-string data is supported via fallback.
+- Created CombinedSessionData record in Infrastructure/Models/ to store all three data fields as a single JSON object
+- Build: 0 errors, Tests: 74 pass, 0 failures
 ### Architecture
 
 - 11 design patterns implemented in SpreadsheetUtility.Library (Strategy, Factory, Template Method, Builder, Facade, Mapper/Adapter, Observer, Command, Dependency Injection, Provider, Generic List Generator)

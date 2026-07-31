@@ -1,10 +1,12 @@
 using SpreadsheetUtility.Domain.Models;
+using System.Globalization;
 
 namespace SpreadsheetUtility.Application.Services;
 
-public abstract class TaskAssignmentStrategyBase(IDateCalculator _dateCalculator) : ITaskAssignmentStrategy
-{
-    protected IDateCalculator _dateCalculator = _dateCalculator;
+public abstract class TaskAssignmentStrategyBase(IDateCalculator dateCalculator) : ITaskAssignmentStrategy
+{   
+    internal readonly IDateCalculator _dateCalculator = dateCalculator;
+
     public abstract void AssignTasks(
         ProjectGroup projectGroup,
         List<Developer> developers,
@@ -62,7 +64,7 @@ public abstract class TaskAssignmentStrategyBase(IDateCalculator _dateCalculator
         return (taskStart, taskEnd);
     }
 
-    private void UpdateTaskDetails(
+    private static void UpdateTaskDetails(
         GanttTask task,
         Developer developer,
         DateTime taskStart,
@@ -70,9 +72,9 @@ public abstract class TaskAssignmentStrategyBase(IDateCalculator _dateCalculator
         IDateCalculator dateCalculator
     )
     {
-        task.Start = taskStart.ToString("yyyy-MM-dd");
-        task.End = taskEnd.ToString("yyyy-MM-dd");
-        task.TaskEndWeekDescriptionDescription = $"Week of {taskEnd.AddDays(-(int)(taskEnd.DayOfWeek - 1)).ToString("yyyy-MM-dd")}";
+        task.Start = taskStart.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        task.End = taskEnd.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        task.TaskEndWeekDescriptionDescription = $"Week of {taskEnd.AddDays(-(int)(taskEnd.DayOfWeek - 1)).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}";
         task.StartDate = taskStart;
         task.EndDate = taskEnd;
         task.AssignedDeveloper = developer.Name;
